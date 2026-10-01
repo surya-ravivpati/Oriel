@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/*
+ * Oriel design tokens. Near-black studio, white type, restrained greys and one
+ * accent: warm window light (tungsten). The accent is used sparingly — for the
+ * living interviewer, focus, and the one thing on screen that matters most.
+ */
+@theme {
+  --color-ink-950: #070708;
+  --color-ink-900: #0b0b0d;
+  --color-ink-850: #0f0f12;
+  --color-ink-800: #141417;
+  --color-ink-700: #1b1b1f;
+  --color-ink-600: #26262b;
+  --color-ink-500: #3a3a41;
+  --color-mist-400: #6e6e78;
+  --color-mist-300: #9a9aa3;
+  --color-mist-200: #c4c4cb;
+  --color-mist-100: #ececef;
+  --color-lume: #e9b872;
+  --color-lume-soft: #f3d3a1;
+  --color-lume-deep: #b8844a;
+  --color-signal-good: #9cc7a4;
+  --color-signal-warn: #e0a86b;
+  --color-signal-bad: #e07a6b;
+
+  --font-display: var(--font-instrument-serif), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+:root {
+  color-scheme: dark;
+  --line: rgb(255 255 255 / 0.07);
+  --line-strong: rgb(255 255 255 / 0.13);
+}
+
+html, body { background: var(--color-ink-950); color: var(--color-mist-100); }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-feature-settings: "ss01", "cv11"; }
+
+::selection { background: color-mix(in oklab, var(--color-lume) 35%, transparent); color: white; }
+
+/* Film grain — very faint, gives the dark surfaces some tooth. */
+.grain::after {
+  content: ""; position: fixed; inset: -50%; pointer-events: none; z-index: 60; opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grain 8s steps(8) infinite;
+}
+@keyframes grain { 0%,100% { transform: translate(0,0) } 25% { transform: translate(-3%,2%) } 50% { transform: translate(2%,-3%) } 75% { transform: translate(-2%,-1%) } }
+
+.hairline { border-color: var(--line); }
+.hairline-strong { border-color: var(--line-strong); }
+
+/* The window light: a warm pool of light used behind the interviewer and in the hero. */
+.window-light {
+  background:
+    radial-gradient(60% 55% at 50% 38%, rgb(233 184 114 / 0.16), transparent 70%),
+    radial-gradient(40% 35% at 50% 30%, rgb(243 211 161 / 0.08), transparent 70%);
+}
+
+.text-balance { text-wrap: balance; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 650ms var(--ease-out-expo) both; }
+
+:focus-visible { outline: 1.5px solid var(--color-lume); outline-offset: 3px; border-radius: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  .grain::after { animation: none; }
+}
+
+input[type="range"].dial { -webkit-appearance: none; appearance: none; background: transparent; height: 28px; }
+input[type="range"].dial::-webkit-slider-runnable-track { height: 2px; background: var(--line-strong); border-radius: 2px; }
+input[type="range"].dial::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; margin-top: -8px; border-radius: 50%; background: var(--color-lume); box-shadow: 0 0 0 6px rgb(233 184 114 / 0.12), 0 0 24px rgb(233 184 114 / 0.45); cursor: grab; }
+input[type="range"].dial::-moz-range-track { height: 2px; background: var(--line-strong); }
+input[type="range"].dial::-moz-range-thumb { height: 18px; width: 18px; border: 0; border-radius: 50%; background: var(--color-lume); }

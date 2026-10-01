@@ -1,0 +1,138 @@
+{
+  "source": "Synthetic portraits generated with Higgsfield Soul 2.0 (model soul_2, aspect ratio 4:3, 2026-09-30) from the prompt recorded on each image. The PNGs are not committed; regenerate them from these prompts into this folder, check each gaze label by eye, and record attributes as observed (the generator does not always follow the prompt: face-07 came back wearing glasses).",
+  "images": [
+    {
+      "file": "face-00.png",
+      "subject": "A",
+      "skinTone": "light",
+      "ageBand": "30s",
+      "eyewear": "none",
+      "headCovering": "none",
+      "lighting": "even",
+      "gaze": "camera",
+      "prompt": "Photorealistic laptop webcam frame of a light-skinned woman in her 30s with straight brown hair, no glasses, sitting at a desk in a home office, head and shoulders visible, even soft front lighting, looking directly into the camera lens with a neutral expression."
+    },
+    {
+      "file": "face-01.png",
+      "subject": "A",
+      "skinTone": "light",
+      "ageBand": "30s",
+      "eyewear": "none",
+      "headCovering": "none",
+      "lighting": "even",
+      "gaze": "away",
+      "prompt": "Photorealistic laptop webcam frame of a light-skinned woman in her 30s with straight brown hair, no glasses, sitting at a desk in a home office, head and shoulders visible, even soft front lighting, looking down and to the side at her notes, eyes clearly away from the camera."
+    },
+    {
+      "file": "face-02.png",
+      "subject": "B",
+      "skinTone": "dark",
+      "ageBand": "40s",
+      "eyewear": "glasses",
+      "headCovering": "none",
+      "lighting": "even",
+      "gaze": "camera",
+      "prompt": "Photorealistic laptop webcam frame of a dark-skinned Black man in his 40s wearing rectangular glasses and a navy sweater, head and shoulders visible, even soft front lighting, looking directly into the camera lens with a neutral expression."
+    },
+    {
+      "file": "face-03.png",
+      "subject": "B",
+      "skinTone": "dark",
+      "ageBand": "40s",
+      "eyewear": "glasses",
+      "headCovering": "none",
+      "lighting": "even",
+      "gaze": "away",
+      "prompt": "Photorealistic laptop webcam frame of a dark-skinned Black man in his 40s wearing rectangular glasses and a navy sweater, head and shoulders visible, even soft front lighting, looking down and to the side at his notes, eyes clearly away from the camera."
+    },
+    {
+      "file": "face-04.png",
+      "subject": "C",
+      "skinTone": "medium",
+      "ageBand": "20s",
+      "eyewear": "none",
+      "headCovering": "hijab",
+      "lighting": "even",
+      "gaze": "camera",
+      "prompt": "Photorealistic laptop webcam frame of a South Asian woman in her 20s wearing a dark blue hijab, head and shoulders visible, even soft front lighting, looking directly into the camera lens with a neutral expression."
+    },
+    {
+      "file": "face-05.png",
+      "subject": "C",
+      "skinTone": "medium",
+      "ageBand": "20s",
+      "eyewear": "none",
+      "headCovering": "hijab",
+      "lighting": "even",
+      "gaze": "away",
+      "prompt": "Photorealistic laptop webcam frame of a South Asian woman in her 20s wearing a dark blue hijab, head and shoulders visible, even soft front lighting, looking down and to the side at her notes, eyes clearly away from the camera."
+    },
+    {
+      "file": "face-06.png",
+      "subject": "D",
+      "skinTone": "light-medium",
+      "ageBand": "50s",
+      "eyewear": "none",
+      "headCovering": "none",
+      "lighting": "even",
+      "gaze": "camera",
+      "prompt": "Photorealistic laptop webcam frame of an East Asian man in his 50s with short grey hair, no glasses, collared shirt, head and shoulders visible, even soft front lighting, looking directly into the camera lens with a neutral expression."
+    },
+    {
+      "file": "face-07.png",
+      "subject": "D",
+      "skinTone": "light-medium",
+      "ageBand": "50s",
+      "eyewear": "glasses",
+      "headCovering": "none",
+      "lighting": "even",
+      "gaze": "away",
+      "note": "generator added glasses despite the prompt; attribute recorded as observed",
+      "prompt": "Photorealistic laptop webcam frame of an East Asian man in his 50s with short grey hair, no glasses, collared shirt, head and shoulders visible, even soft front lighting, looking down and to the side at his notes, eyes clearly away from the camera."
+    },
+    {
+      "file": "face-08.png",
+      "subject": "E",
+      "skinTone": "medium",
+      "ageBand": "30s",
+      "eyewear": "none",
+      "headCovering": "turban",
+      "lighting": "even",
+      "gaze": "camera",
+      "prompt": "Photorealistic laptop webcam frame of a Sikh man in his 30s wearing a maroon turban and a full beard, head and shoulders visible, even soft front lighting, looking directly into the camera lens with a neutral expression."
+    },
+    {
+      "file": "face-09.png",
+      "subject": "E",
+      "skinTone": "medium",
+      "ageBand": "30s",
+      "eyewear": "none",
+      "headCovering": "turban",
+      "lighting": "even",
+      "gaze": "away",
+      "prompt": "Photorealistic laptop webcam frame of a Sikh man in his 30s wearing a maroon turban and a full beard, head and shoulders visible, even soft front lighting, looking down and to the side at his notes, eyes clearly away from the camera."
+    },
+    {
+      "file": "face-10.png",
+      "subject": "F",
+      "skinTone": "dark",
+      "ageBand": "30s",
+      "eyewear": "none",
+      "headCovering": "none",
+      "lighting": "backlit",
+      "gaze": "camera",
+      "prompt": "Photorealistic laptop webcam frame of a Black woman in her 30s with natural curly hair, no glasses, head and shoulders visible, dim evening room lighting with a bright window behind her (backlit), looking directly into the camera lens with a neutral expression."
+    },
+    {
+      "file": "face-11.png",
+      "subject": "G",
+      "skinTone": "medium",
+      "ageBand": "60s",
+      "eyewear": "glasses",
+      "headCovering": "none",
+      "lighting": "dim",
+      "gaze": "camera",
+      "prompt": "Photorealistic laptop webcam frame of a Latina woman in her 60s wearing round glasses and short silver hair, head and shoulders visible, dim warm lamp lighting, looking directly into the camera lens with a neutral expression."
+    }
+  ]
+}

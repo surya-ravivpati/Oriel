@@ -1,0 +1,485 @@
+{
+  "generatedAt": "2026-09-30T21:38:23.533Z",
+  "results": [
+    {
+      "accent": "us",
+      "accentLabel": "US English",
+      "script": "fluent",
+      "file": "tests/validation/speech/us-fluent.wav",
+      "truth": {
+        "firstWordMs": 1086,
+        "pauseMs": 1557,
+        "wpm": 191,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 29
+      },
+      "measured": {
+        "firstWordMs": 1085,
+        "longestPauseMs": 1580,
+        "wpm": 180,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 28,
+        "transcript": "In my last role, I led the migration of our billing system to a new platform. We finished two weeks early and invoice errors dropped by about 30%."
+      },
+      "error": {
+        "recoveryMs": -1,
+        "pauseMs": 23,
+        "pacePct": -5.6,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "us",
+      "accentLabel": "US English",
+      "script": "disfluent",
+      "file": "tests/validation/speech/us-disfluent.wav",
+      "truth": {
+        "firstWordMs": 1837,
+        "pauseMs": 2466,
+        "wpm": 151,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34
+      },
+      "measured": {
+        "firstWordMs": 1785,
+        "longestPauseMs": 2480,
+        "wpm": 148,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34,
+        "transcript": "Um, so in my last role, I uh kind of led the migration of our billing system. And like we finished early, I think, and um invoice errors dropped, you know, quite a bit."
+      },
+      "error": {
+        "recoveryMs": -52,
+        "pauseMs": 14,
+        "pacePct": -1.7,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "uk",
+      "accentLabel": "British English",
+      "script": "fluent",
+      "file": "tests/validation/speech/uk-fluent.wav",
+      "truth": {
+        "firstWordMs": 2839,
+        "pauseMs": 1582,
+        "wpm": 183,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 29
+      },
+      "measured": {
+        "firstWordMs": 2785,
+        "longestPauseMs": 1580,
+        "wpm": 171,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 28,
+        "transcript": "In my last role, I led the migration of our billing system to a new platform. We finished two weeks early and invoice errors dropped by about 30%."
+      },
+      "error": {
+        "recoveryMs": -54,
+        "pauseMs": -2,
+        "pacePct": -6.3,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "uk",
+      "accentLabel": "British English",
+      "script": "disfluent",
+      "file": "tests/validation/speech/uk-disfluent.wav",
+      "truth": {
+        "firstWordMs": 4269,
+        "pauseMs": 2622,
+        "wpm": 174,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34
+      },
+      "measured": {
+        "firstWordMs": 4285,
+        "longestPauseMs": 2680,
+        "wpm": 166,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 33,
+        "transcript": "Um, so in my last role, I, uh, kind of led the migration of our billing system. Like, we finished early, I think, and, um, invoice errors dropped, you know, quite a bit."
+      },
+      "error": {
+        "recoveryMs": 16,
+        "pauseMs": 58,
+        "pacePct": -4.5,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "in",
+      "accentLabel": "Indian English",
+      "script": "fluent",
+      "file": "tests/validation/speech/in-fluent.wav",
+      "truth": {
+        "firstWordMs": 1141,
+        "pauseMs": 1531,
+        "wpm": 179,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 29
+      },
+      "measured": {
+        "firstWordMs": 1085,
+        "longestPauseMs": 1580,
+        "wpm": 168,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 28,
+        "transcript": "In my last role, I led the migration of our billing system to a new platform. We finished two weeks early and invoice errors dropped by about 30%."
+      },
+      "error": {
+        "recoveryMs": -56,
+        "pauseMs": 49,
+        "pacePct": -6,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "in",
+      "accentLabel": "Indian English",
+      "script": "disfluent",
+      "file": "tests/validation/speech/in-disfluent.wav",
+      "truth": {
+        "firstWordMs": 1915,
+        "pauseMs": 2791,
+        "wpm": 178,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34
+      },
+      "measured": {
+        "firstWordMs": 1885,
+        "longestPauseMs": 2780,
+        "wpm": 164,
+        "fillers": 4,
+        "hedges": 2,
+        "words": 32,
+        "transcript": "Um, so in my last role, I kind of led the migration of our billing system. And like we finished early, I think, and invoice errors dropped, you know, quite a bit."
+      },
+      "error": {
+        "recoveryMs": -30,
+        "pauseMs": -11,
+        "pacePct": -7.8,
+        "fillers": -2,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "ng",
+      "accentLabel": "Nigerian English",
+      "script": "fluent",
+      "file": "tests/validation/speech/ng-fluent.wav",
+      "truth": {
+        "firstWordMs": 2967,
+        "pauseMs": 1560,
+        "wpm": 159,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 29
+      },
+      "measured": {
+        "firstWordMs": 2885,
+        "longestPauseMs": 1580,
+        "wpm": 150,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 28,
+        "transcript": "In my last role, I led the migration of our billing system to a new platform. We finished two weeks early and invoice errors dropped by about 30%."
+      },
+      "error": {
+        "recoveryMs": -82,
+        "pauseMs": 20,
+        "pacePct": -5.7,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "ng",
+      "accentLabel": "Nigerian English",
+      "script": "disfluent",
+      "file": "tests/validation/speech/ng-disfluent.wav",
+      "truth": {
+        "firstWordMs": 4361,
+        "pauseMs": 2627,
+        "wpm": 160,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34
+      },
+      "measured": {
+        "firstWordMs": 4285,
+        "longestPauseMs": 2580,
+        "wpm": 155,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34,
+        "transcript": "Um, so in my last role, I uh kind of led the migration of our billing system. And like we finished early, I think, and um invoice errors dropped, you know, quite a bit."
+      },
+      "error": {
+        "recoveryMs": -76,
+        "pauseMs": -47,
+        "pacePct": -3,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "es",
+      "accentLabel": "Spanish-accented English",
+      "script": "fluent",
+      "file": "tests/validation/speech/es-fluent.wav",
+      "truth": {
+        "firstWordMs": 1152,
+        "pauseMs": 1595,
+        "wpm": 165,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 29
+      },
+      "measured": {
+        "firstWordMs": 1085,
+        "longestPauseMs": 1580,
+        "wpm": 155,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 28,
+        "transcript": "In my last role, I led the migration of our billing system to a new platform. We finished two weeks early and invoice errors dropped by about 30%."
+      },
+      "error": {
+        "recoveryMs": -67,
+        "pauseMs": -15,
+        "pacePct": -6.1,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "es",
+      "accentLabel": "Spanish-accented English",
+      "script": "disfluent",
+      "file": "tests/validation/speech/es-disfluent.wav",
+      "truth": {
+        "firstWordMs": 1881,
+        "pauseMs": 2745,
+        "wpm": 161,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34
+      },
+      "measured": {
+        "firstWordMs": 1885,
+        "longestPauseMs": 2780,
+        "wpm": 149,
+        "fillers": 4,
+        "hedges": 2,
+        "words": 32,
+        "transcript": "Um, so in my last role, I kind of led the migration of our billing system. And like, we finished early, I think, and invoice errors dropped, you know, quite a bit."
+      },
+      "error": {
+        "recoveryMs": 4,
+        "pauseMs": 35,
+        "pacePct": -7.2,
+        "fillers": -2,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "cn",
+      "accentLabel": "Mandarin-accented English",
+      "script": "fluent",
+      "file": "tests/validation/speech/cn-fluent.wav",
+      "truth": {
+        "firstWordMs": 2945,
+        "pauseMs": 1586,
+        "wpm": 166,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 29
+      },
+      "measured": {
+        "firstWordMs": 2885,
+        "longestPauseMs": 1580,
+        "wpm": 157,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 28,
+        "transcript": "In my last role, I led the migration of our billing system to a new platform. We finished two weeks early and invoice errors dropped by about 30%."
+      },
+      "error": {
+        "recoveryMs": -60,
+        "pauseMs": -6,
+        "pacePct": -5.6,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "cn",
+      "accentLabel": "Mandarin-accented English",
+      "script": "disfluent",
+      "file": "tests/validation/speech/cn-disfluent.wav",
+      "truth": {
+        "firstWordMs": 4422,
+        "pauseMs": 2695,
+        "wpm": 153,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34
+      },
+      "measured": {
+        "firstWordMs": 4385,
+        "longestPauseMs": 2680,
+        "wpm": 141,
+        "fillers": 4,
+        "hedges": 2,
+        "words": 32,
+        "transcript": "Um, so in my last role, I kind of led the migration of our billing system. And like we finished early, I think, and invoice errors dropped, you know, quite a bit."
+      },
+      "error": {
+        "recoveryMs": -37,
+        "pauseMs": -15,
+        "pacePct": -7.7,
+        "fillers": -2,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "au",
+      "accentLabel": "Australian English",
+      "script": "fluent",
+      "file": "tests/validation/speech/au-fluent.wav",
+      "truth": {
+        "firstWordMs": 1137,
+        "pauseMs": 1639,
+        "wpm": 178,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 29
+      },
+      "measured": {
+        "firstWordMs": 1085,
+        "longestPauseMs": 1680,
+        "wpm": 168,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 28,
+        "transcript": "In my last role, I led the migration of our billing system to a new platform. We finished two weeks early and invoice errors dropped by about 30%."
+      },
+      "error": {
+        "recoveryMs": -52,
+        "pauseMs": 41,
+        "pacePct": -5.4,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "au",
+      "accentLabel": "Australian English",
+      "script": "disfluent",
+      "file": "tests/validation/speech/au-disfluent.wav",
+      "truth": {
+        "firstWordMs": 1814,
+        "pauseMs": 2725,
+        "wpm": 186,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34
+      },
+      "measured": {
+        "firstWordMs": 1785,
+        "longestPauseMs": 2680,
+        "wpm": 180,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34,
+        "transcript": "Um, so in my last role I uh kind of led the migration of our billing system. And like we finished early I think and um invoice errors dropped you know quite a bit."
+      },
+      "error": {
+        "recoveryMs": -29,
+        "pauseMs": -45,
+        "pacePct": -3,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "south",
+      "accentLabel": "Southern US English",
+      "script": "fluent",
+      "file": "tests/validation/speech/south-fluent.wav",
+      "truth": {
+        "firstWordMs": 2914,
+        "pauseMs": 1449,
+        "wpm": 167,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 29
+      },
+      "measured": {
+        "firstWordMs": 2885,
+        "longestPauseMs": 1480,
+        "wpm": 158,
+        "fillers": 0,
+        "hedges": 0,
+        "words": 28,
+        "transcript": "In my last role, I led the migration of our billing system to a new platform. We finished two weeks early and invoice errors dropped by about 30%."
+      },
+      "error": {
+        "recoveryMs": -29,
+        "pauseMs": 31,
+        "pacePct": -5.3,
+        "fillers": 0,
+        "hedges": 0
+      }
+    },
+    {
+      "accent": "south",
+      "accentLabel": "Southern US English",
+      "script": "disfluent",
+      "file": "tests/validation/speech/south-disfluent.wav",
+      "truth": {
+        "firstWordMs": 4329,
+        "pauseMs": 2572,
+        "wpm": 184,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34
+      },
+      "measured": {
+        "firstWordMs": 4285,
+        "longestPauseMs": 2580,
+        "wpm": 180,
+        "fillers": 6,
+        "hedges": 2,
+        "words": 34,
+        "transcript": "Um, so in my last role, I uh kind of led the migration of our billing system. And like we finished early, I think, and um invoice errors dropped, you know, quite a bit."
+      },
+      "error": {
+        "recoveryMs": -44,
+        "pauseMs": 8,
+        "pacePct": -2.1,
+        "fillers": 0,
+        "hedges": 0
+      }
+    }
+  ]
+}

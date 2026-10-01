@@ -1,0 +1,25 @@
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+Icon?
+
+# secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# local data: sqlite db and encrypted media
+data/
+
+# copied at install time from node_modules
+public/mediapipe/
+
+# validation fixtures (regenerable; reports live in docs/validation)
+tests/validation/speech/
+tests/validation/faces/*.png
