@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { FieldError, Input } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { cn } from "@/components/ui/cn";
 import { api, ApiError } from "@/lib/client/api";
 import { AvatarStore } from "@/lib/avatar/store";
-import { BOT_ACCESSORIES, BOT_COLORS, BOT_SHAPES, DEFAULT_STYLES, NAME_MAX, cleanName, nameProblem, styleFor, type AvatarStyle, type BotColorId } from "@/lib/avatar/style";
+import { BOT_ACCESSORIES, BOT_COLORS, BOT_SHAPES, BOT_VOICES, DEFAULT_STYLES, NAME_MAX, VOICE_SAMPLE, cleanName, nameProblem, styleFor, type AvatarStyle, type BotColorId, type BotVoice } from "@/lib/avatar/style";
+import { InterviewerAudio, speakWithBrowser } from "@/lib/avatar/audio";
+import { readNdjson } from "@/features/room/engine/stream";
+import type { RoomEvent } from "@/server/interview/service";
 import { PERSONAS, type PersonaId } from "@/lib/interview/personas";
 import { BotAvatar } from "./BotAvatar";
 import { BotStill } from "./BotStill";
@@ -16,8 +19,9 @@ export type SavedStyles = Partial<Record<PersonaId, AvatarStyle>>;
 
 /**
  * "Make it yours": pick an interviewer's shape, colour and accessory and give it a name.
- * The live preview morphs as you choose. Only the look and name change — how the
- * interviewer behaves (warmth, skepticism, pace, voice) stays with the persona.
+ * The live preview morphs as you choose, and speaks a sample in any voice you try. The
+ * look, name and voice are yours; how the interviewer behaves (warmth, skepticism,
+ * pressure) stays with the persona.
  */
 export function AvatarStudio({ personaId, saved, onClose, onSaved }: {
   personaId: PersonaId | null;
@@ -46,11 +50,52 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
     return s;
   }, []);
 
+  const [playing, setPlaying] = useState<string | null>(null);
+  const [voiceNote, setVoiceNote] = useState<string | null>(null);
+  const audio = useRef<InterviewerAudio | null>(null);
+  const playToken = useRef(0);
+  useEffect(() => () => audio.current?.close(), []);
+
   const name = cleanName(nameInput);
   const problem = nameProblem(name);
   const style: AvatarStyle = { ...draft, name: name || null };
   const shown = name || defaultName;
-  const isDefault = JSON.stringify(style) === JSON.stringify(DEFAULT_STYLES[personaId]);
+  const isDefault = JSON.stringify({ ...style, voice: style.voice ?? null }) === JSON.stringify({ ...DEFAULT_STYLES[personaId], voice: null });
+  const voice = draft.voice ?? persona.voice;
+
+  /** Play the sample line in a voice; the preview bot speaks it. Pressing again stops it. */
+  async function play(v: string) {
+    const token = ++playToken.current;
+    const a = (audio.current ??= new InterviewerAudio());
+    a.stop();
+    if (playing === v) { setPlaying(null); store.setMode("listening", 0); return; }
+    await a.resume();
+    setPlaying(v);
+    setVoiceNote(null);
+    store.setLevel(() => a.level());
+    store.setMode("speaking", 0);
+    try {
+      const res = await fetch("/api/avatar/voice-preview", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ voice: v }) });
+      if (res.status === 429) { setVoiceNote("Voice previews are busy — try again in a few seconds."); return; }
+      if (!res.ok) throw new Error(String(res.status));
+      let started = false, fallback = false;
+      await readNdjson<RoomEvent>(res, (ev) => {
+        if (token !== playToken.current) return;
+        if (ev.type === "audio") { if (!started) { a.beginUtterance(); started = true; } a.enqueuePcm(ev.pcm, ev.sampleRate); }
+        else if (ev.type === "audio_end") a.endUtterance();
+        else if (ev.type === "tts_fallback") fallback = true;
+      });
+      if (token !== playToken.current) return;
+      if (fallback) {
+        setVoiceNote("Interviewer voices need the speech service, which isn't available right now — this is your browser's voice instead.");
+        await speakWithBrowser(VOICE_SAMPLE, { audio: a });
+      } else if (started) await a.waitForEnd();
+    } catch {
+      setVoiceNote("Couldn't play that voice — try again.");
+    } finally {
+      if (token === playToken.current) { setPlaying(null); store.setMode("listening", 0); store.setLevel(() => 0); }
+    }
+  }
 
   // A nod (and, for the warmer interviewers, a smile) once you've given it a name.
   useEffect(() => {
@@ -96,7 +141,7 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
         <BotAvatar store={store} seats={[seat]} compact className="mt-2 h-52 w-full sm:h-64 md:h-72" />
         <p className="mt-1 max-w-full truncate font-display text-4xl leading-tight" aria-live="polite">{shown}</p>
         <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-mist-400">{persona.title}</p>
-        <p className="mt-5 max-w-[30ch] text-center text-[13px] leading-relaxed text-mist-400">The look and name are yours. How {shown} interviews stays the same.</p>
+        <p className="mt-5 max-w-[30ch] text-center text-[13px] leading-relaxed text-mist-400">The look, name and voice are yours. How {shown} interviews stays the same.</p>
       </div>
 
       {/* Choices */}
@@ -106,6 +151,30 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
           <Input id="bot-name" value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder={defaultName} maxLength={NAME_MAX + 6} autoComplete="off" aria-invalid={!!problem} />
           {problem ? <FieldError>{problem}</FieldError> : <p className="mt-2 text-xs text-mist-400">It introduces itself with this name. Leave it blank for {defaultName}.</p>}
         </div>
+
+        <fieldset>
+          <legend className="mb-2 text-[13px] font-medium text-mist-200">Voice</legend>
+          <div role="radiogroup" aria-label="Voice" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {BOT_VOICES.map((v) => {
+              const on = voice === v.id;
+              return (
+                <div key={v.id} className={cn("flex items-center rounded-xl border pl-3 pr-1 transition-colors duration-200", on ? "border-lume/60 bg-lume/[0.07]" : "hairline-strong bg-white/[0.02] hover:bg-white/[0.05]")}>
+                  <button type="button" role="radio" aria-checked={on} onClick={() => setDraft({ ...draft, voice: v.id === persona.voice ? null : (v.id as BotVoice) })} className="min-w-0 flex-1 py-2 text-left">
+                    <span className={cn("block truncate text-sm", on ? "text-mist-100" : "text-mist-200")}>{v.id}</span>
+                    <span className="block truncate text-[11px] text-mist-400">{v.label}{v.id === persona.voice ? " · default" : ""}</span>
+                  </button>
+                  <button type="button" onClick={() => play(v.id)} aria-label={playing === v.id ? `Stop ${v.id}` : `Play ${v.id}`} title={playing === v.id ? "Stop" : "Hear it"}
+                    className={cn("grid size-8 shrink-0 place-items-center rounded-full transition-colors hover:bg-white/10", playing === v.id ? "text-lume" : "text-mist-300 hover:text-lume")}>
+                    {playing === v.id
+                      ? <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden><rect width="10" height="10" rx="1.5" fill="currentColor" /></svg>
+                      : <svg width="10" height="12" viewBox="0 0 10 12" aria-hidden><path d="M0 0v12l10-6z" fill="currentColor" /></svg>}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-xs text-mist-400" aria-live="polite">{voiceNote ?? "Press play to hear a voice. The interviewer speaks with it in the Room and in drills."}</p>
+        </fieldset>
 
         <fieldset>
           <legend className="mb-2 text-[13px] font-medium text-mist-200">Shape</legend>

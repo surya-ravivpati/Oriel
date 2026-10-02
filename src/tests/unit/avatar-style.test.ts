@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BOT_SHAPES, BOT_COLORS, callName, cleanName, nameProblem, styleFor, DEFAULT_STYLES } from "@/lib/avatar/style";
+import { BOT_SHAPES, BOT_COLORS, BOT_VOICES, callName, cleanName, nameProblem, styleFor, voiceFor, DEFAULT_STYLES } from "@/lib/avatar/style";
+import { PERSONAS } from "@/lib/interview/personas";
 import { avatarStyleSchema } from "@/lib/avatar/style-schema";
 import { OUTLINE_POINTS, approachGeom, cloneGeom, extent, halfWidthAt, insideOutline, shapeGeom } from "@/components/avatar/bot/shapes";
 import { lookFor } from "@/components/avatar/bot/looks";
@@ -79,11 +80,24 @@ describe("interviewer styles", () => {
   });
 
   it("validates styles on the server and normalises the name", () => {
-    expect(avatarStyleSchema.parse({ shape: "hexagon", color: "lilac", accessory: "glasses", name: "  Pixel  " })).toEqual({ shape: "hexagon", color: "lilac", accessory: "glasses", name: "Pixel" });
+    expect(avatarStyleSchema.parse({ shape: "hexagon", color: "lilac", accessory: "glasses", name: "  Pixel  " })).toEqual({ shape: "hexagon", color: "lilac", accessory: "glasses", name: "Pixel", voice: null });
     expect(avatarStyleSchema.parse({ shape: "hexagon", color: "lilac", accessory: "glasses", name: "   " }).name).toBeNull();
     expect(avatarStyleSchema.safeParse({ shape: "star", color: "lilac", accessory: "glasses", name: null }).success).toBe(false);
     expect(avatarStyleSchema.safeParse({ shape: "circle", color: "neon", accessory: "none", name: null }).success).toBe(false);
     expect(avatarStyleSchema.safeParse({ shape: "circle", color: "sky", accessory: "none", name: "<b>hi</b>" }).success).toBe(false);
+  });
+
+  it("offers every persona's own voice, and speaks with the chosen one", () => {
+    for (const p of Object.values(PERSONAS)) expect(BOT_VOICES.map((v) => v.id)).toContain(p.voice);
+    expect(voiceFor("skeptic", null)).toBe(PERSONAS.skeptic.voice);
+    expect(voiceFor("skeptic", { voice: null })).toBe(PERSONAS.skeptic.voice);
+    expect(voiceFor("skeptic", { voice: "Puck" })).toBe("Puck");
+  });
+
+  it("validates voices on the server, defaulting older saves to the persona's voice", () => {
+    expect(avatarStyleSchema.parse({ shape: "circle", color: "sky", accessory: "none", name: null, voice: "Puck" }).voice).toBe("Puck");
+    expect(avatarStyleSchema.parse({ shape: "circle", color: "sky", accessory: "none", name: null }).voice).toBeNull();
+    expect(avatarStyleSchema.safeParse({ shape: "circle", color: "sky", accessory: "none", name: null, voice: "Bogus" }).success).toBe(false);
   });
 
   it("uses a chosen name whole, and a persona's by first name", () => {

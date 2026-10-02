@@ -30,6 +30,11 @@ export class AvatarStore {
     }
   }
 
+  /** Drive the voice light from an audio source, e.g. a voice preview. */
+  setLevel(fn: () => number) {
+    this.level = fn;
+  }
+
   fireCue(kind: AvatarCue, seat = this.activeSeat) {
     this.cue = { kind, at: this.now(), seat };
   }

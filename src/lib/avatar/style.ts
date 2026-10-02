@@ -1,4 +1,4 @@
-import type { PersonaId } from "@/lib/interview/personas";
+import { PERSONAS, type PersonaId } from "@/lib/interview/personas";
 
 /**
  * How an interviewer looks and what it's called. Each person can restyle and rename
@@ -43,12 +43,30 @@ export const BOT_ACCESSORIES = [
 ] as const;
 export type BotAccessory = (typeof BOT_ACCESSORIES)[number]["id"];
 
+/**
+ * Gemini prebuilt voices, each checked against the TTS models Oriel uses. Descriptions are
+ * Google's. No genders are assigned — people listen and choose.
+ */
+export const BOT_VOICES = [
+  { id: "Sulafat", label: "Warm" }, { id: "Iapetus", label: "Clear" }, { id: "Alnilam", label: "Firm" }, { id: "Kore", label: "Firm" },
+  { id: "Gacrux", label: "Mature" }, { id: "Achird", label: "Friendly" }, { id: "Puck", label: "Upbeat" }, { id: "Charon", label: "Informative" },
+  { id: "Aoede", label: "Breezy" }, { id: "Leda", label: "Youthful" }, { id: "Zephyr", label: "Bright" }, { id: "Algenib", label: "Gravelly" },
+  { id: "Despina", label: "Smooth" }, { id: "Schedar", label: "Even" }, { id: "Vindemiatrix", label: "Gentle" }, { id: "Sadaltager", label: "Knowledgeable" },
+  { id: "Umbriel", label: "Easy-going" }, { id: "Enceladus", label: "Breathy" },
+] as const;
+export type BotVoice = (typeof BOT_VOICES)[number]["id"];
+
+/** One fixed line for previews, so each voice is synthesised once and then served from cache. */
+export const VOICE_SAMPLE = "Thanks for making the time today. Let's start with you — tell me about yourself.";
+
 export interface AvatarStyle {
   shape: BotShape;
   color: BotColorId;
   accessory: BotAccessory;
   /** What the interviewer calls itself; null keeps the persona's own name. */
   name: string | null;
+  /** How it sounds; null keeps the persona's own voice. */
+  voice?: BotVoice | null;
 }
 
 export const DEFAULT_STYLES: Record<PersonaId, AvatarStyle> = {
@@ -78,6 +96,11 @@ export function nameProblem(name: string): string | null {
   if (name.length > NAME_MAX) return `Keep it to ${NAME_MAX} characters.`;
   if (!NAME_RE.test(name)) return "Use letters, numbers, spaces, apostrophes, hyphens or full stops.";
   return null;
+}
+
+/** The voice an interviewer speaks with: the person's choice, else the persona's. */
+export function voiceFor(personaId: string, style?: { voice?: string | null } | null): string {
+  return style?.voice ?? PERSONAS[personaId as PersonaId]?.voice ?? PERSONAS.hiring_manager.voice;
 }
 
 /** The name used in conversation: a custom name whole, a persona's full name by its first word. */

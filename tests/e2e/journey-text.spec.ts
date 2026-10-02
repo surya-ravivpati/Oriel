@@ -16,6 +16,8 @@ test("text-mode journey from signup to deletion", async ({ page }) => {
   const studio = page.getByRole("dialog", { name: "Make it yours" });
   await studio.getByRole("radio", { name: "Prism" }).click();
   await studio.getByRole("radio", { name: "Sky" }).click();
+  await studio.getByRole("radio", { name: /^Puck/ }).click();
+  await expect(studio.getByRole("radio", { name: /^Puck/ })).toHaveAttribute("aria-checked", "true");
   await studio.getByLabel("Name").fill("Captain Byte");
   await studio.getByRole("button", { name: "Save" }).click();
   await expect(studio).toBeHidden();

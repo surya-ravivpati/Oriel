@@ -10,6 +10,7 @@ import { PLANS, type PlanId } from "@/lib/billing/plans";
 import { PERSONAS, type PersonaId } from "@/lib/interview/personas";
 import { AvatarStudio, type SavedStyles } from "@/components/avatar/AvatarStudio";
 import { BotStill } from "@/components/avatar/BotStill";
+import { voiceFor } from "@/lib/avatar/style";
 
 type Privacy = { cameraMetricsEnabled: boolean; gazeMetricEnabled: boolean; postureMetricEnabled: boolean; recordVideo: boolean; videoRetentionDays: number };
 
@@ -100,7 +101,7 @@ export function ProfileClient(p: {
 
         <section id="interviewers" className="scroll-mt-24">
           <h2 className="font-display text-3xl">Your interviewers</h2>
-          <p className="mt-2 max-w-2xl text-sm text-mist-400">Give any of them a new shape, colour and name. They keep their interviewing style; the look and name are yours.</p>
+          <p className="mt-2 max-w-2xl text-sm text-mist-400">Give any of them a new shape, colour, name and voice. They keep their interviewing style; the look and sound are yours.</p>
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
             {(Object.keys(PERSONAS) as PersonaId[]).map((id) => {
               const name = styles[id]?.name ?? PERSONAS[id].name.split(" ")[0];
@@ -108,7 +109,7 @@ export function ProfileClient(p: {
                 <Card key={id} className="flex flex-col items-center px-3 pb-4">
                   <BotStill personaId={id} style={styles[id]} accent={PERSONAS[id].accent} className="aspect-square w-full max-w-[150px]" />
                   <p className="max-w-full truncate font-display text-2xl leading-tight">{name}</p>
-                  <p className="mt-0.5 text-xs text-mist-400">{PERSONAS[id].title}</p>
+                  <p className="mt-0.5 text-xs text-mist-400">{PERSONAS[id].title} · {voiceFor(id, styles[id])} voice</p>
                   <Button size="sm" variant="secondary" className="mt-3" onClick={() => setEditing(id)} aria-label={`Customize ${name}`}>Customize</Button>
                 </Card>
               );

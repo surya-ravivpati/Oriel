@@ -22,6 +22,8 @@ export interface SeatedInterviewer {
   name: string;
   /** Set when the person named this interviewer: used whole in conversation (not cut to a first name). */
   callName?: string;
+  /** Set when the person chose this interviewer's voice. */
+  voice?: string;
 }
 
 export interface OpenClaim {

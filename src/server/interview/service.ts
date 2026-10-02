@@ -24,6 +24,7 @@ import {
 } from "@/lib/billing/entitlements";
 import { loadEntitlementContext } from "@/lib/billing/entitlement-context";
 import { savedStyles } from "@/server/avatar-styles";
+import { voiceFor } from "@/lib/avatar/style";
 
 // ─── Types sent to the Room ───────────────────────────────────────────────
 
@@ -78,7 +79,10 @@ export function createInterview(userId: string, input: CreateInterviewInput): { 
   const sessionId = newId("ses");
   const styles = savedStyles(userId);
   // The person's own name for an interviewer replaces the persona's; behaviour is unchanged.
-  const named = (pid: PersonaId) => (styles[pid]?.name ? { name: styles[pid]!.name!, callName: styles[pid]!.name! } : { name: PERSONAS[pid].name });
+  const named = (pid: PersonaId) => ({
+    ...(styles[pid]?.name ? { name: styles[pid]!.name!, callName: styles[pid]!.name! } : { name: PERSONAS[pid].name }),
+    ...(styles[pid]?.voice ? { voice: styles[pid]!.voice! } : {}),
+  });
   const seated: SeatedInterviewer[] = [];
   if (mode === "panel") {
     const roles = rung ? null : panelRolesForSize(panelSize);
@@ -167,7 +171,7 @@ export async function* runOpening(sessionId: string, userId: string): AsyncGener
     const { decision, state: next } = openingDecision(state);
     getDb().update(schema.interviewSessions).set({ status: "live", startedAt: new Date() }).where(eq(schema.interviewSessions.id, sessionId)).run();
     // Warm the speech cache with each interviewer's fixed phrases (acknowledgements, handoffs, closing).
-    for (const iv of state.interviewers) prewarm(PERSONAS[iv.personaId].voice, cacheablePhrases(state, iv.seat), (u) => recordTokenCost({ userId, sessionId }, "gemini-tts", "tts", "prewarm", u));
+    for (const iv of state.interviewers) prewarm(voiceFor(iv.personaId, iv), cacheablePhrases(state, iv.seat), (u) => recordTokenCost({ userId, sessionId }, "gemini-tts", "tts", "prewarm", u));
     yield* deliver({ sessionId, userId, decision, state: next, interviewers, candidateName: firstName(profile?.name ?? "there"), lastQuestion: null, lastAnswer: null, answerId: null, t0, askedAtMs: 0 });
   } finally {
     inFlight.delete(sessionId);
@@ -179,7 +183,7 @@ async function* speakExisting(sessionId: string, userId: string, state: Intervie
   yield { type: "decision", seat: iv.seat, interviewerId: iv.id, action: "NEXT_QUESTION", intent: "ask_primary", avatarCue: "still", preSilenceMs: 300, pressure: state.currentPressure, answerId: null };
   const text = `Let's pick up where we left off. ${q.text}`;
   yield { type: "text", questionId: q.id, text, source: "template", seat: iv.seat };
-  yield* speak(sessionId, userId, text, PERSONAS[iv.personaId as PersonaId].voice, state.currentPressure);
+  yield* speak(sessionId, userId, text, voiceFor(iv.personaId, iv.avatarStyle), state.currentPressure);
   yield { type: "done", phase: state.phase, complete: false, listening: listeningPolicy(state), timings: {} };
 }
 
@@ -268,7 +272,7 @@ async function* deliver(p: {
 }): AsyncGenerator<RoomEvent> {
   const db = getDb();
   const iv = p.interviewers.find((i) => i.seat === p.decision.seat) ?? p.interviewers[0];
-  const voice = PERSONAS[iv.personaId as PersonaId].voice;
+  const voice = voiceFor(iv.personaId, iv.avatarStyle);
   yield { type: "decision", seat: iv.seat, interviewerId: iv.id, action: p.decision.action, intent: p.decision.intent, avatarCue: p.decision.avatarCue, preSilenceMs: p.decision.preSilenceMs, pressure: p.decision.pressure, answerId: p.answerId };
 
   const recent = db.select().from(schema.transcriptSegments).where(eq(schema.transcriptSegments.sessionId, p.sessionId)).orderBy(desc(schema.transcriptSegments.startMs)).limit(6).all().reverse();
@@ -381,7 +385,7 @@ function prewarmNext(sessionId: string, userId: string, state: InterviewState) {
   const nextQ = state.plan[state.planCursor];
   if (!nextQ) return;
   const seatIv = state.interviewers.find((i) => i.seat === nextQ.seat) ?? state.interviewers[0];
-  prewarm(PERSONAS[seatIv.personaId].voice, [nextQ.text], (u) => recordTokenCost({ userId, sessionId }, "gemini-tts", "tts", "prewarm", u), "high");
+  prewarm(voiceFor(seatIv.personaId, seatIv), [nextQ.text], (u) => recordTokenCost({ userId, sessionId }, "gemini-tts", "tts", "prewarm", u), "high");
 }
 
 /** Stream TTS audio for a fixed phrase (drill prompts, reconnect lines). On failure, tell the client to use its local voice. */
