@@ -5,15 +5,21 @@ import { cn } from "./cn";
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "lume";
 type Size = "sm" | "md" | "lg";
 
-const base = "relative inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-[-0.01em] transition-[background,color,box-shadow,transform,opacity] duration-300 ease-[var(--ease-out-expo)] disabled:opacity-40 disabled:pointer-events-none active:scale-[0.98] select-none whitespace-nowrap";
+/*
+ * Rectangular, square-shouldered buttons. One ivory button per view is the rule: it is the
+ * thing to do next. Everything else is outlined or plain text. "lume" is kept as an alias
+ * of primary for existing call sites.
+ */
+const base = "relative inline-flex items-center justify-center gap-2 rounded-md font-medium tracking-[-0.005em] transition-[background-color,color,border-color,opacity] duration-200 ease-[var(--ease-out-quint)] disabled:opacity-40 disabled:pointer-events-none select-none whitespace-nowrap";
+const ivory = "bg-mist-100 text-ink-950 hover:bg-mist-200";
 const variants: Record<Variant, string> = {
-  primary: "bg-mist-100 text-ink-950 hover:bg-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_8px_24px_-8px_rgba(255,255,255,0.25)]",
-  lume: "bg-lume text-ink-950 hover:bg-lume-soft shadow-[0_0_0_1px_rgba(255,255,255,0.15)_inset,0_10px_40px_-10px_rgba(233,184,114,0.7)]",
-  secondary: "bg-white/[0.06] text-mist-100 hover:bg-white/[0.1] border hairline-strong",
-  ghost: "text-mist-300 hover:text-mist-100 hover:bg-white/[0.05]",
-  danger: "bg-signal-bad/15 text-signal-bad hover:bg-signal-bad/25 border border-signal-bad/30",
+  primary: ivory,
+  lume: ivory,
+  secondary: "border border-line-strong text-mist-100 hover:border-mist-400 hover:bg-ink-900",
+  ghost: "text-mist-300 hover:bg-ink-900 hover:text-mist-100",
+  danger: "border border-signal-bad/45 text-signal-bad hover:bg-signal-bad/10",
 };
-const sizes: Record<Size, string> = { sm: "h-8 px-3.5 text-[13px]", md: "h-10 px-5 text-sm", lg: "h-12 px-7 text-[15px]" };
+const sizes: Record<Size, string> = { sm: "h-8 px-3 text-[13px]", md: "h-10 px-4 text-[15px]", lg: "h-12 px-5 text-[16px]" };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> { variant?: Variant; size?: Size; loading?: boolean }
 
@@ -28,4 +34,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
 export function ButtonLink({ href, variant = "primary", size = "md", className, children, ...rest }: { href: string; variant?: Variant; size?: Size; className?: string; children: React.ReactNode } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">) {
   return <Link href={href} className={cn(base, variants[variant], sizes[size], className)} {...rest}>{children}</Link>;
+}
+
+/** An inline link: ivory, underlined in olive. */
+export function TextLink({ href, children, className, external }: { href: string; children: React.ReactNode; className?: string; external?: boolean }) {
+  const cls = cn("text-mist-100 underline decoration-lume decoration-1 underline-offset-[0.28em] transition-[text-decoration-thickness,color] hover:text-lume-soft hover:decoration-2", className);
+  return external ? <a href={href} className={cls}>{children}</a> : <Link href={href} className={cls}>{children}</Link>;
 }

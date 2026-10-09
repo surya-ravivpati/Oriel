@@ -8,7 +8,8 @@ export default async function LoginPage() {
   if (await getCurrentUser()) redirect("/home");
   return (
     <>
-      <h1 className="mb-8 text-center font-display text-4xl">Welcome back.</h1>
+      <h1 className="text-title text-mist-100">Welcome back.</h1>
+      <p className="mb-9 mt-2 text-body text-mist-300">Pick up where you left off.</p>
       <AuthForm mode="login" />
     </>
   );

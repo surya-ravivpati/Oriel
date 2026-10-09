@@ -14,9 +14,9 @@ export const metadata = { title: "Lessons" };
 
 const TRACK_ORDER: Track[] = ["responses", "delivery", "presence"];
 const NOT_MEASURED: Record<Track, string> = {
-  responses: "Not measured — your last interview had too few full answers.",
-  delivery: "Not measured — speak your answers so we can hear your delivery.",
-  presence: "Not measured in your last interview — allow camera signals in the Room for presence lessons.",
+  responses: "Not measured: your last interview had too few full answers.",
+  delivery: "Not measured: speak your answers so we can hear your delivery.",
+  presence: "Not measured in your last interview: allow camera signals in the Room for presence lessons.",
 };
 
 export default async function LessonsPage() {
@@ -42,7 +42,7 @@ export default async function LessonsPage() {
       <div>
         <Eyebrow>Lessons</Eyebrow>
         <h1 className="mt-3 max-w-3xl font-display text-5xl leading-tight">Your lessons start with one interview.</h1>
-        <p className="mt-4 max-w-2xl text-mist-300">Lessons are built from what we measure while you practise — your pace and fillers, how your answers land, your posture and eye contact on camera. Do one interview and we&apos;ll pick the skills that will make the biggest difference for you, using your own answers as the examples.</p>
+        <p className="mt-4 max-w-2xl text-mist-300">Lessons are built from what we measure while you practise: your pace and fillers, how your answers land, your posture and eye contact on camera. Do one interview and we&apos;ll pick the skills that will make the biggest difference for you, using your own answers as the examples.</p>
         <ButtonLink href="/practice" variant="lume" size="lg" className="mt-8">Start an interview</ButtonLink>
         <Library title="What you could learn" />
       </div>
@@ -55,18 +55,17 @@ export default async function LessonsPage() {
       <h1 className="mt-3 font-display text-5xl leading-tight">Built from how you interviewed.</h1>
       <p className="mt-3 max-w-2xl text-mist-300">
         {open.length
-          ? <>From your interview {relPhrase(latest.endedAt ?? latest.createdAt)}: the skills furthest from target, taught with your own answers. Learn it, pass the practice twice, then use it in your next interview — that&apos;s where we confirm it.</>
-          : <>Every skill we measured in your interview {relPhrase(latest.endedAt ?? latest.createdAt)} was on target. Raise the pressure next time — new lessons appear when something slips.</>}
+          ? <>From your interview {relPhrase(latest.endedAt ?? latest.createdAt)}: the skills furthest from target, taught with your own answers. Learn it, pass the practice twice, then use it in your next interview: that&apos;s where we confirm it.</>
+          : <>Every skill we measured in your interview {relPhrase(latest.endedAt ?? latest.createdAt)} was on target. Raise the pressure next time; new lessons appear when something slips.</>}
       </p>
 
       {first && (() => {
         const def = LESSONS[first.lessonKey as LessonKey];
         return (
-          <Link href={`/lessons/${first.lessonKey}`} className="group relative mt-10 block overflow-hidden rounded-[28px] border hairline-strong p-8 transition-colors hover:bg-white/[0.02] sm:p-10">
-            <div className="absolute inset-0 window-light opacity-70" aria-hidden />
+          <Link href={`/lessons/${first.lessonKey}`} className="group relative mt-10 block overflow-hidden rounded-lg border hairline-strong p-8 transition-colors hover:bg-ink-900 sm:p-10">
             <div className="relative grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-end">
               <div>
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-lume">Start here · <TrackLabel track={def.track} className="text-lume" /></p>
+                <p className="text-[12px] text-lume font-medium">Start here · <TrackLabel track={def.track} className="text-lume" /></p>
                 <p className="mt-3 font-display text-4xl leading-tight sm:text-5xl">{def.title}</p>
                 <p className="mt-3 max-w-xl text-mist-300">{def.promise}</p>
               </div>
@@ -75,7 +74,7 @@ export default async function LessonsPage() {
                 <p className="mt-1 font-display text-3xl text-mist-100">{first.evidence.display}</p>
                 <p className="text-sm text-mist-400">target {first.evidence.target}</p>
                 <LessonSteps l={summarize(first)} className="mt-5" />
-                <span className="mt-5 inline-block text-sm text-lume group-hover:underline group-hover:underline-offset-4">Open the lesson →</span>
+                <span className="mt-5 inline-block text-callout font-medium text-mist-100 underline decoration-lume underline-offset-4 group-hover:decoration-2">Open the lesson</span>
               </div>
             </div>
           </Link>
@@ -92,9 +91,9 @@ export default async function LessonsPage() {
                 <h2 className="font-display text-2xl">{TRACKS[t].label}</h2>
                 <span className="text-xs text-mist-400">{TRACKS[t].blurb}</span>
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="mt-2">
                 {ls.map((r) => <LessonCard key={r.id} l={summarize(r)} />)}
-                {!ls.length && <p className="rounded-2xl border border-dashed hairline p-5 text-sm text-mist-400">{first?.track === t ? "Your first lesson is above." : !measured[t] ? NOT_MEASURED[t] : done.length ? "On target — nicely done." : "On target in your last interview."}</p>}
+                {!ls.length && <p className="border-t border-line py-4 text-callout text-mist-400">{first?.track === t ? "Your first lesson is above." : !measured[t] ? NOT_MEASURED[t] : done.length ? "On target. Nicely done." : "On target in your last interview."}</p>}
               </div>
             </section>
           );
@@ -104,7 +103,7 @@ export default async function LessonsPage() {
       {mastered.length > 0 && (
         <section className="mt-14">
           <Eyebrow>Mastered</Eyebrow>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
             {mastered.map((r) => <LessonCard key={r.id} l={summarize(r)} />)}
           </div>
         </section>
@@ -120,16 +119,16 @@ function Library({ title }: { title: string }) {
   return (
     <section className="mt-16">
       <Eyebrow>{title}</Eyebrow>
-      <div className="mt-4 grid gap-6 md:grid-cols-3">
+      <div className="mt-4 grid gap-x-8 gap-y-10 md:grid-cols-3">
         {TRACK_ORDER.map((t) => (
-          <Card key={t} className="p-5">
+          <div key={t} className="border-t border-line pt-4">
             <TrackLabel track={t} />
-            <ul className="mt-3 space-y-2.5">
+            <ul className="mt-3 space-y-3">
               {LESSON_ORDER.filter((k) => LESSONS[k].track === t).map((k) => (
-                <li key={k}><Link href={`/lessons/${k}`} className="block text-sm text-mist-200 hover:text-white">{LESSONS[k].title}<span className="block text-xs text-mist-400">{LESSONS[k].promise}</span></Link></li>
+                <li key={k}><Link href={`/lessons/${k}`} className="block text-callout text-mist-100 hover:text-lume-soft">{LESSONS[k].title}<span className="block text-[13px] text-mist-400">{LESSONS[k].promise}</span></Link></li>
               ))}
             </ul>
-          </Card>
+          </div>
         ))}
       </div>
     </section>

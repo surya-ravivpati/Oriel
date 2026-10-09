@@ -25,12 +25,12 @@ export default async function ProgressPage() {
       <header>
         <Eyebrow>Progress</Eyebrow>
         <h1 className="mt-3 font-display text-5xl">{history.length > 1 ? "You against you." : "Baseline set."}</h1>
-        <p className="mt-3 max-w-xl text-mist-300">{history.length} analysed session{history.length > 1 ? "s" : ""}. Comparisons are always with your own history — never other people.</p>
+        <p className="mt-3 max-w-xl text-mist-300">{history.length} analysed session{history.length > 1 ? "s" : ""}. Comparisons are always with your own history, never other people.</p>
       </header>
 
       {first && latest && history.length > 1 && (
-        <Card className="overflow-hidden">
-          <div className="grid grid-cols-[1.2fr_1fr_1fr] border-b hairline px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-mist-400">
+        <div className="border-y border-line">
+          <div className="grid grid-cols-[1.2fr_1fr_1fr] border-b border-line px-1 py-2 text-[12px] text-mist-400">
             <span>Measure</span><span>First session</span><span>Latest</span>
           </div>
           {PROGRESS_METRICS.map((m) => {
@@ -38,28 +38,28 @@ export default async function ProgressPage() {
             if (a == null && b == null) return null;
             const better = a != null && b != null && (m.better === "lower" ? b < a : m.better === "higher" ? b > a : Math.abs(b - (m.target ?? 0)) < Math.abs(a - (m.target ?? 0)));
             return (
-              <div key={m.key} className="grid grid-cols-[1.2fr_1fr_1fr] items-center border-b hairline px-6 py-4 last:border-0">
-                <span className="text-mist-200">{m.label}</span>
-                <span className="font-mono text-mist-400 tabular">{a == null ? "—" : m.format(a)}</span>
-                <span className={`font-mono tabular ${better ? "text-signal-good" : "text-mist-100"}`}>{b == null ? "—" : m.format(b)}{better ? " · better" : ""}</span>
+              <div key={m.key} className="grid grid-cols-[1.2fr_1fr_1fr] items-center border-b border-line px-1 py-3 last:border-0">
+                <span className="text-callout font-medium text-mist-100">{m.label}</span>
+                <span className="font-mono text-[14px] text-mist-400 tabular">{a == null ? "n/a" : m.format(a)}</span>
+                <span className={`font-mono text-[14px] tabular ${better ? "text-signal-good" : "text-mist-100"}`}>{b == null ? "n/a" : m.format(b)}{better ? " · better" : ""}</span>
               </div>
             );
           })}
-        </Card>
+        </div>
       )}
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
         {PROGRESS_METRICS.map((m) => {
           const series = history.map((h) => h.metrics[m.key]).filter((v): v is number => typeof v === "number");
           if (!series.length) return null;
           const b = baseline[m.key];
           return (
-            <Card key={m.key} className="p-5">
-              <div className="flex items-baseline justify-between"><p className="text-sm text-mist-300">{m.label}</p><p className="font-mono text-xs text-mist-400">{m.better === "lower" ? "lower is better" : m.better === "higher" ? "higher is better" : `aim ~${m.target}`}</p></div>
-              <p className="mt-2 font-display text-3xl tabular">{m.format(series.at(-1)!)}</p>
+            <div key={m.key} className="border-t border-line pb-6 pt-4">
+              <div className="flex items-baseline justify-between"><p className="text-callout font-medium text-mist-100">{m.label}</p><p className="text-[12px] text-mist-400">{m.better === "lower" ? "lower is better" : m.better === "higher" ? "higher is better" : `aim for about ${m.target}`}</p></div>
+              <p className="mt-2 font-mono text-[26px] tabular text-mist-100">{m.format(series.at(-1)!)}</p>
               <Sparkline values={series} baseline={b ?? null} better={m.better} className="mt-4 h-14 w-full" />
-              <p className="mt-2 text-xs text-mist-400">{b != null ? `Baseline ${m.format(b)}` : "Baseline after two sessions"}</p>
-            </Card>
+              <p className="mt-2 text-[12px] text-mist-400">{b != null ? `Baseline ${m.format(b)}` : "Baseline after two sessions"}</p>
+            </div>
           );
         })}
       </section>

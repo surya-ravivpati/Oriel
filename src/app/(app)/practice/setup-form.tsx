@@ -82,17 +82,17 @@ export function SetupForm(p: Props) {
         <header>
           <Eyebrow>Practice</Eyebrow>
           <h1 className="mt-3 font-display text-5xl">{p.firstRun ? "Your first interview." : "Set up the room."}</h1>
-          {p.firstRun && <p className="mt-3 max-w-xl text-mist-300">We&apos;ve started you at Realistic pressure. Speak naturally — the interviewer can hear pauses, follow-ups adapt to what you say, and nothing is scored until afterwards.</p>}
+          {p.firstRun && <p className="mt-3 max-w-xl text-mist-300">We&apos;ve started you at Realistic pressure. Speak naturally; the interviewer can hear pauses, follow-ups adapt to what you say, and nothing is scored until afterwards.</p>}
         </header>
 
         {p.limits.ladder && (
           <section>
-            <Label>Climb the Ladder <span className="text-mist-400">(optional — sets interviewer and pressure for you)</span></Label>
+            <Label>Climb the Ladder <span className="text-mist-400">(optional: sets the interviewer and pressure for you)</span></Label>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => setLadderLevel(null)} className={`rounded-full border px-3.5 py-1.5 text-sm ${!ladderLevel ? "border-lume/50 bg-lume/[0.08]" : "hairline-strong text-mist-400"}`}>Custom</button>
+              <button type="button" onClick={() => setLadderLevel(null)} className={`rounded-full border px-3.5 py-1.5 text-sm ${!ladderLevel ? "border-lume bg-bronze" : "hairline-strong text-mist-400"}`}>Custom</button>
               {p.ladder.map((l) => (
                 <button key={l.level} type="button" disabled={!l.unlocked} onClick={() => setLadderLevel(l.level)}
-                  className={`rounded-full border px-3.5 py-1.5 text-sm disabled:opacity-35 ${ladderLevel === l.level ? "border-lume/50 bg-lume/[0.08]" : "hairline-strong text-mist-300"}`}>
+                  className={`rounded-full border px-3.5 py-1.5 text-sm disabled:opacity-35 ${ladderLevel === l.level ? "border-lume bg-bronze" : "hairline-strong text-mist-300"}`}>
                   {String(l.level).padStart(2, "0")} {l.name}{!l.unlocked ? " 🔒" : ""}
                 </button>
               ))}
@@ -136,15 +136,15 @@ export function SetupForm(p: Props) {
                   {SINGLE.map((o) => {
                     const on = persona === o.id;
                     return (
-                      <div key={o.id} className={cn("relative flex items-center gap-3 rounded-2xl border py-2 pl-2 pr-3 transition-all duration-200", on ? "border-lume/50 bg-lume/[0.07] shadow-[0_0_0_3px_rgba(233,184,114,0.06)]" : "hairline-strong bg-white/[0.02] hover:bg-white/[0.05]")}>
-                        <button type="button" role="radio" aria-checked={on} aria-label={`${nameOf(o.id)}, ${o.label} — ${o.hint}`} onClick={() => setPersona(o.id as typeof persona)} className="absolute inset-0 rounded-2xl" />
+                      <div key={o.id} className={cn("relative flex items-center gap-3 rounded-lg border py-2 pl-2 pr-3 transition-all duration-200", on ? "border-lume bg-bronze" : "hairline-strong bg-ink-900 hover:bg-ink-850")}>
+                        <button type="button" role="radio" aria-checked={on} aria-label={`${nameOf(o.id)}, ${o.label}: ${o.hint}`} onClick={() => setPersona(o.id as typeof persona)} className="absolute inset-0 rounded-lg" />
                         <BotStill personaId={o.id} style={styles[o.id]} className="pointer-events-none size-[72px] shrink-0" />
                         <div className="pointer-events-none min-w-0 flex-1">
                           <p className="truncate font-display text-xl leading-tight text-mist-100">{nameOf(o.id)}</p>
                           <p className="mt-0.5 text-xs text-mist-400"><span className="text-mist-300">{o.label}</span> · {o.hint}</p>
                         </div>
                         <button type="button" onClick={() => setEditing(o.id)} aria-label={`Customize ${nameOf(o.id)}`}
-                          className="relative shrink-0 rounded-full border hairline-strong px-3 py-1 text-xs text-mist-300 transition-colors hover:border-lume/40 hover:text-mist-100">Customize</button>
+                          className="relative shrink-0 rounded-full border hairline-strong px-3 py-1 text-xs text-mist-300 transition-colors hover:border-lume-deep hover:text-mist-100">Customize</button>
                       </div>
                     );
                   })}
@@ -158,11 +158,11 @@ export function SetupForm(p: Props) {
                   {panelRolesForSize(panelSize).map((role) => {
                     const id = PANEL_ROLE_PERSONA[role];
                     return (
-                      <div key={role} className="flex flex-col items-center rounded-2xl border hairline-strong bg-white/[0.02] px-2 pb-3">
+                      <div key={role} className="flex flex-col items-center rounded-lg border hairline-strong bg-ink-900 px-2 pb-3">
                         <BotStill personaId={id} style={styles[id]} className="aspect-square w-full max-w-[110px]" />
                         <p className="max-w-full truncate font-display text-lg leading-tight">{nameOf(id)}</p>
                         <p className="text-[11px] text-mist-400">{PANEL_ROLE_LABEL[role]}</p>
-                        <button type="button" onClick={() => setEditing(id)} aria-label={`Customize ${nameOf(id)}`} className="mt-2 rounded-full border hairline-strong px-3 py-1 text-xs text-mist-300 transition-colors hover:border-lume/40 hover:text-mist-100">Customize</button>
+                        <button type="button" onClick={() => setEditing(id)} aria-label={`Customize ${nameOf(id)}`} className="mt-2 rounded-full border hairline-strong px-3 py-1 text-xs text-mist-300 transition-colors hover:border-lume-deep hover:text-mist-100">Customize</button>
                       </div>
                     );
                   })}
@@ -175,7 +175,7 @@ export function SetupForm(p: Props) {
                 <span className="font-display text-2xl">{PRESSURE_LABELS[pressure]}</span>
               </div>
               <input aria-label="Pressure" type="range" min={1} max={5} step={1} value={pressure} onChange={(e) => setPressure(Number(e.target.value) as PressureLevel)} className="dial w-full" />
-              <div className="mt-1 flex justify-between font-mono text-[10px] uppercase tracking-widest text-mist-400">{[1, 2, 3, 4, 5].map((l) => <span key={l}>{l}</span>)}</div>
+              <div className="mt-1 flex justify-between text-[12px] text-mist-400 font-medium">{[1, 2, 3, 4, 5].map((l) => <span key={l}>{l}</span>)}</div>
               <p className="mt-3 text-sm text-mist-300">{PRESSURE_DESCRIPTIONS[pressure]}</p>
             </div>
           </section>
@@ -187,7 +187,7 @@ export function SetupForm(p: Props) {
             <Segmented name="Length" value={String(minutes)} onChange={(v) => setMinutes(Number(v))} options={[10, 15, 20, 30].map((m) => ({ value: String(m), label: `${m} min`, disabled: m > p.limits.maxMinutes }))} />
           </div>
           <Card className="px-5">
-            <Toggle checked={cameraMetrics} onChange={setCameraMetrics} label="Camera-based signals" description="Estimate camera engagement and posture on your device. Off means no gaze or posture in your Read — you can still see yourself and record." />
+            <Toggle checked={cameraMetrics} onChange={setCameraMetrics} label="Camera-based signals" description="Estimate camera engagement and posture on your device. Off means no gaze or posture in your Read; you can still see yourself and record." />
           </Card>
         </section>
       </div>

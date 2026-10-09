@@ -34,7 +34,7 @@ export default async function DrillsPage() {
       {attempts.length > 0 && (
         <section className="mt-16">
           <Eyebrow>Recent attempts</Eyebrow>
-          <ul className="mt-4 divide-y divide-white/[0.06] rounded-2xl border hairline">
+          <ul className="mt-4 divide-y divide-white/[0.06] rounded-lg border hairline">
             {attempts.slice(0, 8).map((a) => (
               <li key={a.id} className="flex flex-wrap items-center gap-4 px-5 py-4 text-sm">
                 <span className="w-40 text-mist-100">{DRILLS.find((d) => d.id === a.drillId)?.title}</span>

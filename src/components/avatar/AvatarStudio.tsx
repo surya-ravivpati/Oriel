@@ -76,7 +76,7 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
     store.setMode("speaking", 0);
     try {
       const res = await fetch("/api/avatar/voice-preview", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ voice: v }) });
-      if (res.status === 429) { setVoiceNote("Voice previews are busy — try again in a few seconds."); return; }
+      if (res.status === 429) { setVoiceNote("Voice previews are busy. Try again in a few seconds."); return; }
       if (!res.ok) throw new Error(String(res.status));
       let started = false, fallback = false;
       await readNdjson<RoomEvent>(res, (ev) => {
@@ -87,11 +87,11 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
       });
       if (token !== playToken.current) return;
       if (fallback) {
-        setVoiceNote("Interviewer voices need the speech service, which isn't available right now — this is your browser's voice instead.");
+        setVoiceNote("Interviewer voices need the speech service, which isn't available right now, so this is your browser's voice instead.");
         await speakWithBrowser(VOICE_SAMPLE, { audio: a });
       } else if (started) await a.waitForEnd();
     } catch {
-      setVoiceNote("Couldn't play that voice — try again.");
+      setVoiceNote("Couldn't play that voice. Try again.");
     } finally {
       if (token === playToken.current) { setPlaying(null); store.setMode("listening", 0); store.setLevel(() => 0); }
     }
@@ -136,11 +136,11 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
   return (
     <div className="grid max-h-[calc(100dvh-48px)] overflow-y-auto md:grid-cols-[1fr_1.2fr] md:overflow-hidden">
       {/* Preview */}
-      <div className="relative flex flex-col items-center justify-center overflow-hidden border-b hairline bg-[radial-gradient(120%_80%_at_50%_0%,rgba(233,184,114,0.13),transparent_60%)] px-6 pb-8 pt-6 md:border-b-0 md:border-r">
-        <p className="self-start font-mono text-[11px] uppercase tracking-[0.18em] text-mist-400">Make it yours</p>
+      <div className="relative flex flex-col items-center justify-center overflow-hidden border-b hairline bg-ink-900 px-6 pb-8 pt-6 md:border-b-0 md:border-r">
+        <p className="self-start text-[12px] text-mist-400 font-medium">Make it yours</p>
         <BotAvatar store={store} seats={[seat]} compact className="mt-2 h-52 w-full sm:h-64 md:h-72" />
         <p className="mt-1 max-w-full truncate font-display text-4xl leading-tight" aria-live="polite">{shown}</p>
-        <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-mist-400">{persona.title}</p>
+        <p className="mt-1 text-[12px] text-mist-400 font-medium">{persona.title}</p>
         <p className="mt-5 max-w-[30ch] text-center text-[13px] leading-relaxed text-mist-400">The look, name and voice are yours. How {shown} interviews stays the same.</p>
       </div>
 
@@ -158,7 +158,7 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
             {BOT_VOICES.map((v) => {
               const on = voice === v.id;
               return (
-                <div key={v.id} className={cn("flex items-center rounded-xl border pl-3 pr-1 transition-colors duration-200", on ? "border-lume/60 bg-lume/[0.07]" : "hairline-strong bg-white/[0.02] hover:bg-white/[0.05]")}>
+                <div key={v.id} className={cn("flex items-center rounded-xl border pl-3 pr-1 transition-colors duration-200", on ? "border-lume bg-bronze" : "hairline-strong bg-ink-900 hover:bg-ink-850")}>
                   <button type="button" role="radio" aria-checked={on} onClick={() => setDraft({ ...draft, voice: v.id === persona.voice ? null : (v.id as BotVoice) })} className="min-w-0 flex-1 py-2 text-left">
                     <span className={cn("block truncate text-sm", on ? "text-mist-100" : "text-mist-200")}>{v.id}</span>
                     <span className="block truncate text-[11px] text-mist-400">{v.label}{v.id === persona.voice ? " · default" : ""}</span>
@@ -183,7 +183,7 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
               const on = draft.shape === s.id;
               return (
                 <button key={s.id} type="button" role="radio" aria-checked={on} aria-label={s.label} onClick={() => setDraft({ ...draft, shape: s.id })}
-                  className={cn("flex flex-col items-center rounded-2xl border px-1 pb-2 pt-1 transition-colors duration-200", on ? "border-lume/60 bg-lume/[0.07]" : "hairline-strong bg-white/[0.02] hover:bg-white/[0.05]")}>
+                  className={cn("flex flex-col items-center rounded-lg border px-1 pb-2 pt-1 transition-colors duration-200", on ? "border-lume bg-bronze" : "hairline-strong bg-ink-900 hover:bg-ink-850")}>
                   <BotStill personaId={personaId} style={{ ...draft, shape: s.id }} className="aspect-square w-full" />
                   <span className={cn("text-xs", on ? "text-mist-100" : "text-mist-400")}>{s.label}</span>
                 </button>
@@ -199,7 +199,7 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
               const on = draft.color === id;
               return (
                 <button key={id} type="button" role="radio" aria-checked={on} aria-label={c.label} title={c.label} onClick={() => setDraft({ ...draft, color: id })}
-                  className={cn("size-8 rounded-full border transition-[box-shadow,transform] duration-200 hover:scale-110", on ? "border-transparent shadow-[0_0_0_2px_#0b0b0d,0_0_0_4px_rgba(233,184,114,0.85)]" : "border-white/15")}
+                  className={cn("size-8 rounded-full border transition-[box-shadow,transform] duration-200 hover:scale-110", on ? "border-transparent shadow-[0_0_0_2px_var(--color-ink-950),0_0_0_4px_var(--color-lume)]" : "border-line-strong")}
                   style={{ background: `radial-gradient(circle at 35% 30%, ${c.face}, ${c.shade})` }} />
               );
             })}
@@ -213,7 +213,7 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
               const on = draft.accessory === a.id;
               return (
                 <button key={a.id} type="button" role="radio" aria-checked={on} onClick={() => setDraft({ ...draft, accessory: a.id })}
-                  className={cn("rounded-full border px-3.5 py-1.5 text-sm transition-colors duration-200", on ? "border-lume/50 bg-lume/[0.08] text-mist-100" : "hairline-strong text-mist-300 hover:text-mist-100")}>
+                  className={cn("rounded-full border px-3.5 py-1.5 text-sm transition-colors duration-200", on ? "border-lume bg-bronze text-mist-100" : "hairline-strong text-mist-300 hover:text-mist-100")}>
                   {a.label}
                 </button>
               );

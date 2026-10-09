@@ -41,7 +41,7 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ i
           {d.questions.map((q) => {
             const a = answersByQ.get(q.id);
             return (
-              <li key={q.id} className="rounded-2xl border hairline p-5 text-sm">
+              <li key={q.id} className="rounded-lg border hairline p-5 text-sm">
                 <p className="font-mono text-xs text-mist-400">{mmss(q.askedAtMs)} · {q.kind} · {q.competency ?? "—"} · difficulty {q.difficulty}</p>
                 <p className="mt-1 text-lume/90">Decision: {q.decisionReason}</p>
                 <p className="mt-2 text-mist-100">Q: {q.text}</p>
@@ -59,7 +59,7 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ i
 
       <section>
         <Eyebrow>Event log (decisions, latency, AI outputs, errors)</Eyebrow>
-        <ol className="mt-4 max-h-[600px] overflow-y-auto rounded-2xl border hairline font-mono text-xs">
+        <ol className="mt-4 max-h-[600px] overflow-y-auto rounded-lg border hairline font-mono text-xs">
           {d.events.map((e) => <li key={e.id} className="border-b hairline px-4 py-2"><span className="text-mist-400">{e.createdAt.toLocaleTimeString()}</span> <span className={e.type === "error" ? "text-signal-bad" : e.type === "fallback" ? "text-signal-warn" : e.type === "latency" ? "text-signal-good" : "text-lume"}>{e.type}</span> {e.name} {e.durationMs !== null ? `${e.durationMs}ms` : ""} <span className="text-mist-400">{JSON.stringify(e.data).slice(0, 500)}</span></li>)}
         </ol>
       </section>

@@ -15,6 +15,8 @@ export class AvatarStore {
   level: () => number = () => 0;
   /** Candidate is speaking right now (drives listening reactions). */
   candidateSpeaking = false;
+  /** Somewhere to look (x, y in -1..1, e.g. the visitor's cursor); null lets the eyes wander. */
+  lookAt: { x: number; y: number } | null = null;
   private listeners = new Set<() => void>();
 
   now() {
@@ -28,6 +30,17 @@ export class AvatarStore {
       this.modeSince = this.now();
       this.emit();
     }
+  }
+
+  /** Change how the interviewer carries itself (e.g. a pressure dial). */
+  configure(opts: { pressure?: number; stillness?: number }) {
+    if (opts.pressure !== undefined) this.pressure = opts.pressure;
+    if (opts.stillness !== undefined) this.stillness = opts.stillness;
+  }
+
+  /** Point the eyes (and a little of the head) at something; null to let them wander. */
+  setLookAt(target: { x: number; y: number } | null) {
+    this.lookAt = target;
   }
 
   /** Drive the voice light from an audio source, e.g. a voice preview. */

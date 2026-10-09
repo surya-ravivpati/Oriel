@@ -2,8 +2,8 @@ import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth/session";
 import { getDb, schema } from "@/db/client";
-import { ButtonLink } from "@/components/ui/Button";
-import { Card, Eyebrow, Badge } from "@/components/ui/Card";
+import { ButtonLink, TextLink } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Card";
 import { DrillCard, PlaybackClipCard } from "@/components/app/cards";
 import { ladderState, listSessions, progressSummary, recentClips } from "@/server/queries";
 import { PROGRESS_METRICS, recommendDrill } from "@/lib/practice/progress";
@@ -11,6 +11,10 @@ import { getDrill } from "@/lib/practice/catalog";
 import { relDate, TYPE_LABEL } from "@/lib/format";
 import { nextLesson } from "@/server/lessons";
 import { LessonCard, summarize } from "@/components/app/lessons";
+import { BotStill } from "@/components/avatar/BotStill";
+import { savedStyles } from "@/server/avatar-styles";
+import { PERSONAS, type PersonaId } from "@/lib/interview/personas";
+import { callName } from "@/lib/avatar/style";
 
 export const metadata = { title: "Home" };
 
@@ -25,80 +29,99 @@ export default async function Home() {
   const drill = getDrill(rec.drillId)!;
   const improved = vsBaseline.filter((c) => c.improved === true);
   const lesson = nextLesson(user.id);
+  const next = current.personaIds[0];
+  const styles = savedStyles(user.id);
 
   return (
-    <div className="space-y-14">
-      <section className="relative overflow-hidden rounded-[32px] border hairline px-8 py-14 sm:px-12">
-        <div className="absolute inset-0 window-light" aria-hidden />
-        <div className="relative flex flex-wrap items-end justify-between gap-8">
-          <div>
-            <Eyebrow>{profile?.targetRole ?? "Practice"} · Ladder {String(current.level).padStart(2, "0")} — {current.name}</Eyebrow>
-            <h1 className="mt-4 font-display text-[clamp(2.8rem,6vw,5rem)] leading-[0.95]">Ready for the room{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}?</h1>
-            <p className="mt-4 max-w-lg text-mist-300">{history.length ? `${history.length} session${history.length > 1 ? "s" : ""} analysed. Next up: ${current.name.toLowerCase()}.` : "Your first session sets your baseline. Everything after is measured against you."}</p>
-          </div>
-          <div className="flex gap-3">
-            <ButtonLink href="/practice" variant="lume" size="lg">Start Practice</ButtonLink>
-            {sessions[0]?.analysisStatus === "complete" && <ButtonLink href={`/playback/${sessions[0].id}`} variant="secondary" size="lg">Last Playback</ButtonLink>}
+    <div>
+      <section className="grid gap-10 border-b border-line pb-12 lg:grid-cols-12 lg:items-end lg:gap-x-8">
+        <div className="lg:col-span-8">
+          <p className="text-[13px] font-medium text-mist-400">{profile?.targetRole ?? "Practice"} · Ladder {current.level} of 6</p>
+          <h1 className="mt-3 text-display text-mist-100">Ready for the room{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}?</h1>
+          <p className="mt-4 max-w-[40rem] text-lead text-mist-300">{history.length ? `${history.length} session${history.length > 1 ? "s" : ""} analysed. Next up: ${current.name.toLowerCase()}.` : "Your first session sets your baseline. Everything after is measured against you."}</p>
+          <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3">
+            <ButtonLink href="/practice" size="lg">Start practice</ButtonLink>
+            {sessions[0]?.analysisStatus === "complete" && <TextLink href={`/playback/${sessions[0].id}`}>Open your last Playback</TextLink>}
           </div>
         </div>
+        <figure className="lg:col-span-4">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-ink-900" aria-hidden>
+            <div className="absolute inset-x-[18%] bottom-[2%] top-[6%]"><BotStill personaId={next} style={styles[next as PersonaId]} className="size-full" /></div>
+          </div>
+          <figcaption className="mt-3 text-caption text-mist-400">
+            Next up: <span className="text-mist-200">{callName(PERSONAS[next as PersonaId]?.name ?? "Your interviewer", styles[next as PersonaId])}</span>{current.mode === "panel" ? `, leading a ${current.personaIds.length}-person panel` : `, ${PERSONAS[next as PersonaId]?.title ?? ""}`}
+          </figcaption>
+        </figure>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <Card className="p-6 lg:col-span-2">
-          <div className="flex items-center justify-between"><Eyebrow>How you&apos;re improving</Eyebrow><Link href="/progress" className="text-[13px] text-mist-400 hover:text-mist-100">All progress →</Link></div>
-          {latest && history.length > 1 ? (
-            <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4">
+      <Band title="Since your baseline" link={["/progress", "All progress"]}>
+        {latest && history.length > 1 ? (
+          <table className="w-full max-w-[44rem] text-left">
+            <thead>
+              <tr className="border-b border-line text-[12px] text-mist-400"><th scope="col" className="pb-2 font-normal">Measure</th><th scope="col" className="pb-2 font-normal">Latest</th><th scope="col" className="pb-2 font-normal">Baseline</th><th scope="col" className="pb-2 text-right font-normal">Change</th></tr>
+            </thead>
+            <tbody>
               {PROGRESS_METRICS.slice(0, 4).map((m) => {
                 const c = vsBaseline.find((x) => x.key === m.key);
                 const v = latest.metrics[m.key];
                 return (
-                  <div key={m.key}>
-                    <p className="text-[13px] text-mist-400">{m.label}</p>
-                    <p className="mt-1 font-display text-3xl tabular">{v == null ? "—" : m.format(v)}</p>
-                    <p className={`mt-1 text-xs ${c?.improved ? "text-signal-good" : c?.improved === false ? "text-mist-400" : "text-mist-400"}`}>
-                      {baseline[m.key] == null ? "no baseline yet" : `baseline ${m.format(baseline[m.key]!)}`}{c?.improved ? " · better" : ""}
-                    </p>
-                  </div>
+                  <tr key={m.key} className="border-b border-line">
+                    <th scope="row" className="py-3 pr-4 text-callout font-medium text-mist-100">{m.label}</th>
+                    <td className="py-3 pr-4 font-mono text-[14px] tabular text-mist-100">{v == null ? "n/a" : m.format(v)}</td>
+                    <td className="py-3 pr-4 font-mono text-[14px] tabular text-mist-400">{baseline[m.key] == null ? "not yet" : m.format(baseline[m.key]!)}</td>
+                    <td className={`py-3 text-right text-[13px] font-medium ${c?.improved ? "text-signal-good" : "text-mist-400"}`}>{c?.improved ? "Better" : c?.improved === false ? "Not yet" : ""}</td>
+                  </tr>
                 );
               })}
-            </div>
-          ) : (
-            <p className="mt-6 text-mist-400">{latest ? "One session in. Your baseline is set — the next session shows what's changed." : "Complete a session to see your baseline."}</p>
-          )}
-          {improved.length > 0 && <p className="mt-6 text-sm text-mist-300">Better than your baseline on {improved.map((c) => c.label.toLowerCase()).join(", ")}.</p>}
-        </Card>
-        {lesson ? (
-          <div>
-            <div className="mb-3 flex items-center justify-between"><Eyebrow>Your next lesson</Eyebrow><Link href="/lessons" className="text-[13px] text-mist-400 hover:text-mist-100">All lessons →</Link></div>
-            <LessonCard l={summarize(lesson)} />
-          </div>
-        ) : <DrillCard drill={drill} recommended={rec.reason} />}
-      </section>
+            </tbody>
+          </table>
+        ) : (
+          <p className="max-w-[40rem] text-body text-mist-300">{latest ? "One session in. Your baseline is set; the next session shows what has changed." : "Complete a session to see your baseline."}</p>
+        )}
+        {improved.length > 0 && <p className="mt-4 text-callout text-mist-300">Better than your baseline on {improved.map((c) => c.label.toLowerCase()).join(", ")}.</p>}
+      </Band>
 
-      <section className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
-        <div>
-          <div className="flex items-center justify-between"><Eyebrow>What you struggled with</Eyebrow><Link href="/playback" className="text-[13px] text-mist-400 hover:text-mist-100">All Playback →</Link></div>
-          <div className="mt-4 space-y-3">
-            {clips.length ? clips.map((c) => <PlaybackClipCard key={c.id} clip={c} href={`/playback/${c.sessionId}?t=${c.startMs}&clip=${c.id}`} />) : <p className="rounded-2xl border hairline p-6 text-sm text-mist-400">Your Playback moments will appear here after your first session.</p>}
+      <Band title={lesson ? "Your next lesson" : "A drill for today"} link={lesson ? ["/lessons", "All lessons"] : ["/drills", "All drills"]}>
+        <div className="max-w-[36rem]">{lesson ? <LessonCard l={summarize(lesson)} /> : <DrillCard drill={drill} recommended={rec.reason} />}</div>
+      </Band>
+
+      <section className="grid gap-12 pt-12 lg:grid-cols-12 lg:gap-x-8">
+        <div className="lg:col-span-7">
+          <div className="flex items-baseline justify-between gap-4"><h2 className="text-[13px] font-medium text-mist-400">What you struggled with</h2><TextLink href="/playback" className="text-[13px]">All Playback</TextLink></div>
+          <div className="mt-3 border-b border-line">
+            {clips.length ? clips.map((c) => <PlaybackClipCard key={c.id} clip={c} href={`/playback/${c.sessionId}?t=${c.startMs}&clip=${c.id}`} />) : <p className="border-t border-line py-5 text-callout text-mist-400">Your Playback moments will appear here after your first session.</p>}
           </div>
         </div>
-        <div>
-          <Eyebrow>Recent sessions</Eyebrow>
-          <ul className="mt-4 divide-y divide-white/[0.06] rounded-2xl border hairline">
+        <div className="lg:col-span-5">
+          <h2 className="text-[13px] font-medium text-mist-400">Recent sessions</h2>
+          <ul className="mt-3 border-t border-line">
             {sessions.length ? sessions.map((s) => (
-              <li key={s.id}>
-                <Link href={s.status === "ended" ? `/playback/${s.id}` : `/room/${s.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02]">
+              <li key={s.id} className="border-b border-line">
+                <Link href={s.status === "ended" ? `/playback/${s.id}` : `/room/${s.id}`} className="flex items-center gap-4 px-1 py-3.5 transition-colors hover:bg-ink-900">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-mist-100">{s.role} · {TYPE_LABEL[s.type] ?? s.type}{s.mode === "panel" ? " · panel" : ""}</p>
-                    <p className="mt-0.5 text-xs text-mist-400">{relDate(s.createdAt)} · pressure {s.pressure}/5</p>
+                    <p className="truncate text-callout text-mist-100">{s.role} · {TYPE_LABEL[s.type] ?? s.type}{s.mode === "panel" ? " · panel" : ""}</p>
+                    <p className="mt-0.5 font-mono text-[12px] text-mist-400">{relDate(s.createdAt)} · pressure {s.pressure}/5</p>
                   </div>
                   {s.status !== "ended" ? <Badge tone="warn">Unfinished</Badge> : s.analysisStatus === "complete" ? <Badge tone="good">Read ready</Badge> : s.analysisStatus === "failed" ? <Badge tone="bad">Needs retry</Badge> : <Badge>Analysing</Badge>}
                 </Link>
               </li>
-            )) : <li className="px-5 py-6 text-sm text-mist-400">No sessions yet.</li>}
+            )) : <li className="py-5 text-callout text-mist-400">No sessions yet.</li>}
           </ul>
         </div>
       </section>
     </div>
+  );
+}
+
+/** A row of the page: its label in the left margin, its content beside it. */
+function Band({ title, link, children }: { title: string; link?: [string, string]; children: React.ReactNode }) {
+  return (
+    <section className="grid gap-5 border-b border-line py-12 lg:grid-cols-12 lg:gap-x-8">
+      <div className="flex items-baseline justify-between gap-4 lg:col-span-3 lg:block">
+        <h2 className="text-[13px] font-medium text-mist-400">{title}</h2>
+        {link && <TextLink href={link[0]} className="text-[13px] lg:mt-2 lg:inline-block">{link[1]}</TextLink>}
+      </div>
+      <div className="min-w-0 lg:col-span-9">{children}</div>
+    </section>
   );
 }

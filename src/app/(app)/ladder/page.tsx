@@ -17,9 +17,9 @@ export default async function LadderPage() {
       <div className="lg:sticky lg:top-24 lg:self-start">
         <Eyebrow>The Ladder</Eyebrow>
         <h1 className="mt-3 font-display text-5xl leading-tight">From friendly recruiter to curveball panel.</h1>
-        <p className="mt-4 text-mist-300">Each rung is a harder room. You unlock the next after two sessions above your own baseline — measured against you, never against anyone else.</p>
-        <div className="mt-8 rounded-2xl border border-lume/30 bg-lume/[0.05] p-6">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-lume">You&apos;re on</p>
+        <p className="mt-4 text-mist-300">Each rung is a harder room. You unlock the next after two sessions above your own baseline, measured against you, never against anyone else.</p>
+        <div className="mt-8 rounded-lg border border-lume-deep bg-bronze p-6">
+          <p className="text-[12px] text-lume font-medium">You&apos;re on</p>
           <p className="mt-2 font-display text-3xl">{String(current.level).padStart(2, "0")} · {current.name}</p>
           <p className="mt-2 text-sm text-mist-300">{current.description}</p>
           {allowed.allowed ? <ButtonLink href={`/practice?ladder=${current.level}`} variant="lume" className="mt-6">Practice this rung</ButtonLink> : (

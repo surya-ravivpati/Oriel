@@ -103,11 +103,11 @@ export function drawBot(ctx: CanvasRenderingContext2D, W: number, H: number, loo
   hl.addColorStop(1, "rgba(255,248,236,0)");
   ctx.fillStyle = hl;
   ctx.fillRect(cx - a * 1.2, cy - b * 1.2, a * 2.4, b * 2.4);
-  // Rim light from the window behind (warm accent on the top edge).
+  // Rim light: a faint ivory edge along the top.
   ctx.lineWidth = S * 0.012;
   const rim = ctx.createLinearGradient(cx, Y(ext.top), cx, cy);
-  rim.addColorStop(0, "rgba(233,184,114,0.55)");
-  rim.addColorStop(1, "rgba(233,184,114,0)");
+  rim.addColorStop(0, "rgba(245,242,235,0.42)");
+  rim.addColorStop(1, "rgba(245,242,235,0)");
   ctx.strokeStyle = rim;
   ctx.beginPath();
   trace();
@@ -265,7 +265,7 @@ function drawHeadsetMic(ctx: CanvasRenderingContext2D, g: ShapeGeom, X: (u: numb
   ctx.moveTo(X(hw * 0.98), Y(g.eyeY + 0.053));
   ctx.quadraticCurveTo(X(hw * 0.93), Y(g.eyeY + 0.23), X(g.spacing * 0.67), Y(g.eyeY + 0.2));
   ctx.stroke();
-  ctx.fillStyle = p.voice > 0.05 ? "#E9B872" : "#2A2C31";
+  ctx.fillStyle = p.voice > 0.05 ? "#A3AB8B" : "#2A2C31";
   ctx.beginPath();
   capsule(ctx, X(g.spacing * 0.57), Y(g.eyeY + 0.2), S * 0.06, S * 0.03);
   ctx.fill();

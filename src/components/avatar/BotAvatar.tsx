@@ -156,6 +156,8 @@ function BotSeat({ store, seat, count, className }: { store: AvatarStore; seat: 
       if (mode === "thinking" && t < b.thinkUntil) { gx = 0.8 * b.thinkDir; gy = -0.75; yaw = 0.18 * b.thinkDir; }
       if (mode === "speaking" && t < b.avertUntil) { gx = 0.55 * b.thinkDir; gy = -0.3; }
       if (cue?.kind === "gaze_shift" && cueAge < 0.9) { gx = -0.7; gy = -0.5; }
+      // Watching something (the visitor's cursor on the landing page): eyes lead, the head follows a little.
+      if (store.lookAt && mode !== "thinking") { gx = Math.max(-1, Math.min(1, store.lookAt.x)); gy = Math.max(-1, Math.min(1, store.lookAt.y)) * 0.8; yaw = gx * 0.32; }
 
       // Blinks: fewer under pressure (longer eye contact), sometimes doubled.
       if (t > b.blinkAt) { b.blinkStart = t; b.blinkAt = t + rand(2.4, 5.6) * (1 + still * 0.9) * (Math.random() < 0.15 ? 0.2 : 1); }

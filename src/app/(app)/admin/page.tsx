@@ -49,12 +49,12 @@ export default async function AdminPage() {
 
       <section>
         <Eyebrow>Sessions</Eyebrow>
-        <div className="mt-4 overflow-x-auto rounded-2xl border hairline">
+        <div className="mt-4 overflow-x-auto rounded-lg border hairline">
           <table className="w-full min-w-[800px] text-sm">
             <thead className="text-left text-xs text-mist-400"><tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-normal"><th>When</th><th>User</th><th>Role</th><th>Mode</th><th>Status</th><th>Analysis</th><th>Degraded</th><th className="text-right">Cost</th></tr></thead>
             <tbody>
               {o.sessions.map((s) => (
-                <tr key={s.id} className="border-t hairline hover:bg-white/[0.02] [&>td]:px-4 [&>td]:py-3">
+                <tr key={s.id} className="border-t hairline hover:bg-ink-900 [&>td]:px-4 [&>td]:py-3">
                   <td><Link href={`/admin/sessions/${s.id}`} className="text-mist-100 underline-offset-4 hover:underline">{s.createdAt.toLocaleString()}</Link></td>
                   <td className="text-mist-300">{s.email}</td><td>{s.role}</td><td>{s.mode} · p{s.pressure}</td><td>{s.status}</td>
                   <td><Badge tone={s.analysis === "complete" ? "good" : s.analysis === "failed" ? "bad" : "neutral"}>{s.analysis}</Badge></td>
@@ -68,7 +68,7 @@ export default async function AdminPage() {
 
       <section>
         <Eyebrow>Recent errors &amp; fallbacks</Eyebrow>
-        <ul className="mt-4 divide-y divide-white/[0.05] rounded-2xl border hairline text-sm">
+        <ul className="mt-4 divide-y divide-white/[0.05] rounded-lg border hairline text-sm">
           {o.errors.length ? o.errors.map((e) => <li key={e.id} className="px-5 py-3"><span className="font-mono text-xs text-mist-400">{e.createdAt.toLocaleString()}</span> <Badge tone={e.type === "error" ? "bad" : "warn"}>{e.type}</Badge> <span className="text-mist-200">{e.name}</span> <span className="font-mono text-xs text-mist-400">{JSON.stringify(e.data).slice(0, 220)}</span></li>) : <li className="px-5 py-4 text-mist-400">None.</li>}
         </ul>
       </section>

@@ -31,9 +31,11 @@ export async function signUp(page: Page, email: string) {
 }
 
 export async function onboard(page: Page, opts: { resume: boolean }) {
+  await page.getByRole("button", { name: /Let.s begin/ }).click();
   await page.getByLabel("Your name").fill("Jamie");
   await page.getByLabel("Target role").fill("Senior Product Manager");
-  await page.getByLabel("Field").selectOption("product");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("radiogroup", { name: "Field" }).getByRole("radio", { name: /^Product Management/ }).click();
   await page.getByRole("button", { name: "Continue" }).click();
   if (opts.resume) {
     await page.getByPlaceholder("Paste your resume text").fill(RESUME);

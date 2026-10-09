@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Logo } from "@/components/ui/Logo";
 import { CONSENT_COPY, CONSENT_VERSION } from "@/lib/privacy/consent";
 
 export const metadata = { title: "Privacy & biometric policy" };
@@ -18,16 +17,15 @@ const RETENTION: [string, string, string][] = [
 const PROCESSORS: [string, string, string][] = [
   ["Google (Gemini API)", "Interviewer language, voice synthesis, answer transcription, document parsing, coaching", "Your answers' text and answer audio (for transcription); resume and job description text"],
   ["Your browser's speech service (Chrome)", "Live captions during the interview, when your browser provides them", "Microphone audio, processed by the browser vendor"],
-  ["Google (MediaPipe model files)", "Download of the on-device face and pose models", "None — no user data is sent"],
+  ["Google (MediaPipe model files)", "Download of the on-device face and pose models", "None: no user data is sent"],
 ];
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
-      <Link href="/"><Logo /></Link>
-      <p className="mt-12 font-mono text-[11px] uppercase tracking-[0.18em] text-signal-warn">Draft — pending review by privacy counsel</p>
-      <h1 className="mt-3 font-display text-5xl leading-tight">Privacy &amp; biometric policy</h1>
-      <p className="mt-4 text-mist-300">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview. Consent version {CONSENT_VERSION}.</p>
+    <main className="mx-auto max-w-[760px] px-5 pb-28 pt-28 sm:px-8 sm:pt-36">
+      <p className="text-caption font-medium text-signal-warn">Draft, pending review by privacy counsel</p>
+      <h1 className="mt-4 text-display text-mist-100">Privacy &amp; biometric policy</h1>
+      <p className="mt-6 text-lead text-mist-300">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview. Consent version {CONSENT_VERSION}.</p>
 
       <Section title="The short version">
         <ul className="list-disc space-y-2 pl-5">
@@ -43,7 +41,7 @@ export default function PrivacyPage() {
         <ul className="list-disc space-y-2 pl-5">
           <li><b>Account:</b> email, a salted scrypt hash of your password, and your profile (name, target role, preferences).</li>
           <li><b>Documents:</b> the resume and job description you provide, so the interviewer asks relevant questions. We extract only what is written.</li>
-          <li><b>Interview:</b> what you say (transcribed), the interviewer&apos;s questions, timing, and — if you allow recording — an encrypted recording for Playback.</li>
+          <li><b>Interview:</b> what you say (transcribed), the interviewer&apos;s questions, timing, and (if you allow recording) an encrypted recording for Playback.</li>
           <li><b>Delivery signals:</b> from audio, loudness and pitch timelines (for pace, pauses and vocal variety); from the camera, if you allow it, estimates of where your head and eyes point and how your upper body moves.</li>
           <li><b>Operational:</b> usage, costs, latency and errors, used to run and improve the service.</li>
         </ul>
@@ -56,7 +54,7 @@ export default function PrivacyPage() {
           <li><b>Voice:</b> we analyse loudness, pitch movement and timing, and transcribe your words. We do not create or store voiceprints and do not identify speakers.</li>
           <li><b>Written release:</b> before any camera-derived signal is computed, we ask for your electronic signature on this release, and record the exact wording, its version and the time:</li>
         </ul>
-        <blockquote className="mt-3 border-l-2 border-lume/50 pl-4 text-mist-200">{CONSENT_COPY.camera_metrics} {CONSENT_COPY.camera_metrics_release}</blockquote>
+        <blockquote className="mt-3 font-display text-[19px] leading-snug text-mist-100">{CONSENT_COPY.camera_metrics} {CONSENT_COPY.camera_metrics_release}</blockquote>
         <ul className="mt-3 list-disc space-y-2 pl-5">
           <li><b>Purpose:</b> only to give you feedback on your own practice. Never to identify you, never for hiring decisions, never for advertising.</li>
           <li><b>No sale, no disclosure:</b> we never sell, lease, trade or otherwise profit from this data, and never disclose it except to you, or where legally required.</li>
@@ -69,7 +67,7 @@ export default function PrivacyPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
             <thead className="text-left text-xs text-mist-400"><tr><th className="py-2 pr-4 font-normal">Data</th><th className="pr-4 font-normal">Kept for</th><th className="font-normal">How it is destroyed</th></tr></thead>
-            <tbody>{RETENTION.map(([a, b, c]) => <tr key={a} className="border-t border-white/10 align-top"><td className="py-3 pr-4 text-mist-100">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
+            <tbody>{RETENTION.map(([a, b, c]) => <tr key={a} className="border-t border-line align-top"><td className="py-3 pr-4 text-mist-100">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
           </table>
         </div>
       </Section>
@@ -78,7 +76,7 @@ export default function PrivacyPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
             <thead className="text-left text-xs text-mist-400"><tr><th className="py-2 pr-4 font-normal">Processor</th><th className="pr-4 font-normal">Purpose</th><th className="font-normal">Data involved</th></tr></thead>
-            <tbody>{PROCESSORS.map(([a, b, c]) => <tr key={a} className="border-t border-white/10 align-top"><td className="py-3 pr-4 text-mist-100">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
+            <tbody>{PROCESSORS.map(([a, b, c]) => <tr key={a} className="border-t border-line align-top"><td className="py-3 pr-4 text-mist-100">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
           </table>
         </div>
       </Section>
@@ -106,8 +104,8 @@ export default function PrivacyPage() {
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="mt-12 scroll-mt-10 leading-relaxed text-mist-300">
-      <h2 className="mb-4 font-display text-3xl text-mist-100">{title}</h2>
+    <section id={id} className="mt-14 scroll-mt-24 text-body text-mist-300">
+      <h2 className="mb-4 font-display text-[clamp(1.65rem,1.25rem+1.1vw,2.25rem)] leading-tight text-mist-100">{title}</h2>
       {children}
     </section>
   );

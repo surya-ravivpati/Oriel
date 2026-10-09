@@ -30,7 +30,7 @@ export function AvatarLab() {
     store.candidateSpeaking = m === "listening";
   };
   return (
-    <main className="min-h-dvh bg-ink-950 window-light">
+    <main className="min-h-dvh bg-ink-950 glow-gold">
       <BotAvatar key={seats.map((s) => s.personaId).join()} store={store} seats={seats} className="h-[72dvh] w-full"
         labels={(s, active) => <span className={`font-mono text-[11px] uppercase tracking-widest ${active ? "text-lume" : "text-mist-400"}`}>{s.name.split(" ")[0]}</span>} />
       <div className="flex flex-wrap gap-2 p-4 text-sm">
@@ -72,7 +72,7 @@ function ExpressionSheet() {
       EXPRESSIONS.forEach((e, i) => {
         ctx.save();
         ctx.translate(pad + i * cell, pad + r * cell);
-        drawBot(ctx, cell, cell, lookFor(pid), { ...BASE_POSE, ...e.pose }, "#E9B872");
+        drawBot(ctx, cell, cell, lookFor(pid), { ...BASE_POSE, ...e.pose }, "#A3AB8B");
         ctx.restore();
       });
     });
@@ -113,7 +113,7 @@ function ShapeSheet() {
       SHAPE_COLUMNS.forEach((col, i) => {
         ctx.save();
         ctx.translate(label + i * cell, pad + r * cell);
-        drawBot(ctx, cell, cell, lookFor("hiring_manager", { shape: shape.id, color: SHEET_COLORS[r % SHEET_COLORS.length], accessory: col.accessory }), { ...BASE_POSE, ...col.pose }, "#E9B872");
+        drawBot(ctx, cell, cell, lookFor("hiring_manager", { shape: shape.id, color: SHEET_COLORS[r % SHEET_COLORS.length], accessory: col.accessory }), { ...BASE_POSE, ...col.pose }, "#A3AB8B");
         ctx.restore();
       });
     });

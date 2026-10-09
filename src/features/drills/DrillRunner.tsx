@@ -197,28 +197,28 @@ export function DrillRunner({ drill, sourceSessionId, serverStt, lesson }: { dri
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button variant="lume" size="lg" onClick={begin}>Start drill</Button>
             {!drill.requiresCamera && !voiceOnly && <button className="text-sm text-mist-400 hover:text-mist-100" onClick={() => setTextMode(!textMode)}>{textMode ? "Use my voice" : "Type instead"}</button>}
-            {voiceOnly && <span className="text-sm text-mist-400">Spoken only — this is measured from your voice.</span>}
+            {voiceOnly && <span className="text-sm text-mist-400">Spoken only: this is measured from your voice.</span>}
           </div>
           <FieldError>{error}</FieldError>
         </Card>
       )}
 
       {(stage === "calibrate" || (drill.requiresCamera && stage !== "brief")) && (
-        <div className="mt-8 overflow-hidden rounded-3xl border hairline-strong bg-ink-900">
+        <div className="mt-8 overflow-hidden rounded-xl border hairline-strong bg-ink-900">
           <video ref={videoRef} muted playsInline className="aspect-video w-full -scale-x-100 object-cover" />
         </div>
       )}
       {stage === "calibrate" && (
         <div className="mt-5 flex items-center gap-4">
           <Button onClick={calibrate}>{postureDrill ? "Sit tall, look at the lens for 2 seconds" : "Look at the lens for 2 seconds"}</Button>
-          {calibOk === false && <p className="text-sm text-signal-warn">{postureDrill ? "We need your face and shoulders in view — sit back a little or tilt your camera down, add light in front of you, and try again." : "We couldn't see your face clearly — add light in front of you and try again."}</p>}
+          {calibOk === false && <p className="text-sm text-signal-warn">{postureDrill ? "We need your face and shoulders in view. Sit back a little or tilt your camera down, add light in front of you, and try again." : "We couldn't see your face clearly. Add light in front of you and try again."}</p>}
         </div>
       )}
 
       {(stage === "prompt" || stage === "answer" || stage === "scoring") && (
         <section className="mt-10">
           <Card className="p-7">
-            <p className="font-mono text-[11px] uppercase tracking-widest text-lume">The question</p>
+            <p className="text-[12px] text-lume font-medium">The question</p>
             <p className="mt-3 font-display text-3xl leading-snug">&ldquo;{drill.prompt}&rdquo;</p>
           </Card>
           {stage === "prompt" && <p className="mt-6 text-center text-sm text-mist-400">Listen…</p>}
@@ -228,7 +228,7 @@ export function DrillRunner({ drill, sourceSessionId, serverStt, lesson }: { dri
                 <span className={cn("font-mono text-3xl tabular", over ? "text-signal-warn" : "text-mist-100")}>{String(Math.floor(secs / 60)).padStart(1, "0")}:{String(secs % 60).padStart(2, "0")}</span>
                 <span className="text-sm text-mist-400">target {drill.durationSec}s</span>
               </div>
-              <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]"><div className={cn("h-full rounded-full transition-[width] duration-300", over ? "bg-signal-warn" : "bg-lume")} style={{ width: `${Math.min(100, (elapsed / (drill.durationSec * 1000)) * 100)}%` }} /></div>
+              <div className="mt-3 h-1 overflow-hidden rounded-full bg-ink-850"><div className={cn("h-full rounded-full transition-[width] duration-300", over ? "bg-signal-warn" : "bg-lume")} style={{ width: `${Math.min(100, (elapsed / (drill.durationSec * 1000)) * 100)}%` }} /></div>
               {textMode ? (
                 <Textarea className="mt-6" rows={6} value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Type your answer" autoFocus />
               ) : (
@@ -263,7 +263,7 @@ export function DrillRunner({ drill, sourceSessionId, serverStt, lesson }: { dri
           </Card>
           {result.lesson && (
             <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
-              <p className="text-sm text-mist-300">Lesson practice · <span className="text-mist-100">{result.lesson.title}</span>: {Math.min(result.lesson.passes, result.lesson.needed)} of {result.lesson.needed} passes{result.lesson.passes >= result.lesson.needed ? " — practised. Now use it in an interview." : ""}</p>
+              <p className="text-sm text-mist-300">Lesson practice · <span className="text-mist-100">{result.lesson.title}</span>: {Math.min(result.lesson.passes, result.lesson.needed)} of {result.lesson.needed} passes{result.lesson.passes >= result.lesson.needed ? ". Practised. Now use it in an interview." : ""}</p>
               <Link href={`/lessons/${result.lesson.key}`} className="text-sm text-lume underline-offset-4 hover:underline">Back to the lesson →</Link>
             </Card>
           )}

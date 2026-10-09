@@ -123,7 +123,7 @@ export function ProfileClient(p: {
           <p className="mt-2 max-w-2xl text-sm text-mist-400">Camera signals are computed on your device; only derived numbers are stored. We never sell biometric data or share individual results with employers.</p>
           <Card className="mt-6 divide-y divide-white/[0.06] px-6">
             <Toggle checked={privacy.cameraMetricsEnabled} onChange={(v) => savePrivacy({ cameraMetricsEnabled: v })} label="Camera-based signals" description="Estimate camera engagement and posture. Off: you still see yourself and can record, but no camera measurements are made." />
-            <Toggle checked={privacy.gazeMetricEnabled} disabled={!privacy.cameraMetricsEnabled} onChange={(v) => savePrivacy({ gazeMetricEnabled: v })} label="Camera engagement (gaze)" description="Turn off if you avoid eye contact for cultural, neurological or personal reasons — nothing is penalised." />
+            <Toggle checked={privacy.gazeMetricEnabled} disabled={!privacy.cameraMetricsEnabled} onChange={(v) => savePrivacy({ gazeMetricEnabled: v })} label="Camera engagement (gaze)" description="Turn off if you avoid eye contact for cultural, neurological or personal reasons; nothing is penalised." />
             <Toggle checked={privacy.postureMetricEnabled} disabled={!privacy.cameraMetricsEnabled} onChange={(v) => savePrivacy({ postureMetricEnabled: v })} label="Posture & movement" description="Lean, slouch, sway and fidgeting, shown as a timeline." />
             <Toggle checked={privacy.recordVideo} onChange={(v) => savePrivacy({ recordVideo: v })} label="Record sessions" description="Needed for video Playback. Off: you still get the transcript and the Read." />
             <div className="py-4">
@@ -140,10 +140,10 @@ export function ProfileClient(p: {
           <p className="mt-2 text-sm text-mist-400">You&apos;re on <span className="text-mist-100">{p.plan.name}</span>{p.plan.periodEnd ? ` until ${new Date(p.plan.periodEnd).toLocaleDateString()}` : ""}. {p.plan.sessionsThisWeek} session{p.plan.sessionsThisWeek === 1 ? "" : "s"} this week.</p>
           <div className="mt-6 grid gap-3 md:grid-cols-3">
             {(["free", "sprint", "pro"] as const).map((id) => (
-              <Card key={id} className={`flex flex-col p-6 ${p.plan.id === id ? "border-lume/40" : ""}`}>
+              <Card key={id} className={`flex flex-col p-6 ${p.plan.id === id ? "border-lume-deep" : ""}`}>
                 <p className="text-mist-100">{PLANS[id].name}</p>
                 <p className="mt-2 font-display text-4xl">{PLANS[id].price}<span className="ml-1 text-sm text-mist-400">{PLANS[id].cadence}</span></p>
-                <ul className="mt-4 flex-1 space-y-1.5 text-sm text-mist-300">{PLANS[id].features.map((f) => <li key={f}>— {f}</li>)}</ul>
+                <ul className="mt-4 flex-1 space-y-1.5 text-sm text-mist-300">{PLANS[id].features.map((f) => <li key={f}>{f}</li>)}</ul>
                 <Button className="mt-5" size="sm" variant={p.plan.id === id ? "secondary" : "primary"} disabled={p.plan.id === id} loading={busy === id} onClick={() => choosePlan(id)}>{p.plan.id === id ? "Current plan" : `Switch to ${PLANS[id].name}`}</Button>
               </Card>
             ))}
@@ -156,12 +156,12 @@ export function ProfileClient(p: {
           <Card className="mt-6 p-6">
             <p className="text-sm text-mist-300">{p.storedRecordings} encrypted recording{p.storedRecordings === 1 ? "" : "s"} stored. Delete individual sessions from Playback.</p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <a href="/api/privacy/export" className="inline-flex h-10 items-center rounded-full border hairline-strong px-5 text-sm text-mist-100 hover:bg-white/[0.06]">Download my data (JSON)</a>
+              <a href="/api/privacy/export" className="inline-flex h-10 items-center rounded-full border hairline-strong px-5 text-sm text-mist-100 hover:bg-ink-850">Download my data (JSON)</a>
               <Button variant="danger" onClick={() => setConfirmDelete(true)}>Delete my account</Button>
             </div>
           </Card>
           <Eyebrow className="mt-10">Consent history</Eyebrow>
-          <ul className="mt-3 divide-y divide-white/[0.05] rounded-2xl border hairline text-sm">
+          <ul className="mt-3 divide-y divide-white/[0.05] rounded-lg border hairline text-sm">
             {p.consents.map((c) => (
               <li key={c.id} className="flex flex-wrap gap-4 px-5 py-3"><span className="w-36 text-mist-200">{c.kind.replace("_", " ")}</span><span className={c.granted ? "text-signal-good" : "text-mist-400"}>{c.granted ? "granted" : "declined"}</span><span className="font-mono text-xs text-mist-400">v{c.version}</span><span className="ml-auto text-mist-400">{new Date(c.at).toLocaleString()}</span></li>
             ))}

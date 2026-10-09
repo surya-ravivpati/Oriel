@@ -1,81 +1,162 @@
 @import "tailwindcss";
 
 /*
- * Oriel design tokens. Near-black studio, white type, restrained greys and one
- * accent: warm window light (tungsten). The accent is used sparingly — for the
- * living interviewer, focus, and the one thing on screen that matters most.
+ * Oriel: the interview studio.
+ *
+ * Every screen in Oriel is a take and its notes: what was said, when, and what to change.
+ * The system encodes that directly:
+ *   - Newsreader (serif) is speech: the interviewer's lines, your answers, and Oriel's own headlines.
+ *   - IBM Plex Mono is evidence: timecodes, measurements, counts.
+ *   - Schibsted Grotesk is the interface: labels, buttons, explanations.
+ * Surfaces are warm charcoal, ruled with hairlines; boxes are reserved for real objects (a video
+ * frame, a field, a menu). Ivory carries the text and the one high-contrast action in a view.
+ * Olive and stone are the only accents: a mark under a word, the current place, a chosen
+ * option. Never a glow, never a gradient.
  */
 @theme {
-  --color-ink-950: #070708;
-  --color-ink-900: #0b0b0d;
-  --color-ink-850: #0f0f12;
-  --color-ink-800: #141417;
-  --color-ink-700: #1b1b1f;
-  --color-ink-600: #26262b;
-  --color-ink-500: #3a3a41;
-  --color-mist-400: #6e6e78;
-  --color-mist-300: #9a9aa3;
-  --color-mist-200: #c4c4cb;
-  --color-mist-100: #ececef;
-  --color-lume: #e9b872;
-  --color-lume-soft: #f3d3a1;
-  --color-lume-deep: #b8844a;
-  --color-signal-good: #9cc7a4;
-  --color-signal-warn: #e0a86b;
-  --color-signal-bad: #e07a6b;
+  /* Surfaces: ink, then progressively lifted charcoal */
+  --color-ink-950: #151515; /* Ink: page */
+  --color-ink-900: #20201e; /* Surface: frames, navigation, stage, alternate bands */
+  --color-ink-850: #232321;
+  --color-ink-800: #262624;
+  --color-ink-700: #2a2a27; /* fields, raised controls */
+  --color-ink-600: #33332f;
+  --color-ink-500: #45443f;
+  /* Rules */
+  --color-line: #2b2b28;
+  --color-line-strong: #3b3a36;
+  /* Type */
+  --color-mist-100: #f5f2eb; /* Ivory: headlines, primary text, the primary action */
+  --color-mist-200: #ddd8ce;
+  --color-mist-300: #b7b0a4; /* Stone: secondary text */
+  --color-mist-400: #8e887d; /* captions; 5:1 on Surface */
+  /* Accent: olive. Legacy token names (lume, bronze) are kept so every page reads the new values. */
+  --color-lume: #a3ab8b;      /* Olive, lit: marks, focus, the current place, a chosen option */
+  --color-lume-glow: #b9c0a3;
+  --color-lume-soft: #d2d6c3;
+  --color-lume-deep: #555c4a; /* Deep olive: borders on chosen things, timeline ticks */
+  --color-bronze: #23261d;    /* Olive ground under a chosen thing */
+  --color-accent: #a3ab8b;
+  --color-accent-deep: #555c4a;
+  --color-accent-ground: #23261d;
+  /* Signals: muted to sit with the palette */
+  --color-signal-good: #93bf8a;
+  --color-signal-warn: #d6a45e;
+  --color-signal-bad: #de7a68;
 
-  --font-display: var(--font-instrument-serif), "Iowan Old Style", Georgia, serif;
-  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", monospace;
+  --font-sans: var(--font-schibsted), "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, Menlo, monospace;
+
+  /* Type scale. Serif display steps (hero, display, title); grotesk text steps. Ratio ≥ 1.25. */
+  --text-hero: clamp(2.6rem, 1.3rem + 4.4vw, 5.5rem);
+  --text-hero--line-height: 1.02;
+  --text-hero--letter-spacing: -0.022em;
+  --text-hero--font-weight: 400;
+  --text-display: clamp(2.2rem, 1.35rem + 2.7vw, 3.75rem);
+  --text-display--line-height: 1.06;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 400;
+  --text-title: clamp(1.75rem, 1.3rem + 1.3vw, 2.5rem);
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.016em;
+  --text-title--font-weight: 400;
+  --text-headline: 1.25rem;
+  --text-headline--line-height: 1.3;
+  --text-headline--letter-spacing: -0.01em;
+  --text-headline--font-weight: 600;
+  --text-lead: clamp(1.125rem, 1.03rem + 0.35vw, 1.3125rem);
+  --text-lead--line-height: 1.5;
+  --text-lead--letter-spacing: -0.008em;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.6;
+  --text-body--letter-spacing: -0.005em;
+  --text-callout: 0.9375rem;
+  --text-callout--line-height: 1.55;
+  --text-callout--letter-spacing: -0.003em;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.45;
+
+  /* Radii: small and square-shouldered. Nothing in the interface is a pill except a switch. */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :root {
   color-scheme: dark;
-  --line: rgb(255 255 255 / 0.07);
-  --line-strong: rgb(255 255 255 / 0.13);
+  --line: var(--color-line);
+  --line-strong: var(--color-line-strong);
+  /* One elevation, only for things that float over the page: menus and dialogs. */
+  --shadow-sheet: 0 24px 64px -16px rgb(4 5 6 / 0.75), 0 0 0 1px var(--color-line-strong);
+  /* Vertical rhythm between chapters of a page. */
+  --space-section: clamp(4rem, 2.75rem + 4.5vw, 7rem);
 }
 
-html, body { background: var(--color-ink-950); color: var(--color-mist-100); }
-body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-feature-settings: "ss01", "cv11"; }
-
-::selection { background: color-mix(in oklab, var(--color-lume) 35%, transparent); color: white; }
-
-/* Film grain — very faint, gives the dark surfaces some tooth. */
-.grain::after {
-  content: ""; position: fixed; inset: -50%; pointer-events: none; z-index: 60; opacity: 0.035;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  animation: grain 8s steps(8) infinite;
-}
-@keyframes grain { 0%,100% { transform: translate(0,0) } 25% { transform: translate(-3%,2%) } 50% { transform: translate(2%,-3%) } 75% { transform: translate(-2%,-1%) } }
-
-.hairline { border-color: var(--line); }
-.hairline-strong { border-color: var(--line-strong); }
-
-/* The window light: a warm pool of light used behind the interviewer and in the hero. */
-.window-light {
-  background:
-    radial-gradient(60% 55% at 50% 38%, rgb(233 184 114 / 0.16), transparent 70%),
-    radial-gradient(40% 35% at 50% 30%, rgb(243 211 161 / 0.08), transparent 70%);
+@layer base {
+  html { background: var(--color-ink-950); color: var(--color-mist-100); -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--color-ink-950);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  /* The serif voice, wherever a page asks for it. */
+  .font-display { font-weight: 400; letter-spacing: -0.012em; font-optical-sizing: auto; }
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+  ::selection { background: color-mix(in oklab, var(--color-lume) 35%, transparent); color: var(--color-mist-100); }
+  :focus-visible { outline: 2px solid var(--color-lume); outline-offset: 2px; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  * { scrollbar-width: thin; scrollbar-color: var(--color-ink-500) transparent; }
 }
 
-.text-balance { text-wrap: balance; }
-.tabular { font-variant-numeric: tabular-nums; }
+@layer utilities {
+  /* Display steps are always set in the serif. */
+  .text-hero, .text-display, .text-title { font-family: var(--font-display); font-optical-sizing: auto; }
+  .hairline { border-color: var(--line); }
+  .hairline-strong { border-color: var(--line-strong); }
+  .text-balance { text-wrap: balance; }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .shadow-sheet { box-shadow: var(--shadow-sheet); }
+  .section-y { padding-block: var(--space-section); }
+  /* An editor's mark under a word: the one place gold touches running text. */
+  .mark-gold { text-decoration: underline; text-decoration-color: var(--color-lume); text-decoration-thickness: 2px; text-underline-offset: 0.22em; }
+}
 
-@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-.rise { animation: rise 650ms var(--ease-out-expo) both; }
+/* The interviewer blinks: a quick squint, then a long pause. Used by the mark when Oriel is working. */
+@keyframes blink { 0%, 88%, 100% { transform: scaleY(1); } 92% { transform: scaleY(0.12); } }
+/* A live microphone level, faked for illustrations of the Room. */
+@keyframes meter { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+/* Things that float in (menus, dialogs) arrive from just below where they settle. */
+@keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-:focus-visible { outline: 1.5px solid var(--color-lume); outline-offset: 3px; border-radius: 6px; }
+/* Skeletons for anything that loads. */
+.skeleton {
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--color-ink-800) 0%, var(--color-ink-700) 50%, var(--color-ink-800) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
-  .grain::after { animation: none; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
 
-input[type="range"].dial { -webkit-appearance: none; appearance: none; background: transparent; height: 28px; }
-input[type="range"].dial::-webkit-slider-runnable-track { height: 2px; background: var(--line-strong); border-radius: 2px; }
-input[type="range"].dial::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; margin-top: -8px; border-radius: 50%; background: var(--color-lume); box-shadow: 0 0 0 6px rgb(233 184 114 / 0.12), 0 0 24px rgb(233 184 114 / 0.45); cursor: grab; }
-input[type="range"].dial::-moz-range-track { height: 2px; background: var(--line-strong); }
-input[type="range"].dial::-moz-range-thumb { height: 18px; width: 18px; border: 0; border-radius: 50%; background: var(--color-lume); }
+input[type="range"].dial { -webkit-appearance: none; appearance: none; background: transparent; height: 32px; cursor: pointer; }
+input[type="range"].dial::-webkit-slider-runnable-track { height: 2px; background: linear-gradient(90deg, var(--color-lume) var(--fill, 50%), var(--color-line-strong) var(--fill, 50%)); }
+input[type="range"].dial::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; margin-top: -9px; border-radius: 50%; background: var(--color-mist-100); border: 5px solid var(--color-lume); transition: transform 200ms var(--ease-out-quint); }
+input[type="range"].dial:active::-webkit-slider-thumb { transform: scale(1.1); }
+input[type="range"].dial::-moz-range-track { height: 2px; background: var(--color-line-strong); }
+input[type="range"].dial::-moz-range-progress { height: 2px; background: var(--color-lume); }
+input[type="range"].dial::-moz-range-thumb { height: 12px; width: 12px; border-radius: 50%; background: var(--color-mist-100); border: 5px solid var(--color-lume); }

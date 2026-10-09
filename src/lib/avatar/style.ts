@@ -28,8 +28,8 @@ export const BOT_COLORS = {
   sky: { label: "Sky", face: "#C2D5E8", shade: "#94B0CB", eye: "#1A1D24", highlight: "#F3D3A1" },
   lilac: { label: "Lilac", face: "#D2C9EC", shade: "#ABA0D0", eye: "#1D1A26", highlight: "#F3D3A1" },
   rose: { label: "Rose", face: "#F1C9C1", shade: "#D3A096", eye: "#221A1A", highlight: "#F6DDB0" },
-  graphite: { label: "Graphite", face: "#76787D", shade: "#55575C", eye: "#18191D", highlight: "#E9B872", dark: true },
-  midnight: { label: "Midnight", face: "#343947", shade: "#1F232D", eye: "#F2C46D", highlight: "#FFF6E0", dark: true, glowEyes: true },
+  graphite: { label: "Graphite", face: "#76787D", shade: "#55575C", eye: "#18191D", highlight: "#A3AB8B", dark: true },
+  midnight: { label: "Midnight", face: "#343947", shade: "#1F232D", eye: "#EDE7DA", highlight: "#FFF6E0", dark: true, glowEyes: true },
 } satisfies Record<string, BotColor>;
 export type BotColorId = keyof typeof BOT_COLORS;
 

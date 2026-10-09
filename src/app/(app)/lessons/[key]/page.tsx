@@ -30,7 +30,7 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
   return (
     <div className="mx-auto max-w-5xl">
       <Link href="/lessons" className="text-sm text-mist-400 hover:text-mist-100">← Lessons</Link>
-      <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.18em] text-mist-400">
+      <p className="mt-8 text-[12px] text-mist-400 font-medium">
         {TRACKS[def.track].label} · {status === "active" ? <span className="text-lume">In your plan</span> : status === "queued" ? "Up next" : status === "mastered" ? <span className="text-signal-good">Mastered</span> : "Lesson"}
       </p>
       <h1 className="mt-3 font-display text-5xl leading-tight sm:text-6xl">{def.title}</h1>
@@ -46,12 +46,12 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
                 <p className="font-display text-5xl tabular text-mist-100">{l.evidence.display}</p>
                 <p className="text-sm text-mist-400">target {l.evidence.target}{l.evidence.confidence !== "high" ? ` · ${l.evidence.confidence} confidence` : ""}</p>
               </div>
-              {l.startValue !== null && l.latestValue !== null && l.startValue !== l.latestValue && <p className="mt-2 text-sm text-mist-400">{l.status === "mastered" ? `Was ${formatMeasure(l.metricKey, l.startValue)} — now ${formatMeasure(l.metricKey, l.latestValue)}.` : `When this lesson started: ${formatMeasure(l.metricKey, l.startValue)}.`}</p>}
+              {l.startValue !== null && l.latestValue !== null && l.startValue !== l.latestValue && <p className="mt-2 text-sm text-mist-400">{l.status === "mastered" ? `Was ${formatMeasure(l.metricKey, l.startValue)}, now ${formatMeasure(l.metricKey, l.latestValue)}.` : `When this lesson started: ${formatMeasure(l.metricKey, l.startValue)}.`}</p>}
               <p className="mt-5 leading-relaxed text-mist-200">{l.content.observation}</p>
               {l.evidence.quotes.length > 0 && (
                 <ul className="mt-6 space-y-4">
                   {l.evidence.quotes.map((q, i) => (
-                    <li key={i} className="border-l-2 border-lume/40 pl-4">
+                    <li key={i} className="border-l-2 border-lume-deep pl-4">
                       {q.question && <p className="text-xs text-mist-400">Answering “{q.question}”</p>}
                       <p className="mt-1 text-[15px] leading-relaxed text-mist-100">“{q.text}”</p>
                       <p className="mt-1.5 flex flex-wrap gap-x-3 text-xs text-mist-400">
@@ -69,12 +69,12 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
                   ))}
                 </ul>
               )}
-              <p className="mt-6 text-xs text-mist-400">Measured {relPhrase(l.updatedAt)}. Your numbers only — never compared with other people.</p>
+              <p className="mt-6 text-xs text-mist-400">Measured {relPhrase(l.updatedAt)}. Your numbers only, never compared with other people.</p>
             </Card>
           ) : (
             <Card className="p-7">
               <Eyebrow>Not in your plan</Eyebrow>
-              <p className="mt-3 leading-relaxed text-mist-300">We haven&apos;t measured a need for this one — it was on target, or your interviews haven&apos;t measured it yet (typed answers have no pace or voice; camera skills need the camera). The technique below still works.</p>
+              <p className="mt-3 leading-relaxed text-mist-300">We haven&apos;t measured a need for this one: it was on target, or your interviews haven&apos;t measured it yet (typed answers have no pace or voice; camera skills need the camera). The technique below still works.</p>
             </Card>
           )}
 
@@ -93,15 +93,15 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
                 </li>
               ))}
             </ol>
-            {l?.content.tip && <p className="mt-6 rounded-2xl border border-lume/20 bg-lume/[0.05] p-4 text-sm leading-relaxed text-mist-200"><span className="text-lume">For you: </span>{l.content.tip}</p>}
+            {l?.content.tip && <p className="mt-6 rounded-lg border border-lume-deep bg-bronze p-4 text-sm leading-relaxed text-mist-200"><span className="text-lume">For you: </span>{l.content.tip}</p>}
           </section>
 
           {l?.content.rewrite && (
             <section>
               <h2 className="font-display text-3xl">Your answer, rewritten</h2>
               <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <Card className="p-5"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-mist-400">What you said</p><p className="mt-3 text-[15px] leading-relaxed text-mist-300">“{l.content.rewrite.before}”</p></Card>
-                <Card className="border-lume/25 p-5"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-lume">Same story, with the lesson</p><p className="mt-3 text-[15px] leading-relaxed text-mist-100">“{l.content.rewrite.after}”</p></Card>
+                <Card className="p-5"><p className="text-[12px] text-mist-400 font-medium">What you said</p><p className="mt-3 text-[15px] leading-relaxed text-mist-300">“{l.content.rewrite.before}”</p></Card>
+                <Card className="border-lume-deep p-5"><p className="text-[12px] text-lume font-medium">Same story, with the lesson</p><p className="mt-3 text-[15px] leading-relaxed text-mist-100">“{l.content.rewrite.after}”</p></Card>
               </div>
               <p className="mt-3 text-xs text-mist-400">{l.content.rewrite.note}</p>
             </section>
@@ -117,7 +117,7 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
                 <p className="mt-1 text-sm text-mist-400">{drill.objective}</p>
                 <p className="mt-3 text-xs text-mist-400">Pass: {drill.passRule}</p>
                 <ButtonLink href={`/drills/${drill.id}?lesson=${def.key}${l?.sourceSessionId ? `&from=${l.sourceSessionId}` : ""}`} variant="lume" className="mt-5 w-full">Start practice</ButtonLink>
-                {l && <p className="mt-3 text-center text-xs text-mist-400">{passes >= PRACTICE_PASSES_NEEDED ? "Practised — now use it in an interview." : `${passes} of ${PRACTICE_PASSES_NEEDED} passes`}</p>}
+                {l && <p className="mt-3 text-center text-xs text-mist-400">{passes >= PRACTICE_PASSES_NEEDED ? "Practised. Now use it in an interview." : `${passes} of ${PRACTICE_PASSES_NEEDED} passes`}</p>}
                 {found && found.attempts.length > 0 && (
                   <ul className="mt-5 space-y-2 border-t hairline pt-4 text-sm">
                     {found.attempts.map((a) => (
@@ -137,7 +137,7 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
           <Card className="p-6">
             <Eyebrow>The goal</Eyebrow>
             <p className="mt-3 text-mist-200">{def.goal}</p>
-            <p className="mt-2 text-sm text-mist-400">{status === "mastered" && l?.masteredAt ? `Confirmed in your interview ${relPhrase(l.masteredAt)}.` : "Your next interview confirms it — lessons are only marked mastered when the skill shows up in a real interview."}</p>
+            <p className="mt-2 text-sm text-mist-400">{status === "mastered" && l?.masteredAt ? `Confirmed in your interview ${relPhrase(l.masteredAt)}.` : "Your next interview confirms it: lessons are only marked mastered when the skill shows up in a real interview."}</p>
             {status !== "mastered" && <ButtonLink href="/practice" variant="secondary" size="sm" className="mt-4">Practice an interview</ButtonLink>}
           </Card>
         </aside>

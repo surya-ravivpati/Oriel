@@ -1,22 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Serif, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Newsreader, Schibsted_Grotesk } from "next/font/google";
+import { MotionProvider } from "@/components/ui/MotionProvider";
 import "./globals.css";
 
-const display = Instrument_Serif({ weight: "400", style: ["normal", "italic"], subsets: ["latin"], variable: "--font-instrument-serif" });
-const sans = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", weight: ["400", "500"] });
+/*
+ * Three voices, each with one job: Newsreader for words spoken in the room and Oriel's own
+ * headlines, Schibsted Grotesk for the interface, IBM Plex Mono for time and measurement.
+ */
+const serif = Newsreader({ subsets: ["latin"], style: ["normal", "italic"], axes: ["opsz"], variable: "--font-newsreader" });
+const sans = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-schibsted" });
+const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono" });
 
 export const metadata: Metadata = {
-  title: { default: "Oriel — Practice for the room before you're in it", template: "%s · Oriel" },
-  description: "Oriel simulates realistic interviews, adapts pressure to your performance, and shows you exactly what happened in your own recording.",
+  title: { default: "Oriel: practice for the room before you're in it", template: "%s · Oriel" },
+  description: "Mock interviews with an AI interviewer who listens, follows up and pushes back. Afterwards: your recording, the moments that mattered, and what to change.",
 };
 
-export const viewport: Viewport = { themeColor: "#07070b", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#151515", colorScheme: "dark" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
-      <body className="grain min-h-dvh">{children}</body>
+    <html lang="en" data-scroll-behavior="smooth" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
+      <body className="min-h-dvh"><MotionProvider>{children}</MotionProvider></body>
     </html>
   );
 }

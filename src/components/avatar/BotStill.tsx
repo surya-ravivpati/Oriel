@@ -8,7 +8,7 @@ import { lookFor } from "./bot/looks";
 import { BASE_POSE } from "./bot/presets";
 
 /** One still frame of a bot (pickers, cards): no animation loop, redrawn only when its look changes. */
-export function BotStill({ personaId, style, pose, accent = "#E9B872", className }: {
+export function BotStill({ personaId, style, pose, accent = "#A3AB8B", className }: {
   personaId: string;
   style?: Partial<AvatarStyle> | null;
   pose?: Partial<BotPose>;

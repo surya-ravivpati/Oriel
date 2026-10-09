@@ -6,7 +6,7 @@ import { BotAvatar } from "@/components/avatar/BotAvatar";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { cn } from "@/components/ui/cn";
-import { LogoMark } from "@/components/ui/Logo";
+import { LogoMark, Thinking } from "@/components/ui/Logo";
 import { LocalAvatarProvider } from "@/lib/avatar/local-provider";
 import { ExternalAvatarProvider } from "@/lib/avatar/external-provider";
 import type { AvatarSeatConfig, AvatarSession } from "@/lib/avatar/types";
@@ -65,6 +65,10 @@ export function Room(props: RoomProps) {
   const [postureReady, setPostureReady] = useState(false);
   const [livePosture, setLivePosture] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  // The questions asked so far, captured once each has been spoken (so captions-off stays honest).
+  const [asked, setAsked] = useState<{ t: number; who: string; text: string }[]>([]);
+  const lastAsked = useRef<string | null>(null);
+  const startedAt = useRef(0);
   const provider = useMemo(() => new LocalAvatarProvider(), []);
   const controller = useRef<RoomController | null>(null);
   const avatarSession = useRef<AvatarSession | null>(null);
@@ -172,11 +176,21 @@ export function Room(props: RoomProps) {
       sessionId: props.sessionId, provider, avatarSession: avatarSession.current,
       micStream: devices.mic, cameraStream: devices.cam, record: consent.recording,
       vision: consent.cameraMetrics && visionReady ? vision.current : null, videoEl: analysisVideoRef.current,
-      sttMode, onState: setUi, onEnded: () => router.push(`/playback/${props.sessionId}?processing=1`),
+      sttMode, onEnded: () => router.push(`/playback/${props.sessionId}?processing=1`),
+      onState: (st) => {
+        setUi(st);
+        if (st.phase === "listening" && st.caption && st.caption !== lastAsked.current) {
+          lastAsked.current = st.caption;
+          const seat = props.seats.find((x) => x.seat === st.activeSeat) ?? props.seats[0];
+          const line = st.caption;
+          setAsked((h) => [...h, { t: Date.now() - startedAt.current, who: callName(seat.name, seat.style), text: line }]);
+        }
+      },
     });
     if (sttMode === "none") c.switchToText();
     controller.current = c;
     await new Promise((r) => setTimeout(r, 900)); // let the room light up before the first word
+    startedAt.current = Date.now();
     setStage("live");
     void c.start();
   }, [consent, devices, props, provider, router, visionReady]);
@@ -188,14 +202,18 @@ export function Room(props: RoomProps) {
     return () => clearInterval(id);
   }, [stage]);
 
-  // Keyboard: Space = done answering (when not typing), M = mute.
+  // Keyboard: Space = done answering, M = mute, C = captions, T = type or speak. Never while typing,
+  // and never with a modifier, so browser shortcuts (copy, minimise) keep working.
   useEffect(() => {
     if (stage !== "live") return;
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      if (target.tagName === "TEXTAREA" || target.tagName === "INPUT") return;
+      if (target.tagName === "TEXTAREA" || target.tagName === "INPUT" || e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key.toLowerCase();
       if (e.code === "Space" && ui?.phase === "listening" && ui.inputMode === "voice") { e.preventDefault(); void controller.current?.finishAnswer(false); }
-      if (e.key === "m") toggleMute();
+      else if (k === "m") toggleMute();
+      else if (k === "c") setCaptions((c) => !c);
+      else if (k === "t") toggleInput();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -209,6 +227,11 @@ export function Room(props: RoomProps) {
     devices?.cam?.getTracks().forEach((t) => t.stop());
     vision.current?.close();
   }, [devices]);
+
+  function toggleInput() {
+    if (ui?.inputMode === "voice") controller.current?.switchToText();
+    else if (devices?.mic) controller.current?.switchToVoice();
+  }
 
   function toggleMute() {
     const m = !muted;
@@ -225,101 +248,138 @@ export function Room(props: RoomProps) {
   const phase = ui?.phase;
   const active = props.seats.find((s) => s.seat === (ui?.activeSeat ?? 0)) ?? props.seats[0];
   const remaining = Math.max(0, props.targetMinutes * 60000 - elapsed);
+  const live = stage === "entering" || stage === "live" || stage === "ending";
+  const clock = `${Math.floor(elapsed / 60000)}:${String(Math.floor((elapsed % 60000) / 1000)).padStart(2, "0")}`;
+  // The question stays readable once it has been asked; while it is being spoken, only with captions on.
+  const question = ui?.caption ?? null;
+  const showQuestion = !!question && phase !== "starting" && (phase !== "interviewer" || captions);
+  const status = phase === "starting" ? "Connecting" : phase === "listening" ? (ui?.inputMode === "text" ? "Your turn: type" : "Listening")
+    : phase === "interviewer" ? (ui?.voice === "browser" ? "Backup voice" : "Speaking") : phase === "processing" ? "Thinking" : "";
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-ink-950 text-mist-100">
       {devices?.cam && <video ref={analysisVideoRef} muted playsInline aria-hidden className="pointer-events-none absolute size-px opacity-0" />}
-      {/* The room: warm window light behind the interviewer. */}
-      <div className={cn("absolute inset-0 transition-opacity duration-[1600ms]", stage === "live" || stage === "ending" ? "opacity-100" : "opacity-40")}>
-        <div className="absolute inset-0 window-light" />
-        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink-950 to-transparent" />
-      </div>
 
-      {/* Interviewer */}
-      {(stage === "entering" || stage === "live" || stage === "ending") && (
-        <div className={cn("absolute inset-0 transition-all duration-[1400ms] ease-[var(--ease-out-expo)]", stage === "entering" ? "scale-[1.04] opacity-0" : "scale-100 opacity-100")}>
-          {voiceOnly ? <VoiceOrb provider={provider} name={active.name} /> : (
-            <AvatarBoundary fallback={<VoiceOrb provider={provider} name={active.name} />} onError={() => setVoiceOnly(true)}>
-              <BotAvatar store={provider.store} seats={props.seats} className="absolute inset-0 pb-24"
-                labels={props.seats.length > 1 ? (s, active) => (
-                  <span className={cn("block whitespace-nowrap rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors duration-500", active ? "bg-lume/15 text-lume" : "text-mist-400/80")}>
-                    {callName(s.name, s.style)} · {props.seats.find((x) => x.seat === s.seat)?.title}
-                  </span>
-                ) : undefined} />
-            </AvatarBoundary>
-          )}
-        </div>
-      )}
+      {live && (
+        <div className="absolute inset-0 flex flex-col">
+          {/* Session bar: where you are, how long, whether it's recording. */}
+          <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-line px-4 sm:px-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <LogoMark className="size-5 shrink-0" />
+              <p className="truncate text-[13px] text-mist-300"><span className="font-medium text-mist-100">Mock interview</span><span className="hidden sm:inline"> · {props.role}</span></p>
+            </div>
+            <div className="flex shrink-0 items-center gap-4 text-[13px]">
+              {ui?.recording && <span className="flex items-center gap-1.5 text-mist-300"><span className="size-1.5 rounded-full bg-signal-bad motion-safe:animate-pulse" aria-hidden />Recording</span>}
+              <span className="font-mono tabular text-mist-100">{clock}<span className="hidden text-mist-400 sm:inline"> · {Math.ceil(remaining / 60000)} min left</span></span>
+            </div>
+          </header>
 
-      {/* Top bar */}
-      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 py-4 sm:px-8">
-        <div className="flex items-center gap-3">
-          <LogoMark className="size-5 text-mist-300" />
-          {stage === "live" && (
-            <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-mist-400">
-              {ui?.recording && <span className="size-1.5 animate-pulse rounded-full bg-signal-bad" aria-label="Recording" />}
-              {Math.floor(elapsed / 60000)}:{String(Math.floor((elapsed % 60000) / 1000)).padStart(2, "0")}
-              <span className="text-mist-400/60">· ~{Math.ceil(remaining / 60000)} min left</span>
-            </span>
-          )}
-        </div>
-        {stage === "live" && (
-          <div className="flex items-center gap-2 rounded-full border hairline bg-ink-950/60 px-3 py-1.5 backdrop-blur">
-            <span className={cn("size-1.5 rounded-full", phase === "interviewer" ? "bg-lume" : phase === "listening" ? "bg-signal-good" : "bg-mist-400")} />
-            <span className="text-[12px] text-mist-300">{active.name} · {active.title}</span>
-            <span className="text-[11px] text-mist-400">AI</span>
+          <div className="flex min-h-0 flex-1">
+            <main className={cn("relative flex min-w-0 flex-1 flex-col transition-opacity duration-700", stage === "entering" ? "opacity-0" : "opacity-100")}>
+              {/* The interviewer */}
+              <div className="relative min-h-0 flex-1">
+                {voiceOnly ? <VoiceFace provider={provider} name={active.name} /> : (
+                  <AvatarBoundary fallback={<VoiceFace provider={provider} name={active.name} />} onError={() => setVoiceOnly(true)}>
+                    <BotAvatar store={provider.store} seats={props.seats} className="absolute inset-0"
+                      labels={props.seats.length > 1 ? (s, isActive) => (
+                        <span className={cn("block whitespace-nowrap text-[12px] font-medium transition-colors duration-500", isActive ? "text-mist-100" : "text-mist-400")}>
+                          {callName(s.name, s.style)} · {props.seats.find((x) => x.seat === s.seat)?.title}
+                        </span>
+                      ) : undefined} />
+                  </AvatarBoundary>
+                )}
+                {/* Your camera */}
+                {devices?.cam && (
+                  <div className="absolute bottom-3 right-3 z-10 aspect-video w-[min(28vw,240px)] min-w-[112px] overflow-hidden rounded-lg border border-line-strong bg-ink-900 sm:bottom-4 sm:right-4">
+                    <video ref={videoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" />
+                    <span className="absolute bottom-1.5 left-2 text-[11px] font-medium text-mist-100">You</span>
+                    {phase === "listening" && ui?.inputMode === "voice" && <MicRing controller={controller.current} />}
+                  </div>
+                )}
+              </div>
+
+              {/* The conversation: who is talking, and the question you're answering. */}
+              <div className="shrink-0 px-5 pb-5 pt-2 sm:px-10">
+                <div className="mx-auto max-w-[44rem]">
+                  <p className="flex items-center gap-2 text-[13px]">
+                    <span className={cn("size-1.5 shrink-0 rounded-full transition-colors duration-300", phase === "interviewer" ? "bg-mist-100" : phase === "listening" ? "bg-lume" : "bg-mist-400")} aria-hidden />
+                    <span className="font-medium text-mist-100">{active.name} · {active.title}</span>
+                    <span className="font-mono text-[11px] text-mist-400">AI</span>
+                  </p>
+                  <div className="mt-2 min-h-[4.25rem]">
+                    {showQuestion && <p className="font-display text-[clamp(1.2rem,1rem+0.8vw,1.65rem)] leading-snug text-mist-100">{question}</p>}
+                  </div>
+                  {stage === "live" && ui?.phase === "listening" && ui.inputMode === "text" && (
+                    <form onSubmit={(e) => { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); }} className="mt-3 flex items-end gap-2">
+                      <textarea autoFocus value={typed} onChange={(e) => { controller.current?.noteKeystroke(); setTyped(e.target.value); }} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); } }}
+                        rows={2} placeholder="Type your answer — Enter to send" aria-label="Your answer" className="flex-1 resize-none rounded-md border border-line-strong bg-ink-900 px-3.5 py-2.5 text-[16px] leading-relaxed outline-none transition-colors focus:border-lume" />
+                      <Button type="submit" disabled={!typed.trim()}>Send</Button>
+                    </form>
+                  )}
+                  {stage === "live" && ui?.hint && <p className="mt-3 text-callout text-mist-300">{ui.hint}</p>}
+                </div>
+              </div>
+            </main>
+
+            {/* The rail: context you can glance at without leaving the conversation. */}
+            <aside aria-label="About this interview" className="hidden w-[300px] shrink-0 flex-col border-l border-line xl:flex">
+              <div className="border-b border-line px-5 py-4">
+                <p className="text-[12px] font-medium text-mist-400">{props.seats.length > 1 ? `Panel of ${props.seats.length}` : "Interviewer"}</p>
+                <p className="mt-1 text-callout text-mist-100">{props.seats.map((x) => callName(x.name, x.style)).join(", ")}</p>
+                <p className="mt-0.5 text-[13px] text-mist-400">{props.seats.length > 1 ? "They hand off and cross-question" : active.title} · pressure {props.pressure}/5</p>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                <p className="text-[12px] font-medium text-mist-400">Questions so far</p>
+                {asked.length ? (
+                  <ol className="mt-3 space-y-4">
+                    {asked.map((q, i) => (
+                      <li key={i} className="grid grid-cols-[2.6rem_minmax(0,1fr)] gap-x-2">
+                        <span className="pt-0.5 font-mono text-[11px] tabular text-mist-400">{Math.floor(q.t / 60000)}:{String(Math.floor((q.t % 60000) / 1000)).padStart(2, "0")}</span>
+                        <span>
+                          <span className="block text-[12px] text-mist-400">{q.who}</span>
+                          <span className={cn("block font-display text-[15px] leading-snug", i === asked.length - 1 ? "text-mist-100" : "text-mist-300")}>{q.text}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                ) : <p className="mt-3 text-[13px] text-mist-400">Each question collects here once it has been asked.</p>}
+              </div>
+              <div className="border-t border-line px-5 py-4">
+                <p className="text-[12px] font-medium text-mist-400">Keyboard</p>
+                <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 text-[13px] text-mist-300">
+                  {([["Space", "Done answering"], ["M", "Mute or unmute"], ["C", "Captions"], ["T", "Type or speak"]] as const).map(([k, v]) => (
+                    <div key={k} className="contents"><dt><Kbd>{k}</Kbd></dt><dd>{v}</dd></div>
+                  ))}
+                </dl>
+                <p className="mt-3 text-[12px] text-mist-400">No scores on screen while you talk.</p>
+              </div>
+            </aside>
           </div>
-        )}
-        <div className="w-24" />
-      </header>
 
-      {/* Candidate camera (secondary) */}
-      {devices?.cam && (stage === "live" || stage === "entering" || stage === "ending") && (
-        <div className="absolute bottom-28 right-5 z-10 aspect-video w-[min(26vw,300px)] min-w-[150px] overflow-hidden rounded-2xl border hairline-strong bg-ink-900 shadow-2xl sm:right-8">
-          <video ref={videoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" />
-          <span className="absolute bottom-2 left-2.5 font-mono text-[10px] text-white/70">You</span>
-          {phase === "listening" && ui?.inputMode === "voice" && <MicRing controller={controller.current} />}
+          {/* Controls */}
+          <footer className="shrink-0 border-t border-line px-3 py-3 sm:px-6">
+            {stage === "live" ? (
+              <nav aria-label="Interview controls" className="flex items-center gap-1.5 sm:gap-2">
+                <button type="button" onClick={toggleMute} disabled={!devices?.mic} aria-label={muted ? "Unmute" : "Mute"} aria-keyshortcuts="M"
+                  className={cn("flex h-9 items-center gap-2 rounded-md border px-3 text-[13px] font-medium transition-colors disabled:opacity-40", muted ? "border-signal-bad/50 text-signal-bad" : "border-line-strong text-mist-100 hover:border-ink-500")}>
+                  {muted ? "Mic off" : <><MicMeter controller={controller.current} live={phase === "listening" && ui?.inputMode === "voice"} />Mic</>}
+                  <Kbd className="hidden md:inline-grid">M</Kbd>
+                </button>
+                <Ctl label="Captions" on={captions} onClick={() => setCaptions(!captions)} shortcut="C">CC</Ctl>
+                {ui?.inputMode === "voice"
+                  ? <Ctl label="Type instead" onClick={() => controller.current?.switchToText()} shortcut="T">Type</Ctl>
+                  : devices?.mic ? <Ctl label="Speak instead" onClick={() => controller.current?.switchToVoice()} shortcut="T">Speak</Ctl> : null}
+                <p aria-live="polite" className="min-w-0 flex-1 truncate text-center text-[13px] text-mist-300">{status}</p>
+                {ui?.inputMode === "voice" && (
+                  <Button variant="secondary" size="md" disabled={ui?.phase !== "listening"} onClick={() => void controller.current?.finishAnswer(false)} aria-label="Done answering" aria-keyshortcuts="Space" className="h-9 px-3">
+                    <span className="hidden sm:inline">Done answering</span><span className="sm:hidden">Done</span><Kbd className="hidden md:inline-grid">Space</Kbd>
+                  </Button>
+                )}
+                <Button variant="danger" size="md" className="h-9 px-3.5" onClick={() => setConfirmEnd(true)}>End</Button>
+              </nav>
+            ) : <div className="h-9" />}
+          </footer>
         </div>
-      )}
-
-      {/* Captions (off by default) */}
-      {stage === "live" && captions && ui?.caption && (
-        <div className="absolute inset-x-0 bottom-40 z-10 mx-auto max-w-3xl px-6 text-center">
-          <p className="inline rounded-lg bg-ink-950/75 px-3 py-1.5 text-[15px] leading-relaxed text-mist-100 backdrop-blur">{ui.caption}</p>
-        </div>
-      )}
-
-      {/* Listening affordances: live transcript is hidden by default to keep it real; text mode input. */}
-      {stage === "live" && ui?.phase === "listening" && ui.inputMode === "text" && (
-        <form onSubmit={(e) => { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); }} className="absolute inset-x-0 bottom-28 z-20 mx-auto flex max-w-2xl gap-2 px-5">
-          <textarea autoFocus value={typed} onChange={(e) => { controller.current?.noteKeystroke(); setTyped(e.target.value); }} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); } }}
-            rows={2} placeholder="Type your answer — Enter to send" className="flex-1 resize-none rounded-2xl border hairline-strong bg-ink-900/85 px-4 py-3 text-[15px] outline-none backdrop-blur focus:border-lume/50" />
-          <Button type="submit" disabled={!typed.trim()} className="self-end">Send</Button>
-        </form>
-      )}
-      {stage === "live" && ui?.hint && <p className="absolute inset-x-0 bottom-44 z-10 mx-auto max-w-lg px-6 text-center text-sm text-mist-300">{ui.hint}</p>}
-
-      {/* Controls */}
-      {stage === "live" && (
-        <nav aria-label="Interview controls" className="absolute inset-x-0 bottom-8 z-20 flex items-center justify-center gap-2">
-          <Ctl label={muted ? "Unmute" : "Mute"} danger={muted} onClick={toggleMute} disabled={!devices?.mic}>{muted ? "Mic off" : "Mic"}</Ctl>
-          <Ctl label="Captions" on={captions} onClick={() => setCaptions(!captions)}>CC</Ctl>
-          {ui?.inputMode === "voice" ? (
-            <>
-              <Ctl label="Type instead" onClick={() => controller.current?.switchToText()}>Type</Ctl>
-              <Button variant="secondary" size="md" disabled={ui?.phase !== "listening"} onClick={() => void controller.current?.finishAnswer(false)} title="Done answering (Space)">Done answering</Button>
-            </>
-          ) : devices?.mic ? <Ctl label="Speak instead" onClick={() => controller.current?.switchToVoice()}>Speak</Ctl> : null}
-          <Button variant="danger" size="md" onClick={() => setConfirmEnd(true)}>End</Button>
-        </nav>
-      )}
-
-      {/* Status whisper (never a score) */}
-      {stage === "live" && (
-        <p aria-live="polite" className="absolute inset-x-0 bottom-[5.25rem] z-10 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-mist-400/70">
-          {phase === "starting" ? "Connecting" : phase === "listening" ? (ui?.inputMode === "text" ? "Your turn — type" : "Listening") : phase === "interviewer" ? "" : phase === "processing" ? "" : ""}
-          {ui?.voice === "browser" && phase === "interviewer" ? "Backup voice" : ""}
-        </p>
       )}
 
       {/* Consent */}
@@ -330,33 +390,33 @@ export function Room(props: RoomProps) {
       {/* Device check */}
       {stage === "check" && devices && (
         <div className="relative z-10 mx-auto grid min-h-dvh max-w-5xl items-center gap-10 px-5 py-20 lg:grid-cols-[1.2fr_1fr]">
-          <div className="relative aspect-video overflow-hidden rounded-3xl border hairline-strong bg-ink-900">
-            {devices.cam ? <video ref={checkVideoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" /> : <div className="grid h-full place-items-center text-sm text-mist-400">{devices.camError ?? "Camera off"}</div>}
-            {calib === "running" && <div className="absolute inset-0 grid place-items-center bg-ink-950/40"><p className="rounded-full bg-ink-950/80 px-4 py-2 text-sm">Look straight into your camera lens…</p></div>}
+          <div className="relative aspect-video overflow-hidden rounded-lg border border-line-strong bg-ink-900">
+            {devices.cam ? <video ref={checkVideoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" /> : <div className="grid h-full place-items-center text-callout text-mist-400">{devices.camError ?? "Camera off"}</div>}
+            {calib === "running" && <div className="absolute inset-0 grid place-items-center bg-ink-950/50"><p className="rounded-md bg-ink-950 px-4 py-2 text-callout">Look straight into your camera lens…</p></div>}
           </div>
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-mist-400">{props.resuming ? "Rejoining" : "Before you walk in"}</p>
-            <h1 className="mt-3 font-display text-5xl leading-tight">{props.resuming ? "Pick up where you left off." : "Check your setup."}</h1>
-            <ul className="mt-8 space-y-4 text-sm">
+            <p className="text-[13px] font-medium text-mist-400">{props.resuming ? "Rejoining" : "Before you walk in"}</p>
+            <h1 className="mt-3 text-title text-mist-100">{props.resuming ? "Pick up where you left off." : "Check your setup."}</h1>
+            <ul className="mt-8 border-t border-line text-callout">
               <Check ok={!!devices.mic} label={devices.mic ? "Microphone" : devices.micError ?? "Microphone off"}>
-                {devices.mic && <div className="mt-2 h-1 w-40 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-signal-good transition-[width] duration-100" style={{ width: `${micLevel * 100}%` }} /></div>}
-                {devices.mic && <p className="mt-1 text-xs text-mist-400">Say something — the bar should move.</p>}
+                {devices.mic && <div className="mt-2 h-0.5 w-40 overflow-hidden bg-line-strong"><div className="h-full origin-left bg-lume transition-transform duration-100" style={{ transform: `scaleX(${micLevel})` }} /></div>}
+                {devices.mic && <p className="mt-1.5 text-[13px] text-mist-400">Say something; the line should move.</p>}
               </Check>
               <Check ok={!!devices.cam} label={devices.cam ? "Camera" : devices.camError ?? "Camera off"} />
-              <Check ok={!devices.mic ? false : LiveTranscriber.supported() || props.serverStt} label={!devices.mic ? "Text mode — you'll type your answers" : LiveTranscriber.supported() ? "Live speech recognition" : props.serverStt ? "Server transcription (answers are transcribed after you finish)" : "No speech recognition — you'll type"} />
+              <Check ok={!devices.mic ? false : LiveTranscriber.supported() || props.serverStt} label={!devices.mic ? "Text mode — you'll type your answers" : LiveTranscriber.supported() ? "Live speech recognition" : props.serverStt ? "Server transcription (answers are transcribed after you finish)" : "No speech recognition, so you'll type"} />
               {consent?.cameraMetrics && devices.cam && (
-                <Check ok={calib === "done"} label={calib === "done" ? "Camera lens calibrated" : calib === "unavailable" ? "On-device tracking unavailable — camera signals will be skipped" : "Calibrate to measure camera engagement and posture (skip it and we won't measure gaze, slouch or lean)"}>
+                <Check ok={calib === "done"} label={calib === "done" ? "Camera lens calibrated" : calib === "unavailable" ? "On-device tracking unavailable, so camera signals will be skipped" : "Calibrate to measure camera engagement and posture (skip it and we won't measure gaze, slouch or lean)"}>
                   {calib !== "done" && calib !== "unavailable" && <Button size="sm" variant="secondary" className="mt-2" onClick={calibrate} loading={calib === "running"} disabled={!visionReady}>{visionReady ? "Sit as you normally would and look at the lens for 2 seconds" : "Loading on-device model…"}</Button>}
-                  {calib === "failed" && <p className="mt-1 text-xs text-signal-warn">We couldn&apos;t see your face clearly. Check your lighting and try again.</p>}
+                  {calib === "failed" && <p className="mt-1.5 text-[13px] text-signal-warn">We couldn&apos;t see your face clearly. Check your lighting and try again.</p>}
                 </Check>
               )}
               {consent?.cameraMetrics && props.privacy.posture && devices.cam && calib === "done" && (
                 <Check ok={postureReady} label={postureReady ? "Posture" : "Posture: shoulders not in view"}>
                   {postureReady ? (
-                    <p className="mt-1 text-xs text-mist-400" aria-live="polite">Right now: <span className="text-mist-100">{livePosture ?? "…"}</span>. Try sitting back or leaning in. Nothing here is saved.</p>
+                    <p className="mt-1.5 text-[13px] text-mist-400" aria-live="polite">Right now: <span className="text-mist-100">{livePosture ?? "…"}</span>. Try sitting back or leaning in. Nothing here is saved.</p>
                   ) : (
                     <>
-                      <p className="mt-1 text-xs text-signal-warn">Sit back a little or tilt your camera down so your shoulders are in view, then recalibrate. Without that we can measure sway, but not slouch.</p>
+                      <p className="mt-1.5 text-[13px] text-signal-warn">Sit back a little or tilt your camera down so your shoulders are in view, then recalibrate. Without that we can measure sway, but not slouch.</p>
                       <Button size="sm" variant="secondary" className="mt-2" onClick={calibrate}>Recalibrate</Button>
                     </>
                   )}
@@ -365,28 +425,31 @@ export function Room(props: RoomProps) {
             </ul>
             {(devices.micError || devices.camError) && <p className="mt-6 text-[13px] text-mist-400">To allow access later, use the camera icon in your browser&apos;s address bar, then reload.</p>}
             <div className="mt-10 flex gap-3">
-              <Button variant="lume" size="lg" onClick={enter}>{props.resuming ? "Rejoin the Room" : "Enter the Room"}</Button>
+              <Button size="lg" onClick={enter}>{props.resuming ? "Rejoin the Room" : "Enter the Room"}</Button>
               <Button variant="ghost" size="lg" onClick={() => router.push("/practice")}>Back</Button>
             </div>
           </div>
         </div>
       )}
 
-      {(stage === "entering" || (stage === "live" && phase === "starting")) && (
-        <p className="absolute inset-x-0 top-1/2 z-10 text-center font-display text-3xl text-mist-300 opacity-80">{stage === "entering" ? "Entering the room…" : ""}</p>
+      {stage === "entering" && (
+        <div className="absolute inset-0 z-10 grid place-items-center"><Thinking label="Entering the room" className="text-body" /></div>
       )}
 
       {(stage === "ending" || phase === "ending" || phase === "ended") && (
-        <div className="absolute inset-0 z-30 grid place-items-center bg-ink-950/70 backdrop-blur-sm">
-          <div className="text-center"><p className="font-display text-4xl">{ui?.complete ? "That's the interview." : "Wrapping up…"}</p><p className="mt-3 text-sm text-mist-400">Saving your session and preparing your Read.</p></div>
+        <div className="absolute inset-0 z-30 grid place-items-center bg-ink-950/90">
+          <div className="text-center">
+            <p className="text-title text-mist-100">{ui?.complete ? "That's the interview." : "Wrapping up."}</p>
+            <p className="mt-4"><Thinking label="Saving your session and preparing your Read" /></p>
+          </div>
         </div>
       )}
 
       {/* Recovery */}
       <Modal open={stage === "live" && phase === "error"} onClose={() => {}} title="Connection problem" dismissible={false}>
         <div className="p-8">
-          <h2 className="font-display text-3xl">{ui?.error?.message ?? "We lost the interviewer connection."}</h2>
-          <p className="mt-3 text-sm text-mist-300">Everything you&apos;ve said so far is saved.</p>
+          <h2 className="text-title text-mist-100">{ui?.error?.message ?? "We lost the interviewer connection."}</h2>
+          <p className="mt-3 text-callout text-mist-300">Everything you&apos;ve said so far is saved.</p>
           <div className="mt-7 flex flex-wrap gap-2">
             <Button onClick={() => void controller.current?.retry()}>Reconnect</Button>
             {!voiceOnly && <Button variant="secondary" onClick={() => { setVoiceOnly(true); void controller.current?.retry(); }}>Continue with voice</Button>}
@@ -397,8 +460,8 @@ export function Room(props: RoomProps) {
 
       <Modal open={confirmEnd} onClose={() => setConfirmEnd(false)} title="End the interview?">
         <div className="p-8">
-          <h2 className="font-display text-3xl">End the interview?</h2>
-          <p className="mt-3 text-sm text-mist-300">You&apos;ll still get a Read and Playback for everything you said so far.</p>
+          <h2 className="text-title text-mist-100">End the interview?</h2>
+          <p className="mt-3 text-callout text-mist-300">You&apos;ll still get a Read and Playback for everything you said so far.</p>
           <div className="mt-7 flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setConfirmEnd(false)}>Keep going</Button>
             <Button variant="danger" onClick={endNow}>End and see my Read</Button>
@@ -409,21 +472,47 @@ export function Room(props: RoomProps) {
   );
 }
 
-function Ctl({ children, label, on, onClick, disabled, danger }: { children: ReactNode; label: string; on?: boolean; onClick: () => void; disabled?: boolean; danger?: boolean }) {
+function Kbd({ children, className }: { children: ReactNode; className?: string }) {
+  return <kbd className={cn("inline-grid h-5 min-w-5 place-items-center rounded-sm border border-line-strong px-1 font-mono text-[11px] leading-none text-mist-300", className)}>{children}</kbd>;
+}
+
+function Ctl({ children, label, on, onClick, disabled, shortcut }: { children: ReactNode; label: string; on?: boolean; onClick: () => void; disabled?: boolean; shortcut?: string }) {
   return (
-    <button type="button" aria-label={label} aria-pressed={on} onClick={onClick} disabled={disabled}
-      className={cn("h-10 min-w-10 rounded-full border px-4 text-[13px] transition-colors disabled:opacity-40", danger ? "border-signal-bad/40 bg-signal-bad/15 text-signal-bad" : on ? "border-lume/40 bg-lume/10 text-lume" : "hairline-strong bg-ink-950/60 text-mist-200 hover:bg-white/10 backdrop-blur")}>
+    <button type="button" aria-label={label} aria-pressed={on} aria-keyshortcuts={shortcut} onClick={onClick} disabled={disabled}
+      className={cn("flex h-9 items-center gap-2 rounded-md border px-3 text-[13px] font-medium transition-colors disabled:opacity-40", on ? "border-lume bg-bronze text-lume-soft" : "border-line-strong text-mist-200 hover:border-ink-500 hover:text-mist-100")}>
       {children}
+      {shortcut && <Kbd className="hidden md:inline-grid">{shortcut}</Kbd>}
     </button>
   );
 }
 
 function Check({ ok, label, children }: { ok: boolean; label: string; children?: ReactNode }) {
   return (
-    <li className="flex gap-3">
-      <span className={cn("mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[11px]", ok ? "bg-signal-good/15 text-signal-good" : "bg-white/[0.06] text-mist-400")}>{ok ? "✓" : "–"}</span>
+    <li className="flex gap-3 border-b border-line py-3">
+      <span className={cn("w-4 shrink-0 pt-px font-mono text-[13px]", ok ? "text-signal-good" : "text-mist-400")} aria-hidden>{ok ? "✓" : "–"}</span>
       <div><p className={ok ? "text-mist-100" : "text-mist-300"}>{label}</p>{children}</div>
     </li>
+  );
+}
+
+/** Four bars that follow your voice while you answer; still when you're not being heard. */
+function MicMeter({ controller, live }: { controller: RoomController | null; live: boolean }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    let raf = 0;
+    const loop = () => {
+      const bars = ref.current?.children;
+      const l = live && controller ? controller.micLevel : 0;
+      if (bars) for (let i = 0; i < bars.length; i++) (bars[i] as HTMLElement).style.transform = `scaleY(${Math.max(0.2, Math.min(1, l * (1.6 - i * 0.25) + 0.12))})`;
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [controller, live]);
+  return (
+    <span ref={ref} className="flex h-3.5 items-center gap-[2px]" aria-hidden>
+      {[0, 1, 2, 3].map((i) => <span key={i} className={cn("h-full w-[2px] origin-center rounded-full", live ? "bg-lume" : "bg-mist-400")} />)}
+    </span>
   );
 }
 
@@ -432,24 +521,24 @@ function MicRing({ controller }: { controller: RoomController | null }) {
   useEffect(() => {
     let raf = 0;
     const loop = () => {
-      if (ref.current && controller) ref.current.style.boxShadow = `inset 0 0 0 ${1 + controller.micLevel * 3}px rgba(156,199,164,${0.25 + controller.micLevel * 0.6})`;
+      if (ref.current && controller) ref.current.style.boxShadow = `inset 0 0 0 ${1 + controller.micLevel * 3}px rgba(163,171,139,${0.3 + controller.micLevel * 0.6})`;
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, [controller]);
-  return <div ref={ref} className="pointer-events-none absolute inset-0 rounded-2xl" />;
+  return <div ref={ref} className="pointer-events-none absolute inset-0 rounded-lg" />;
 }
 
-/** Voice-only interviewer: a breathing orb driven by the same voice level. */
-function VoiceOrb({ provider, name }: { provider: LocalAvatarProvider; name: string }) {
+/** Voice-only interviewer: Oriel's own face, breathing with the same voice level. */
+function VoiceFace({ provider, name }: { provider: LocalAvatarProvider; name: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let raf = 0;
     const loop = () => {
       const l = provider.store.level();
       const t = performance.now() / 1000;
-      if (ref.current) ref.current.style.transform = `scale(${1 + Math.sin(t * 1.4) * 0.015 + l * 0.18})`;
+      if (ref.current) ref.current.style.transform = `scale(${1 + Math.sin(t * 1.4) * 0.015 + l * 0.12})`;
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -458,8 +547,8 @@ function VoiceOrb({ provider, name }: { provider: LocalAvatarProvider; name: str
   return (
     <div className="absolute inset-0 grid place-items-center">
       <div className="text-center">
-        <div ref={ref} className="mx-auto size-48 rounded-full bg-[radial-gradient(circle_at_40%_35%,var(--color-lume-soft),var(--color-lume-deep)_45%,transparent_72%)] opacity-80 blur-[1px]" />
-        <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-mist-400">{name} · voice mode</p>
+        <div ref={ref} className="mx-auto size-40"><LogoMark className="size-full" /></div>
+        <p className="mt-6 text-[13px] text-mist-400">{name}, voice only</p>
       </div>
     </div>
   );

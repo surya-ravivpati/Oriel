@@ -26,7 +26,7 @@ export function ConsentDialog({ open, defaults, recordingAllowed, onConfirm, onC
   return (
     <Modal open={open} onClose={onCancel} title="Before you enter the room" dismissible={false} className="w-[min(620px,calc(100vw-32px))]">
       <div className="max-h-[calc(100dvh-48px)] overflow-y-auto p-7 sm:p-9">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-lume">Before you enter</p>
+        <p className="text-[12px] text-lume font-medium">Before you enter</p>
         <h2 className="mt-3 font-display text-4xl leading-tight">Your interviewer is an AI.</h2>
         <p className="mt-3 text-[15px] leading-relaxed text-mist-300">The face and voice are simulated for practice. It will remember what you say during this session and may push back. Nothing is scored on screen while you talk.</p>
         <div className="mt-6 divide-y divide-white/[0.06] border-y hairline">
@@ -36,7 +36,7 @@ export function ConsentDialog({ open, defaults, recordingAllowed, onConfirm, onC
           <Toggle checked={c.cameraMetrics} disabled={!c.camera} onChange={(v) => set("cameraMetrics", v)} label="Camera-based signals (on-device)" description={CONSENT_COPY.camera_metrics} />
         </div>
         {c.cameraMetrics && (
-          <div className="mt-5 rounded-2xl border border-lume/25 bg-lume/[0.04] p-4">
+          <div className="mt-5 rounded-lg border border-lume-deep bg-bronze p-4">
             <p className="text-[13px] leading-relaxed text-mist-200">{CONSENT_COPY.camera_metrics_release}</p>
             <label className="mt-3 block text-[12px] text-mist-400" htmlFor="consent-signature">Type your full name to sign</label>
             <Input id="consent-signature" className="mt-1.5" value={signature} onChange={(e) => setSignature(e.target.value)} placeholder="Full name" autoComplete="name" />

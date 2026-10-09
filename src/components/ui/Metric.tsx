@@ -27,24 +27,24 @@ export function Metric({ label, value, unit, low, high, targetLow, targetHigh, c
   const pct = (v: number) => `${Math.max(0, Math.min(100, (v / max) * 100))}%`;
   const inTarget = value !== null && targetLow != null && targetHigh != null && value >= targetLow && value <= targetHigh;
   return (
-    <div className="rounded-2xl border hairline bg-white/[0.02] p-5">
+    <div className="border-t border-line pb-2 pt-4">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[13px] text-mist-300">{label}</p>
         <ConfidenceMark confidence={confidence} />
       </div>
       <p className="mt-3 flex items-baseline gap-1.5">
-        <span className="font-display text-[44px] leading-none tracking-tight tabular">{value === null ? "—" : fmt(value)}</span>
+        <span className="font-mono text-[34px] leading-none tracking-[-0.02em] tabular text-mist-100">{value === null ? "—" : fmt(value)}</span>
         <span className="text-sm text-mist-400">{unit}</span>
       </p>
       {value !== null && (targetLow != null || low != null) && (
-        <div className="relative mt-5 h-1.5 rounded-full bg-white/[0.05]" aria-hidden>
-          {targetLow != null && targetHigh != null && <div className="absolute inset-y-0 rounded-full bg-signal-good/20" style={{ left: pct(targetLow), width: `calc(${pct(targetHigh)} - ${pct(targetLow)})` }} />}
-          {low != null && high != null && <div className="absolute inset-y-[-2px] rounded-full border border-mist-300/40" style={{ left: pct(low), width: `calc(${pct(high)} - ${pct(low)})` }} />}
+        <div className="relative mt-5 h-1 bg-line" aria-hidden>
+          {targetLow != null && targetHigh != null && <div className="absolute inset-y-0 bg-signal-good/30" style={{ left: pct(targetLow), width: `calc(${pct(targetHigh)} - ${pct(targetLow)})` }} />}
+          {low != null && high != null && <div className="absolute inset-y-[-3px] border-x border-mist-300/60" style={{ left: pct(low), width: `calc(${pct(high)} - ${pct(low)})` }} />}
           <div className={cn("absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full", inTarget ? "bg-signal-good" : "bg-lume")} style={{ left: pct(value) }} />
         </div>
       )}
       {(targetLow != null && targetHigh != null) && value !== null && (
-        <p className="mt-2 text-[11px] text-mist-400 font-mono">target {fmt(targetLow)}–{fmt(targetHigh)}{low != null && high != null ? ` · your range ${fmt(low)}–${fmt(high)}` : ""}</p>
+        <p className="mt-2 font-mono text-[11px] text-mist-400">target {fmt(targetLow)}–{fmt(targetHigh)}{low != null && high != null ? ` · your range ${fmt(low)}–${fmt(high)}` : ""}</p>
       )}
       {note && <p className="mt-3 text-[13px] leading-relaxed text-mist-300">{note}</p>}
     </div>
