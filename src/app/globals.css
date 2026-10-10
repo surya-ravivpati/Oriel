@@ -14,6 +14,14 @@
  * option. Never a glow, never a gradient.
  */
 @theme {
+  /*
+   * Only Oriel's tokens exist. Tailwind's default palette, radii and type sizes are switched off,
+   * so an off-system value (bg-red-500, rounded-xl, text-2xl) generates nothing and shows up in review.
+   */
+  --color-*: initial;
+  --radius-*: initial;
+  --text-*: initial;
+
   /* The studio: warm low-light surfaces. Ink is the room, surfaces are the furniture. */
   --color-ink: #151515;        /* page */
   --color-surface-1: #20201e;  /* section bands; the interview preview frame */
@@ -29,28 +37,6 @@
   --color-ivory-press: #ddd8ce;   /* an ivory fill under the pointer */
   --color-olive-ground: #23261d;  /* the ground under a chosen option */
 
-  /* Legacy names, mapped onto the tokens above so every existing page reads the same values. */
-  --color-ink-950: #151515;
-  --color-ink-900: #20201e;
-  --color-ink-850: #232321;
-  --color-ink-800: #272622;
-  --color-ink-700: #2a2a27;
-  --color-ink-600: #33332f;
-  --color-ink-500: #45443f;
-  --color-line: rgb(245 242 235 / 0.12);
-  --color-line-strong: rgb(245 242 235 / 0.2);
-  --color-mist-100: #f5f2eb;
-  --color-mist-200: #ddd8ce;
-  --color-mist-300: #b7b0a4;
-  --color-mist-400: #948e84;
-  --color-lume: #8c957a;
-  --color-lume-glow: #a3ab8b;
-  --color-lume-soft: #d2d6c3;
-  --color-lume-deep: #555c4a;
-  --color-bronze: #23261d;
-  --color-accent: #8c957a;
-  --color-accent-deep: #555c4a;
-  --color-accent-ground: #23261d;
   /* Signals describe measurements inside the app only; the marketing pages use no other hues. */
   --color-signal-good: #93bf8a;
   --color-signal-warn: #d6a45e;
@@ -75,48 +61,17 @@
   --text-display-m--font-weight: 400;
   --text-body-l: clamp(1.125rem, 1.07rem + 0.25vw, 1.25rem);
   --text-body-l--line-height: 1.5;
+  --text-body: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --text-body--line-height: 1.6;
   --text-ui: clamp(0.875rem, 0.85rem + 0.12vw, 0.9375rem);
   --text-ui--line-height: 1.4;
   --text-meta: clamp(0.75rem, 0.73rem + 0.1vw, 0.8125rem);
   --text-meta--line-height: 1.4;
   --text-meta--letter-spacing: 0.01em;
 
-  /* Legacy names used by the app. hero = display-xl, display = display-l. */
-  --text-hero: clamp(2.5rem, 1.5rem + 5vw, 6.5rem);
-  --text-hero--line-height: 1;
-  --text-hero--letter-spacing: -0.015em;
-  --text-hero--font-weight: 400;
-  --text-display: clamp(2rem, 1.25rem + 2.6vw, 3.5rem);
-  --text-display--line-height: 1.08;
-  --text-display--letter-spacing: -0.01em;
-  --text-display--font-weight: 400;
-  --text-title: clamp(1.75rem, 1.3rem + 1.3vw, 2.5rem);
-  --text-title--line-height: 1.1;
-  --text-title--letter-spacing: -0.01em;
-  --text-title--font-weight: 400;
-  --text-headline: 1.25rem;
-  --text-headline--line-height: 1.3;
-  --text-headline--letter-spacing: -0.01em;
-  --text-headline--font-weight: 600;
-  --text-lead: clamp(1.125rem, 1.07rem + 0.25vw, 1.25rem);
-  --text-lead--line-height: 1.5;
-  --text-body: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
-  --text-body--line-height: 1.6;
-  --text-callout: 0.9375rem;
-  --text-callout--line-height: 1.55;
-  --text-caption: 0.8125rem;
-  --text-caption--line-height: 1.45;
-
-  /* Radii: small and square-shouldered. Nothing in the interface is a pill except a switch. */
-  --radius-xs: 3px;
+  /* Four radii, nothing else: tight marks (checkboxes, key caps, menu rows), controls, buttons,
+     and panels (dialogs, recordings, the preview). Only switches and dots are fully round. */
   --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
-  --radius-2xl: 12px;
-  --radius-3xl: 14px;
-
-  /* Three radii for the marketing system: small controls, buttons, large panels. */
   --radius-control: 6px;
   --radius-button: 10px;
   --radius-panel: 16px;
@@ -188,7 +143,7 @@
 
 @layer utilities {
   /* Display steps are always set in the serif: Oriel's voice. */
-  .text-hero, .text-display, .text-title, .text-display-xl, .text-display-l, .text-display-m { font-family: var(--font-display); font-optical-sizing: auto; }
+  .text-display-xl, .text-display-l, .text-display-m { font-family: var(--font-display); font-optical-sizing: auto; }
   .text-balance { text-wrap: balance; }
   /* Hanging punctuation: an opening quote sits in the margin so the words keep the column's edge.
      The indent is the measured width of “ in Newsreader (.hang) and Schibsted Grotesk (.hang-sans). */

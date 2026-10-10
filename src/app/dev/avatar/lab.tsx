@@ -36,7 +36,7 @@ export function AvatarLab() {
       <div className="flex flex-wrap gap-2 p-4 text-ui">
         {(["idle", "listening", "thinking", "speaking", "interrupting"] as AvatarState[]).map((m) => <button key={m} onClick={() => set(m)} className="rounded-full border border-ivory/15 px-3 py-1">{m}</button>)}
         {(["nod", "brow_raise", "lean_in", "gaze_shift"] as const).map((c) => <button key={c} onClick={() => store.fireCue(c)} className="rounded-full border border-olive-light/40 px-3 py-1 text-olive-light">{c}</button>)}
-        <select value={persona} onChange={(e) => setPersona(e.target.value as PersonaId)} className="bg-surface-2 rounded px-2">{Object.keys(PERSONAS).map((p) => <option key={p}>{p}</option>)}</select>
+        <select value={persona} onChange={(e) => setPersona(e.target.value as PersonaId)} className="bg-surface-2 rounded-control px-2">{Object.keys(PERSONAS).map((p) => <option key={p}>{p}</option>)}</select>
         <button onClick={() => setPanel(!panel)} className="rounded-full border border-ivory/15 px-3 py-1">panel: {String(panel)}</button>
         {panel && [0, 1, 2].map((i) => <button key={i} onClick={() => { store.activeSeat = i; }} className="rounded-full border border-ivory/15 px-3 py-1">speaker {i}</button>)}
         <button onClick={() => { setFamily(!family); }} className="rounded-full border border-ivory/15 px-3 py-1">family: {String(family)}</button>
