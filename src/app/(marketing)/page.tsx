@@ -1,7 +1,6 @@
 import { getCurrentUser } from "@/lib/auth/session";
 import { Hero } from "@/components/marketing/Hero";
-import { Session } from "@/components/marketing/Session";
-import { Cast, Closing, Pricing, Privacy, Why } from "@/components/marketing/Chapters";
+import { Closing, Feedback, HowItWorks, Interview, Pricing, Privacy } from "@/components/marketing/sections";
 
 export default async function Landing() {
   const user = await getCurrentUser();
@@ -9,9 +8,9 @@ export default async function Landing() {
   return (
     <main id="content" className="overflow-x-clip">
       <Hero cta={cta} signedIn={!!user} />
-      <Why />
-      <Session />
-      <Cast />
+      <HowItWorks />
+      <Interview />
+      <Feedback />
       <Privacy />
       <Pricing cta={cta} />
       <Closing cta={cta} signedIn={!!user} />
