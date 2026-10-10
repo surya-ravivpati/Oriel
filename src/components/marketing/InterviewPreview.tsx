@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Interviewer, type InterviewerState } from "@/components/brand/Interviewer";
 import { cn } from "@/components/ui/cn";
 
@@ -13,7 +13,7 @@ import { cn } from "@/components/ui/cn";
 const QUESTION = "Tell me about a time you had to make a decision without all the data you wanted.";
 const FOLLOW_UP = "What would you have done if the holdout had been inconclusive?";
 const ANSWER = "Last spring we had two weeks to decide whether to retire our old onboarding flow. The usage data was incomplete, so I set a decision date, ran a one-week holdout with ten percent of new users, and agreed with the team up front on what result would change our minds…".split(" ");
-const STILL = 33; // the composed state stops mid-answer, after "…ten percent of new users,"
+const STILL = 15; // the composed state: the answer's first sentence, "…to retire our old onboarding flow."
 const LIVE = 6;   // the most recent words are set in ivory, as if still being spoken
 const WORD_MS = 400;
 
@@ -29,7 +29,10 @@ export function InterviewPreview() {
   const [visible, setVisible] = useState(true);
   const [blink, setBlink] = useState(false);
   const root = useRef<HTMLElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const words = useRef<HTMLParagraphElement>(null);
   const running = motionOk && !userPaused && !held.hover && !held.focus && inView && visible;
+  const said = scene.phase === "answer" ? scene.shown : 0;
 
   // Environment: reduced motion, visibility on screen, tab visibility. Read after hydration only.
   useEffect(() => {
@@ -65,8 +68,27 @@ export function InterviewPreview() {
     return () => { clearTimeout(id); clearTimeout(open); };
   }, [running, blink]);
 
+  // The answer scrolls like captions. Every word is laid out from the start (unspoken ones are
+  // transparent), and a new line lifts the text with a transform, never a layout change, so the
+  // loop causes no layout shift. Earlier lines fade at the top only once the text has lifted.
+  useLayoutEffect(() => {
+    const b = box.current, p = words.current;
+    if (!b || !p) return;
+    const place = () => {
+      const last = said > 0 ? (p.children[said - 1] as HTMLElement | undefined) : undefined;
+      const line = parseFloat(getComputedStyle(p).lineHeight);
+      const lift = last ? Math.max(0, (Math.floor(last.offsetTop / line) + 1) * line - b.clientHeight) : 0;
+      p.style.transition = said === 0 ? "none" : "";
+      p.style.transform = lift ? `translateY(${-lift}px)` : "";
+      b.dataset.lifted = String(lift > 0);
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(b);
+    return () => ro.disconnect();
+  }, [said]);
+
   const question = scene.phase === "follow" || scene.phase === "rest" ? FOLLOW_UP : QUESTION;
-  const said = scene.phase === "answer" ? scene.shown : 0;
   const state: InterviewerState = scene.phase === "ask" || scene.phase === "follow" ? "speaking" : "listening";
   const label = state === "speaking" ? "Asking" : "Listening";
 
@@ -88,14 +110,13 @@ export function InterviewPreview() {
         </div>
         <div className="flex items-center gap-4">
           <p className="hidden text-meta text-stone-dim sm:block" aria-hidden>Sample session</p>
-          {motionOk && (
-            <button type="button" onClick={() => setUserPaused((p) => !p)} aria-label={userPaused ? "Play the sample interview" : "Pause the sample interview"}
-              className="-my-2.5 -mr-3 grid size-11 place-items-center rounded-control text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">
-              <svg viewBox="0 0 12 12" className="size-3" aria-hidden>
-                {userPaused ? <path d="M3 1.8v8.4l7-4.2z" fill="currentColor" /> : <path d="M3 2h2v8H3zM7 2h2v8H7z" fill="currentColor" />}
-              </svg>
-            </button>
-          )}
+          {/* Always laid out, so its arrival after hydration moves nothing; hidden (and unfocusable) without motion. */}
+          <button type="button" onClick={() => setUserPaused((p) => !p)} aria-label={userPaused ? "Play the sample interview" : "Pause the sample interview"}
+            className={cn("-my-3 -mr-3 grid size-11 place-items-center rounded-control text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory", !motionOk && "invisible")}>
+            <svg viewBox="0 0 12 12" className="size-3" aria-hidden>
+              {userPaused ? <path d="M3 1.8v8.4l7-4.2z" fill="currentColor" /> : <path d="M3 2h2v8H3zM7 2h2v8H7z" fill="currentColor" />}
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -104,16 +125,22 @@ export function InterviewPreview() {
           <Interviewer size={140} state={state} blink={blink && running} className="w-[72px] sm:w-[120px] lg:w-[140px]" />
           <p className="flex items-center gap-2 text-ui text-stone sm:justify-center">
             <span className={cn("size-1.5 rounded-full bg-olive-light transition-opacity duration-[var(--dur-state)]", state === "speaking" && "opacity-40")} />
-            {label}
+            {/* Both words share one cell, so the line keeps the longer word's width as the state changes. */}
+            <span className="grid">
+              <span className="col-start-1 row-start-1">{label}</span>
+              <span className="invisible col-start-1 row-start-1">{label === "Asking" ? "Listening" : "Asking"}</span>
+            </span>
           </p>
         </div>
         <div className="col-span-4 sm:col-span-5 lg:col-span-6 lg:pr-12">
           <p className="text-ui text-stone-dim">Oriel</p>
           <p key={question} className={cn("hang mt-1 min-h-[5em] text-display-m text-ivory sm:min-h-[3.75em]", running && "animate-[fade-in_var(--dur-panel)_var(--ease-enter)]")}>“{question}”</p>
           <p className="mt-6 text-ui text-stone-dim">You</p>
-          <div className="mt-1 flex h-[4.8em] flex-col justify-end overflow-hidden text-body [mask-image:linear-gradient(to_bottom,transparent,black_45%)] sm:h-[4.8em]">
-            <p className="text-stone">
-              {ANSWER.slice(0, said).map((w, i) => <span key={i} className={cn(i >= said - LIVE && "text-ivory")}>{w} </span>)}
+          <div ref={box} className="relative mt-1 h-[4.8em] overflow-hidden text-body data-[lifted=true]:[mask-image:linear-gradient(to_bottom,transparent,black_45%)]">
+            <p ref={words} className="text-stone [text-wrap:wrap] transition-transform duration-[var(--dur-panel)] ease-[var(--ease-enter)]">
+              {ANSWER.map((w, i) => (
+                <span key={i} className={cn(i >= said ? "opacity-0" : i >= said - LIVE && "text-ivory")}>{w} </span>
+              ))}
             </p>
           </div>
         </div>
