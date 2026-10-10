@@ -3,7 +3,6 @@ import { requireUser } from "@/lib/auth/session";
 import { getDb, schema } from "@/db/client";
 import { activeSubscription, loadEntitlementContext } from "@/lib/billing/entitlement-context";
 import { PLANS } from "@/lib/billing/plans";
-import { Eyebrow } from "@/components/ui/Card";
 import { savedStyles } from "@/server/avatar-styles";
 import { ProfileClient } from "./profile-client";
 
@@ -21,9 +20,8 @@ export default async function ProfilePage() {
   const media = db.select().from(schema.mediaObjects).where(and(eq(schema.mediaObjects.userId, user.id), eq(schema.mediaObjects.status, "complete"))).all();
   return (
     <div>
-      <Eyebrow>Profile</Eyebrow>
-      <h1 className="mt-3 font-display text-5xl">{profile.name}</h1>
-      <p className="mt-2 text-stone-dim">{user.email} · {profile.targetRole}</p>
+      <h1 className="text-display-l text-ivory">{profile.name}</h1>
+      <p className="mt-3 text-body-l text-stone">{user.email} · {profile.targetRole}</p>
       <ProfileClient
         privacy={{ cameraMetricsEnabled: profile.cameraMetricsEnabled, gazeMetricEnabled: profile.gazeMetricEnabled, postureMetricEnabled: profile.postureMetricEnabled, recordVideo: profile.recordVideo, videoRetentionDays: profile.videoRetentionDays }}
         resume={resume ? { name: resume.fileName ?? "Pasted resume", roles: resume.parsed?.roles.map((r) => `${r.title}${r.organization ? ` · ${r.organization}` : ""}`) ?? [], createdAt: resume.createdAt.toISOString() } : null}
