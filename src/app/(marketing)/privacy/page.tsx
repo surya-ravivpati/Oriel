@@ -79,7 +79,7 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="Retention schedule" id="retention">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Retention schedule">
           <table className="w-full min-w-[560px] text-ui">
             <thead className="text-left text-meta text-stone-dim"><tr><th className="py-2 pr-4 font-normal">Data</th><th className="pr-4 font-normal">Kept for</th><th className="font-normal">How it is destroyed</th></tr></thead>
             <tbody>{RETENTION.map(([a, b, c]) => <tr key={a} className="border-t border-divider align-top"><td className="py-3 pr-4 text-ivory">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
@@ -88,7 +88,7 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="Who processes data for us" id="processors">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Who processes data for us">
           <table className="w-full min-w-[560px] text-ui">
             <thead className="text-left text-meta text-stone-dim"><tr><th className="py-2 pr-4 font-normal">Processor</th><th className="pr-4 font-normal">Purpose</th><th className="font-normal">Data involved</th></tr></thead>
             <tbody>{PROCESSORS.map(([a, b, c]) => <tr key={a} className="border-t border-divider align-top"><td className="py-3 pr-4 text-ivory">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>

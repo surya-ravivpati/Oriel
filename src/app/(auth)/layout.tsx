@@ -21,7 +21,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative flex min-h-dvh flex-col px-5 sm:px-8">
         <header className="flex h-14 items-center lg:hidden"><Link href="/" aria-label="Oriel home" className="-ml-1 inline-flex rounded-control p-1"><Logo /></Link></header>
         <main id="content" className="m-auto w-full max-w-[400px] py-12">{children}</main>
-        <p className="pb-6 text-center text-meta text-stone-dim lg:hidden">Practice only. Your interviewer is an AI.</p>
+        <footer className="pb-6 text-center text-meta text-stone-dim lg:hidden">Practice only. Your interviewer is an AI.</footer>
       </div>
     </div>
   );

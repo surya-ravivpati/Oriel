@@ -50,7 +50,7 @@ export default function TrustPage() {
                 ["Pause length error", `${Math.round(mean(abs(s.map((r) => r.error.pauseMs))))} ms`],
               ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-body-l text-ivory">{v}</p><p className="text-meta text-stone-dim">mean absolute</p></div>)}
             </div>
-            <div className="mt-6 overflow-x-auto">
+            <div className="mt-6 overflow-x-auto" tabIndex={0} role="region" aria-label="Speech measurement errors by accent">
               <table className="w-full min-w-[560px] text-ui">
                 <thead className="text-left text-meta text-stone-dim"><tr><th className="py-2 font-normal">Accent</th><th className="font-normal">Pace error</th><th className="font-normal">Filler error</th><th className="font-normal">First-word error</th></tr></thead>
                 <tbody>{[...byAccent].map(([label, rs]) => (
@@ -80,7 +80,7 @@ export default function TrustPage() {
                 ["Looking away recognised", `${Math.round((c.filter((r) => r.gaze === "away" && r.classifiedAs === "away").length / Math.max(1, c.filter((r) => r.gaze === "away").length)) * 100)}%`],
               ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-body-l text-ivory">{v}</p></div>)}
             </div>
-            <div className="mt-6 overflow-x-auto">
+            <div className="mt-6 overflow-x-auto" tabIndex={0} role="region" aria-label="Camera signal results">
               <table className="w-full min-w-[560px] text-ui">
                 <thead className="text-left text-meta text-stone-dim"><tr><th className="py-2 font-normal">Image</th><th className="font-normal">Skin tone · eyewear · covering · light</th><th className="font-normal">Truth</th><th className="font-normal">Estimate</th><th className="font-normal">Result</th></tr></thead>
                 <tbody>{c.map((r) => (

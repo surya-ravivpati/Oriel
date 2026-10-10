@@ -49,15 +49,16 @@ export function DrillCard({ drill, recommended, lastValue }: { drill: { id: stri
 
 export function LadderStep({ step, current }: { step: { level: number; name: string; description: string; unlocked: boolean; completed: boolean; qualifying: number; mode: string; personaIds: string[]; pressure: number }; current: boolean }) {
   return (
-    <div className={cn("relative grid grid-cols-[2.25rem_1fr] items-baseline gap-x-4 border-t py-5", current ? "border-olive-light" : "border-divider", !step.unlocked && "opacity-55")}>
+    <div className={cn("relative grid grid-cols-[2.25rem_1fr] items-baseline gap-x-4 border-t py-5", current ? "border-olive-light" : "border-divider")}>
       <span className={cn("font-display text-display-m leading-none", step.completed ? "text-signal-good" : current ? "text-olive-light" : "text-stone-dim")}>{step.level}</span>
       <div className="min-w-0">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <p className="text-display-m text-ivory">{step.name}</p>
+          {/* Locked rungs are quieter in colour, not faded: every word still reads at 4.5:1. */}
+          <p className={cn("text-display-m", step.unlocked ? "text-ivory" : "text-stone-dim")}>{step.name}</p>
           <p className="text-meta text-stone-dim">{step.mode === "panel" ? `${step.personaIds.length}-person panel` : "One-on-one"} · pressure {step.pressure} of 5</p>
           <p className={cn("ml-auto text-meta font-medium", step.completed ? "text-signal-good" : current ? "text-olive-light" : "text-stone-dim")}>{step.completed ? "Done" : current ? "You are here" : step.unlocked ? "Open" : "Locked"}</p>
         </div>
-        <p className="mt-1 text-ui text-stone">{step.description}</p>
+        <p className={cn("mt-1 text-ui", step.unlocked ? "text-stone" : "text-stone-dim")}>{step.description}</p>
         {step.unlocked && !step.completed && <p className="mt-2 text-meta text-stone">{step.qualifying} of 2 sessions above your baseline</p>}
       </div>
     </div>
