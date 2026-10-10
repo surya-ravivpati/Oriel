@@ -24,6 +24,11 @@ export interface BotPose {
   glow: number; // 0..1 accessory / eye glow emphasis
 }
 
+/** Eye proportions in units of S: shared with the vector reduction of the face (components/brand/Interviewer). */
+export const EYE = { width: 0.082, ratio: 2.05 } as const;
+/** The warm highlight in each eye, relative to the eye's own size. */
+export const EYE_HIGHLIGHT = { dx: 0.16, dy: -0.16, width: 0.17, height: 0.36, maxHeightToWidth: 0.52, color: "#F3D3A1", alpha: 0.85 } as const;
+
 function capsule(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
   const r = Math.min(w, h) / 2;
   const x = cx - w / 2, y = cy - h / 2;
@@ -139,8 +144,8 @@ export function drawBot(ctx: CanvasRenderingContext2D, W: number, H: number, loo
 
   // Eyes.
   const spacing = geom.spacing * sx;
-  const ew0 = S * 0.082 * p.eyeScale * geom.eyeK;
-  const eh0 = ew0 * 2.05;
+  const ew0 = S * EYE.width * p.eyeScale * geom.eyeK;
+  const eh0 = ew0 * EYE.ratio;
   const eyeY = Y(geom.eyeY) + p.gazeY * eh0 * 0.22;
   for (const side of [-1, 1] as const) {
     const far = Math.max(0, p.yaw * side); // eye on the side we turn toward narrows
@@ -197,9 +202,10 @@ function drawEye(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
   // Warm vertical highlight, like a reflection of the window light (hidden as the eye closes).
   if (h > w * 1.1) {
     ctx.beginPath();
-    capsule(ctx, x + w * 0.16, y - h * 0.16, w * 0.17, Math.min(h * 0.36, w * 0.52));
+    const H = EYE_HIGHLIGHT;
+    capsule(ctx, x + w * H.dx, y + h * H.dy, w * H.width, Math.min(h * H.height, w * H.maxHeightToWidth));
     ctx.fillStyle = look.highlight;
-    ctx.globalAlpha = 0.85 * (0.6 + glow * 0.4);
+    ctx.globalAlpha = H.alpha * (0.6 + glow * 0.4);
     ctx.fill();
     ctx.globalAlpha = 1;
   }

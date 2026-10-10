@@ -1,9 +1,9 @@
 import { Interviewer } from "@/components/brand/Interviewer";
 import { cn } from "./cn";
 
-/** The mark is the interviewer's face, drawn by the same component as the preview's interviewer. */
-export function LogoMark({ className, blink }: { className?: string; blink?: boolean }) {
-  return <Interviewer size={24} waiting={blink} className={cn("size-6", className)} />;
+/** The mark is the Classic interviewer's face, reduced from the avatar renderer's own geometry. */
+export function LogoMark({ className, blink, size = 24 }: { className?: string; blink?: boolean; size?: number }) {
+  return <Interviewer size={size} waiting={blink} className={cn("w-6", className)} />;
 }
 
 /** The wordmark is set in the serif: Oriel speaks in the same voice as its headlines. */
@@ -20,7 +20,7 @@ export function Logo({ className }: { className?: string }) {
 export function Thinking({ label, className }: { label: string; className?: string }) {
   return (
     <span role="status" className={cn("inline-flex items-center gap-2.5 text-ui text-stone", className)}>
-      <LogoMark blink className="size-5" />
+      <LogoMark blink size={20} className="w-5" />
       {label}
     </span>
   );

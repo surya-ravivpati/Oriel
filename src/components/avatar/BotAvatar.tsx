@@ -22,12 +22,14 @@ import { Spring, stepAll } from "./bot/springs";
  * Persona temperament (warmth, skepticism, expressiveness) shapes every state:
  * the recruiter smiles with its eyes; the skeptic narrows one eye; the executive barely moves.
  */
-export function BotAvatar({ store, seats, className, labels, compact }: {
+export function BotAvatar({ store, seats, className, labels, compact, paused = false }: {
   store: AvatarStore;
   seats: AvatarSeatConfig[];
   className?: string;
   labels?: (seat: AvatarSeatConfig, active: boolean) => React.ReactNode;
   compact?: boolean;
+  /** Hold the current frame (a sample paused, off-screen or under reduced motion); resumes where it stopped. */
+  paused?: boolean;
 }) {
   const [active, setActive] = useState(store.activeSeat);
   useEffect(() => {
@@ -48,7 +50,7 @@ export function BotAvatar({ store, seats, className, labels, compact }: {
             <div key={s.seat}
               className={cn("relative flex min-w-0 flex-col items-center transition-all duration-700 ease-[var(--ease-out-expo)]", panel ? "flex-1 max-w-[34vw]" : "w-full", compact && "h-full")}
               style={{ transform: panel ? `scale(${isActive ? 1.06 : 0.9})` : undefined, opacity: panel ? (isActive ? 1 : 0.72) : 1 }}>
-              <BotSeat store={store} seat={s} count={seats.length} className={cn(compact ? "h-full w-full" : panel ? "aspect-square w-full" : "aspect-square w-[min(72vw,62vh,640px)]")} />
+              <BotSeat store={store} seat={s} count={seats.length} paused={paused} className={cn(compact ? "h-full w-full" : panel ? "aspect-square w-full" : "aspect-square w-[min(72vw,62vh,640px)]")} />
               {labels && <div className="-mt-[6%]">{labels(s, isActive)}</div>}
             </div>
           );
@@ -66,9 +68,14 @@ const hexOf = (c: Rgb) => `#${c.map((v) => Math.round(v).toString(16).padStart(2
 const PAINT = ["face", "faceShade", "eye", "highlight"] as const;
 const lookKey = (l: BotLook) => `${l.shape}|${l.face}|${l.accessory}`;
 
-function BotSeat({ store, seat, count, className }: { store: AvatarStore; seat: AvatarSeatConfig; count: number; className?: string }) {
+function BotSeat({ store, seat, count, className, paused }: { store: AvatarStore; seat: AvatarSeatConfig; count: number; className?: string; paused: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const box = useRef<HTMLDivElement>(null);
+  // Pausing stops scheduling frames after the current one; resuming restarts the same loop, so the
+  // pose, blink timers and springs carry on from where they were rather than snapping back.
+  const pausedRef = useRef(paused);
+  const resume = useRef<(() => void) | null>(null);
+  useEffect(() => { pausedRef.current = paused; if (!paused) resume.current?.(); }, [paused]);
   // Read every frame, so restyling a bot morphs it in place instead of restarting it.
   const seatRef = useRef(seat);
   useEffect(() => { seatRef.current = seat; }, [seat]);
@@ -95,6 +102,7 @@ function BotSeat({ store, seat, count, className }: { store: AvatarStore; seat: 
     let raf = 0;
     let last = performance.now();
     let W = 0, H = 0;
+    let stopped = false;
 
     // The wrapper owns the layout size; the canvas is absolutely positioned so its
     // pixel-size attribute can never feed back into layout.
@@ -105,6 +113,7 @@ function BotSeat({ store, seat, count, className }: { store: AvatarStore; seat: 
       el.width = Math.max(1, Math.round(W * dpr));
       el.height = Math.max(1, Math.round(H * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (stopped) frame(performance.now()); // resizing clears the canvas: repaint the held frame
     };
     resize();
     const ro = new ResizeObserver(resize);
@@ -208,12 +217,19 @@ function BotSeat({ store, seat, count, className }: { store: AvatarStore; seat: 
       }
       const drawn: BotLook = { ...look, face: hexOf(paint.face), faceShade: hexOf(paint.faceShade), eye: hexOf(paint.eye), highlight: hexOf(paint.highlight) };
       if (W > 0 && H > 0) drawBot(ctx, W, H, drawn, pose, seat.accent, geom);
+      if (pausedRef.current) { stopped = true; return; }
+      raf = requestAnimationFrame(frame);
+    };
+    resume.current = () => {
+      if (!stopped) return;
+      stopped = false;
+      last = performance.now();
       raf = requestAnimationFrame(frame);
     };
     // Paint one frame synchronously so the bot is visible even before the first
     // animation frame (e.g. in a background tab), then animate.
     frame(performance.now());
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); resume.current = null; };
   }, [store, seat.seat, count]);
   return (
     <div ref={box} className={cn("relative", className)}>

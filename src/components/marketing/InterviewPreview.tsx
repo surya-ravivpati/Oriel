@@ -1,14 +1,20 @@
 "use client";
+/* eslint-disable react-hooks/immutability -- AvatarStore is an external mutable object read by the avatar's render loop, not React state. */
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Interviewer, type InterviewerState } from "@/components/brand/Interviewer";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { BotAvatar } from "@/components/avatar/BotAvatar";
+import { AvatarStore } from "@/lib/avatar/store";
+import { PERSONAS } from "@/lib/interview/personas";
 import { cn } from "@/components/ui/cn";
 
 /*
- * The hero's proof: an interview taking place, Oriel asking, you answering. Illustrative content,
- * labelled as a sample. Rendered complete on the server; with scripts and motion allowed, it
- * plays one slow loop (question, answer at ~150 words a minute, follow-up, pause) that the
- * visitor can pause, and that pauses itself on hover, focus, off-screen and in hidden tabs.
+ * The hero's proof: an interview taking place, the interviewer asking, you answering. The
+ * interviewer is the real one: Daniel, the Classic face every new account meets, drawn and
+ * animated by the same engine as the Room (its blinks, its listening, the light that breathes
+ * with its voice). Illustrative content, labelled as a sample. Rendered complete on the server
+ * (with a still of the same face until the canvas takes over); with scripts and motion allowed it
+ * plays one slow loop (question, answer at ~150 words a minute, follow-up, pause) that the visitor
+ * can pause, and that pauses itself on hover, focus, off-screen and in hidden tabs.
  */
 const QUESTION = "Tell me about a time you had to make a decision without all the data you wanted.";
 const FOLLOW_UP = "What would you have done if the holdout had been inconclusive?";
@@ -27,7 +33,6 @@ export function InterviewPreview() {
   const [held, setHeld] = useState({ hover: false, focus: false });
   const [inView, setInView] = useState(false);
   const [visible, setVisible] = useState(true);
-  const [blink, setBlink] = useState(false);
   const root = useRef<HTMLElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const words = useRef<HTMLParagraphElement>(null);
@@ -60,13 +65,30 @@ export function InterviewPreview() {
     return () => clearTimeout(id);
   }, [running, scene]);
 
-  // An occasional blink, at irregular intervals of three to seven seconds.
+  // The interviewer: the avatar engine reads this store every frame. Speaking drives the voice light
+  // with a synthetic level; listening nods now and then while you talk, as it does in the Room.
+  const store = useMemo(() => {
+    const s = new AvatarStore();
+    s.pressure = 2;
+    s.stillness = 0.35;
+    return s;
+  }, []);
   useEffect(() => {
-    if (!running) return;
-    let open: ReturnType<typeof setTimeout>;
-    const id = setTimeout(() => { setBlink(true); open = setTimeout(() => setBlink(false), 150); }, 3000 + Math.random() * 4000);
-    return () => { clearTimeout(id); clearTimeout(open); };
-  }, [running, blink]);
+    const t0 = performance.now();
+    const wave = (t: number) => Math.max(0, Math.sin(t / 95) * 0.45 + Math.sin(t / 41) * 0.25);
+    store.setLevel(() => (store.mode === "speaking" ? wave(performance.now() - t0) : 0));
+  }, [store]);
+  const seats = useMemo(() => {
+    const p = PERSONAS.hiring_manager;
+    return [{ seat: 0, personaId: p.id, name: p.name, accent: p.accent, expressiveness: p.expressiveness, warmth: p.warmth, skepticism: p.skepticism }];
+  }, []);
+  useEffect(() => {
+    const speaking = scene.phase === "ask" || scene.phase === "follow";
+    store.candidateSpeaking = scene.phase === "answer";
+    store.setMode(speaking ? "speaking" : "listening");
+    if (scene.phase === "follow") store.fireCue("lean_in");
+    if (scene.phase === "answer" && (scene.shown === 18 || scene.shown === 40)) store.fireCue("nod");
+  }, [scene, store]);
 
   // The answer scrolls like captions. Every word is laid out from the start (unspoken ones are
   // transparent), and a new line lifts the text with a transform, never a layout change, so the
@@ -89,8 +111,7 @@ export function InterviewPreview() {
   }, [said]);
 
   const question = scene.phase === "follow" || scene.phase === "rest" ? FOLLOW_UP : QUESTION;
-  const state: InterviewerState = scene.phase === "ask" || scene.phase === "follow" ? "speaking" : "listening";
-  const label = state === "speaking" ? "Asking" : "Listening";
+  const label = scene.phase === "ask" || scene.phase === "follow" ? "Speaking" : "Listening";
 
   return (
     <section ref={root} aria-labelledby="sample-title" className="rounded-panel border border-transparent bg-surface-1"
@@ -100,7 +121,7 @@ export function InterviewPreview() {
       onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHeld((h) => ({ ...h, focus: false })); }}>
       <h2 id="sample-title" className="sr-only">Sample interview</h2>
       <p className="sr-only">
-        A sample session for a product manager, behavioral round. Oriel asks: “{QUESTION}” You answer: “{ANSWER.join(" ")}” Oriel follows up: “{FOLLOW_UP}”
+        A sample session for a product manager, behavioral round, with Daniel, an AI hiring manager. Daniel asks: “{QUESTION}” You answer: “{ANSWER.join(" ")}” Daniel follows up: “{FOLLOW_UP}”
       </p>
 
       <div className="flex items-center justify-between gap-4 border-b border-divider px-5 py-3 sm:px-6">
@@ -122,18 +143,23 @@ export function InterviewPreview() {
 
       <div className="page-grid gap-y-6 px-5 py-8 sm:px-6 lg:px-0 lg:py-12" aria-hidden>
         <div className="col-span-4 flex items-center gap-3 sm:col-span-3 sm:flex-col sm:justify-start sm:gap-4 sm:pt-1 lg:col-span-6">
-          <Interviewer size={140} state={state} blink={blink && running} className="w-[72px] sm:w-[120px] lg:w-[140px]" />
+          {/* The avatar draws in a square of side S with its face ~0.74 S wide; a still of the same frame sits beneath the canvas. */}
+          <div className="relative -my-2 -ml-3 size-24 shrink-0 sm:-my-3 sm:ml-0 sm:size-[150px] lg:size-44">
+            {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size still under the canvas, not content */}
+            <img src="/interviewer/daniel-still.webp" alt="" width={352} height={352} decoding="async" className="absolute inset-0 size-full" />
+            <BotAvatar store={store} seats={seats} paused={!running} compact className="absolute inset-0" />
+          </div>
           <p className="flex items-center gap-2 text-ui text-stone sm:justify-center">
-            <span className={cn("size-1.5 rounded-full bg-olive-light transition-opacity duration-[var(--dur-state)]", state === "speaking" && "opacity-40")} />
+            <span className={cn("size-1.5 rounded-full bg-olive-light transition-opacity duration-[var(--dur-state)]", label === "Speaking" && "opacity-40")} />
             {/* Both words share one cell, so the line keeps the longer word's width as the state changes. */}
             <span className="grid">
               <span className="col-start-1 row-start-1">{label}</span>
-              <span className="invisible col-start-1 row-start-1">{label === "Asking" ? "Listening" : "Asking"}</span>
+              <span className="invisible col-start-1 row-start-1">{label === "Speaking" ? "Listening" : "Speaking"}</span>
             </span>
           </p>
         </div>
         <div className="col-span-4 sm:col-span-5 lg:col-span-6 lg:pr-12">
-          <p className="text-ui text-stone-dim">Oriel</p>
+          <p className="text-ui text-stone-dim">Daniel</p>
           <p key={question} className={cn("hang mt-1 min-h-[5em] text-display-m text-ivory sm:min-h-[3.75em]", running && "animate-[fade-in_var(--dur-panel)_var(--ease-enter)]")}>“{question}”</p>
           <p className="mt-6 text-ui text-stone-dim">You</p>
           <div ref={box} className="relative mt-1 h-[4.8em] overflow-hidden text-body data-[lifted=true]:[mask-image:linear-gradient(to_bottom,transparent,black_45%)]">
