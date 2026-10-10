@@ -347,18 +347,18 @@ export function Room(props: RoomProps) {
           <footer className="shrink-0 border-t border-divider px-3 py-3 sm:px-6">
             {stage === "live" ? (
               <nav aria-label="Interview controls" className="flex items-center gap-1.5 sm:gap-2">
-                <button type="button" onClick={toggleMute} disabled={!devices?.mic} aria-label={muted ? "Unmute" : "Mute"} aria-keyshortcuts="M"
+                <button type="button" onClick={toggleMute} disabled={!devices?.mic} aria-keyshortcuts="M"
                   className={cn("flex h-10 items-center gap-2 rounded-control px-3 text-ui font-medium transition-colors duration-[var(--dur-press)] disabled:opacity-40 pointer-coarse:h-11", muted ? "bg-signal-bad/10 text-signal-bad" : "text-ivory hover:bg-surface-1")}>
-                  {muted ? "Mic off" : <><MicMeter controller={controller.current} live={phase === "listening" && ui?.inputMode === "voice"} />Mic</>}
+                  {muted ? "Unmute" : <><MicMeter controller={controller.current} live={phase === "listening" && ui?.inputMode === "voice"} />Mute</>}
                   <Kbd className="hidden md:inline-grid">M</Kbd>
                 </button>
-                <Ctl label="Captions" on={captions} onClick={() => setCaptions(!captions)} shortcut="C">CC</Ctl>
+                <Ctl on={captions} onClick={() => setCaptions(!captions)} shortcut="C">Captions</Ctl>
                 {ui?.inputMode === "voice"
-                  ? <Ctl label="Type instead" onClick={() => controller.current?.switchToText()} shortcut="T">Type</Ctl>
-                  : devices?.mic ? <Ctl label="Speak instead" onClick={() => controller.current?.switchToVoice()} shortcut="T">Speak</Ctl> : null}
+                  ? <Ctl onClick={() => controller.current?.switchToText()} shortcut="T">Type<span className="sr-only"> instead</span></Ctl>
+                  : devices?.mic ? <Ctl onClick={() => controller.current?.switchToVoice()} shortcut="T">Speak<span className="sr-only"> instead</span></Ctl> : null}
                 <p aria-live="polite" className="min-w-0 flex-1 truncate text-center text-meta text-stone">{status}</p>
                 {ui?.inputMode === "voice" && (
-                  <Button variant="secondary" size="md" disabled={ui?.phase !== "listening"} onClick={() => void controller.current?.finishAnswer(false)} aria-label="Done answering" aria-keyshortcuts="Space" className="px-3.5">
+                  <Button variant="secondary" size="md" disabled={ui?.phase !== "listening"} onClick={() => void controller.current?.finishAnswer(false)} aria-keyshortcuts="Space" className="px-3.5">
                     <span className="hidden sm:inline">Done answering</span><span className="sm:hidden">Done</span><Kbd className="hidden md:inline-grid">Space</Kbd>
                   </Button>
                 )}
@@ -376,7 +376,7 @@ export function Room(props: RoomProps) {
 
       {/* Device check */}
       {stage === "check" && devices && (
-        <div className="relative z-10 mx-auto grid min-h-dvh max-w-5xl items-center gap-10 px-5 py-20 lg:grid-cols-[1.2fr_1fr]">
+        <main className="relative z-10 mx-auto grid min-h-dvh max-w-5xl items-center gap-10 px-5 py-20 lg:grid-cols-[1.2fr_1fr]">
           {devices.cam ? (
             <div className="relative aspect-video overflow-hidden rounded-panel bg-surface-1">
               <video ref={checkVideoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" />
@@ -424,7 +424,7 @@ export function Room(props: RoomProps) {
               <Button variant="ghost" size="lg" onClick={() => router.push("/practice")}>Back</Button>
             </div>
           </div>
-        </div>
+        </main>
       )}
 
       {stage === "entering" && (
@@ -474,12 +474,13 @@ function Clock({ text }: { text: string }) {
 }
 
 function Kbd({ children, className }: { children: ReactNode; className?: string }) {
-  return <kbd className={cn("inline-grid h-5 min-w-5 place-items-center rounded-sm border border-control px-1 text-meta leading-none text-stone", className)}>{children}</kbd>;
+  return <kbd aria-hidden className={cn("inline-grid h-5 min-w-5 place-items-center rounded-sm border border-control px-1 text-meta leading-none text-stone", className)}>{children}</kbd>;
 }
 
-function Ctl({ children, label, on, onClick, disabled, shortcut }: { children: ReactNode; label: string; on?: boolean; onClick: () => void; disabled?: boolean; shortcut?: string }) {
+/** A control in the Room's toolbar. Its name is what it shows (plus any words only a screen reader needs). */
+function Ctl({ children, on, onClick, disabled, shortcut }: { children: ReactNode; on?: boolean; onClick: () => void; disabled?: boolean; shortcut?: string }) {
   return (
-    <button type="button" aria-label={label} aria-pressed={on} aria-keyshortcuts={shortcut} onClick={onClick} disabled={disabled}
+    <button type="button" aria-pressed={on} aria-keyshortcuts={shortcut} onClick={onClick} disabled={disabled}
       className={cn("flex h-10 items-center gap-2 rounded-control px-3 text-ui font-medium transition-colors duration-[var(--dur-press)] disabled:opacity-40 pointer-coarse:h-11", on ? "bg-surface-2 text-ivory shadow-[inset_0_0_0_1px_var(--color-control)]" : "text-ivory hover:bg-surface-1")}>
       {children}
       {shortcut && <Kbd className="hidden md:inline-grid">{shortcut}</Kbd>}

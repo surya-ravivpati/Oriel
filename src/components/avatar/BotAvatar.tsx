@@ -48,7 +48,7 @@ export function BotAvatar({ store, seats, className, labels, compact, paused = f
           const isActive = !panel || s.seat === active;
           return (
             <div key={s.seat}
-              className={cn("relative flex min-w-0 flex-col items-center transition-all duration-700 ease-[var(--ease-out-expo)]", panel ? "flex-1 max-w-[34vw]" : "w-full", compact && "h-full")}
+              className={cn("relative flex min-w-0 flex-col items-center transition-[transform,opacity] duration-700 ease-[var(--ease-out-expo)]", panel ? "flex-1 max-w-[34vw]" : "w-full", compact && "h-full")}
               style={{ transform: panel ? `scale(${isActive ? 1.06 : 0.9})` : undefined, opacity: panel ? (isActive ? 1 : 0.72) : 1 }}>
               <BotSeat store={store} seat={s} count={seats.length} paused={paused} className={cn(compact ? "h-full w-full" : panel ? "aspect-square w-full" : "aspect-square w-[min(72vw,62vh,640px)]")} />
               {labels && <div className="-mt-[6%]">{labels(s, isActive)}</div>}

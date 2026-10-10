@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion, useIsPresent } from "motion/react";
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
 import { BotAvatar } from "@/components/avatar/BotAvatar";
 import { BotStill } from "@/components/avatar/BotStill";
 import { Button } from "@/components/ui/Button";
@@ -270,6 +270,7 @@ function useSettled(value: string, ms: number) {
 
 /** The interviewer, saying one line per step, set like a line of transcript. */
 function Stage({ personaId, line, speaker, celebrate }: { personaId: PersonaChoice; line: string; speaker: string; celebrate: boolean }) {
+  const reduce = useReducedMotion();
   const store = useMemo(() => {
     const s = new AvatarStore();
     s.setMode("listening");
@@ -303,7 +304,8 @@ function Stage({ personaId, line, speaker, celebrate }: { personaId: PersonaChoi
             <AnimatePresence mode="wait">
               <motion.p key={line} className="text-display-m text-ivory"
                 initial={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}>
-                {line.split(" ").map((w, i) => (
+                {/* Spoken word by word, unless motion is reduced: then the line simply appears. */}
+                {reduce ? line : line.split(" ").map((w, i) => (
                   <motion.span key={i} className="inline-block pr-[0.24em]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 + i * 0.06, duration: 0.25 }}>{w}</motion.span>
                 ))}
               </motion.p>
