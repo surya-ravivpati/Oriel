@@ -271,7 +271,7 @@ export function Room(props: RoomProps) {
             </div>
             <div className="flex shrink-0 items-center gap-4 text-meta">
               {ui?.recording && <span className="flex items-center gap-1.5 text-stone"><span className="size-1.5 rounded-full bg-signal-bad" aria-hidden />Recording</span>}
-              <span className="text-ivory"><span className="font-mono">{clock}</span><span className="hidden text-stone-dim sm:inline"> · {Math.ceil(remaining / 60000)} min left</span></span>
+              <span className="text-ivory"><Clock text={clock} /><span className="hidden text-stone-dim sm:inline"> · {Math.ceil(remaining / 60000)} min left</span></span>
             </div>
           </header>
 
@@ -313,7 +313,7 @@ export function Room(props: RoomProps) {
                   {stage === "live" && ui?.phase === "listening" && ui.inputMode === "text" && (
                     <form onSubmit={(e) => { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); }} className="mt-3 flex items-end gap-2">
                       <textarea autoFocus value={typed} onChange={(e) => { controller.current?.noteKeystroke(); setTyped(e.target.value); }} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); } }}
-                        rows={2} placeholder="Type your answer — Enter to send" aria-label="Your answer" className="flex-1 resize-none rounded-control border border-control bg-surface-1 px-3.5 py-2.5 text-body leading-relaxed transition-colors duration-[var(--dur-press)] hover:border-stone-dim" />
+                        rows={2} placeholder="Type your answer. Enter sends it." aria-label="Your answer" className="flex-1 resize-none rounded-control border border-control bg-surface-1 px-3.5 py-2.5 text-body leading-relaxed transition-colors duration-[var(--dur-press)] hover:border-stone-dim" />
                       <Button type="submit" disabled={!typed.trim()}>Send</Button>
                     </form>
                   )}
@@ -330,7 +330,7 @@ export function Room(props: RoomProps) {
                   <ol className="mt-4 space-y-5">
                     {asked.map((q, i) => (
                       <li key={i} className="grid grid-cols-[2.75rem_minmax(0,1fr)] items-baseline gap-x-2">
-                        <span className="font-mono text-meta text-stone-dim">{Math.floor(q.t / 60000)}:{String(Math.floor((q.t % 60000) / 1000)).padStart(2, "0")}</span>
+                        <span className="text-meta text-stone-dim">{Math.floor(q.t / 60000)}:{String(Math.floor((q.t % 60000) / 1000)).padStart(2, "0")}</span>
                         <span>
                           <span className="block text-meta text-stone-dim">{q.who}</span>
                           <span className={cn("mt-0.5 block font-display text-body leading-snug", i === asked.length - 1 ? "text-ivory" : "text-stone")}>{q.text}</span>
@@ -399,7 +399,7 @@ export function Room(props: RoomProps) {
                 {devices.mic && <p className="mt-1.5 text-meta text-stone-dim">Say something; the line should move.</p>}
               </Check>
               <Check ok={!!devices.cam} label={devices.cam ? "Camera" : devices.camError ?? "Camera off"} />
-              <Check ok={!devices.mic ? false : LiveTranscriber.supported() || props.serverStt} label={!devices.mic ? "Text mode — you'll type your answers" : LiveTranscriber.supported() ? "Live speech recognition" : props.serverStt ? "Server transcription (answers are transcribed after you finish)" : "No speech recognition, so you'll type"} />
+              <Check ok={!devices.mic ? false : LiveTranscriber.supported() || props.serverStt} label={!devices.mic ? "Text mode: you'll type your answers" : LiveTranscriber.supported() ? "Live speech recognition" : props.serverStt ? "Server transcription (answers are transcribed after you finish)" : "No speech recognition, so you'll type"} />
               {consent?.cameraMetrics && devices.cam && (
                 <Check ok={calib === "done"} label={calib === "done" ? "Camera lens calibrated" : calib === "unavailable" ? "On-device tracking unavailable, so camera signals will be skipped" : "Calibrate to measure camera engagement and posture (skip it and we won't measure gaze, slouch or lean)"}>
                   {calib !== "done" && calib !== "unavailable" && <Button size="sm" variant="secondary" className="mt-2" onClick={calibrate} loading={calib === "running"} disabled={!visionReady}>{visionReady ? "Sit as you normally would and look at the lens for 2 seconds" : "Loading on-device model…"}</Button>}
@@ -468,8 +468,14 @@ export function Room(props: RoomProps) {
   );
 }
 
+/** The running clock: digits at one width so the time never jitters, the colon at its own. */
+function Clock({ text }: { text: string }) {
+  const [m, sec] = text.split(":");
+  return <span className="tabular-nums">{m}<span className="[font-variant-numeric:normal]">:</span>{sec}</span>;
+}
+
 function Kbd({ children, className }: { children: ReactNode; className?: string }) {
-  return <kbd className={cn("inline-grid h-5 min-w-5 place-items-center rounded-sm border border-control px-1 font-mono text-meta leading-none text-stone", className)}>{children}</kbd>;
+  return <kbd className={cn("inline-grid h-5 min-w-5 place-items-center rounded-sm border border-control px-1 text-meta leading-none text-stone", className)}>{children}</kbd>;
 }
 
 function Ctl({ children, label, on, onClick, disabled, shortcut }: { children: ReactNode; label: string; on?: boolean; onClick: () => void; disabled?: boolean; shortcut?: string }) {
@@ -485,7 +491,7 @@ function Ctl({ children, label, on, onClick, disabled, shortcut }: { children: R
 function Check({ ok, label, children }: { ok: boolean; label: string; children?: ReactNode }) {
   return (
     <li className="flex gap-3 border-b border-divider py-3">
-      <span className={cn("w-4 shrink-0 pt-px font-mono text-meta", ok ? "text-signal-good" : "text-stone-dim")} aria-hidden>{ok ? "✓" : "–"}</span>
+      <span className={cn("w-4 shrink-0 pt-px text-meta", ok ? "text-signal-good" : "text-stone-dim")} aria-hidden>{ok ? "✓" : "–"}</span>
       <div><p className={ok ? "text-ivory" : "text-stone"}>{label}</p>{children}</div>
     </li>
   );

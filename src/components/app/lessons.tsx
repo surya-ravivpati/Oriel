@@ -19,12 +19,12 @@ export function summarize(r: { lessonKey: string; status: "active" | "queued" | 
 }
 
 
-/** Learn → practise → use it in an interview: where a lesson stands. Only what actually happened is ticked. */
+/** Learn → practice → use it in an interview: where a lesson stands. Only what actually happened is ticked. */
 export function LessonSteps({ l, className }: { l: LessonSummary; className?: string }) {
   const practised = l.practicePasses >= PRACTICE_NEEDED;
   const steps = [
     { label: "Learn", done: l.viewed || l.practicePasses > 0 },
-    { label: practised ? "Practised" : `Practise ${Math.min(l.practicePasses, PRACTICE_NEEDED)}/${PRACTICE_NEEDED}`, done: practised },
+    { label: practised ? "Practiced" : `Practice ${Math.min(l.practicePasses, PRACTICE_NEEDED)} of ${PRACTICE_NEEDED}`, done: practised },
     { label: l.status === "mastered" ? "Confirmed in an interview" : "Use it in an interview", done: l.status === "mastered" },
   ];
   return (
@@ -32,7 +32,7 @@ export function LessonSteps({ l, className }: { l: LessonSummary; className?: st
       {steps.map((s) => (
         <li key={s.label} className="min-w-0 flex-1">
           <span className={cn("block h-0.5", s.done ? "bg-olive-light" : "bg-divider-strong")} />
-          <span className={cn("mt-1.5 block truncate text-meta", s.done ? "text-ivory" : "text-stone-dim")}>{s.label}</span>
+          <span className={cn("mt-1.5 block text-meta", s.done ? "text-ivory" : "text-stone-dim")}>{s.label}</span>
         </li>
       ))}
     </ol>
@@ -46,7 +46,7 @@ export function TrackLabel({ track, className }: { track: Track; className?: str
 export function LessonCard({ l }: { l: LessonSummary }) {
   const def = LESSONS[l.key];
   return (
-    <Link href={`/lessons/${l.key}`} className={cn("group block border-t pb-2 pt-4 transition-colors duration-[var(--dur-press)]", l.status === "active" ? "border-stone-dim hover:border-olive-light" : "border-divider hover:border-stone-dim")}>
+    <Link href={`/lessons/${l.key}`} className={cn("group block border-t pb-2 pt-4 transition-colors duration-[var(--dur-press)]", l.status === "active" ? "border-divider-strong hover:border-stone-dim" : "border-divider hover:border-stone-dim")}>
       <div className="flex items-start justify-between gap-3">
         <TrackLabel track={def.track} />
         {l.status === "queued" && <span className="text-meta font-medium text-stone-dim">Up next</span>}

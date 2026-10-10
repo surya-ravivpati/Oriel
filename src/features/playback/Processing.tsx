@@ -38,7 +38,7 @@ export function Processing({ sessionId, initialStatus }: { sessionId: string; in
       {status === "failed" ? (
         <>
           <h1 className="text-display-l text-ivory">Your Read didn&apos;t finish.</h1>
-          <p className="mt-4 text-stone">Your interview is saved. Nothing was lost. {error ? <span className="block mt-2 font-mono text-meta text-stone-dim">{error}</span> : null}</p>
+          <p className="mt-4 text-stone">Your interview is saved. Nothing was lost. {error ? <span className="block mt-2 text-meta text-stone-dim">{error}</span> : null}</p>
           <Button className="mt-8" onClick={retry}>Retry analysis</Button>
         </>
       ) : (

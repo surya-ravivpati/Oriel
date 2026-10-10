@@ -79,11 +79,11 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     id: "executive",
     name: "Eleanor Vance",
     title: "Executive",
-    description: "Extremely controlled. Few words, long pauses, cares about judgement and scope.",
+    description: "Extremely controlled. Few words, long pauses, cares about judgment and scope.",
     warmth: 0.3, skepticism: 0.65, pace: 0.35, interruptionRate: 0.2,
     silenceTolerance: 0.95, specificityDemand: 0.7, expressiveness: 0.12,
     voice: "Gacrux", accent: "#d4cfc7",
-    style: "Measured and sparse. Big-picture questions about judgement, trade-offs and impact. Very few words.",
+    style: "Measured and sparse. Big-picture questions about judgment, trade-offs and impact. Very few words.",
   },
   peer: {
     id: "peer",

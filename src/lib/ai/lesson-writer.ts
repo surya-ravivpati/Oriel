@@ -54,7 +54,7 @@ function checked(a: Assessment, m: z.infer<typeof Schema>["lessons"][number] | u
   if (LESSONS[a.key].rewrites && a.focus && m.rewrite && a.key !== "fillers" && a.key !== "hedging") {
     const { before, after } = m.rewrite;
     const ok = isGrounded(before, a.focus.text) && after.trim().length > 0 && numbersWithin(after.replace(/\[[^\]]*\]/g, ""), a.focus.text);
-    if (ok) rewrite = { before: before.trim(), after: after.trim(), note: "Your own words, rewritten. Anything in [brackets] is yours to fill in — we never add facts." };
+    if (ok) rewrite = { before: before.trim(), after: after.trim(), note: "Your own words, rewritten. Anything in [brackets] is yours to fill in; we never add facts." };
   }
   const changed = observation !== base.observation || tip !== base.tip || rewrite !== base.rewrite;
   return { observation, tip, rewrite, source: changed ? "llm" : "heuristic" };
@@ -81,7 +81,7 @@ export function stripPatterns(text: string, patterns: { re: RegExp }[]): string 
 export function heuristicContent(a: Assessment): LessonContent {
   const def = LESSONS[a.key as LessonKey];
   const [first, second] = a.evidence.facts;
-  const observation = `${cap(first ?? a.evidence.display)} — the target is ${a.evidence.target}.${second ? ` ${cap(second)}.` : ""}`;
+  const observation = `${cap(first ?? a.evidence.display)}. The target is ${a.evidence.target}.${second ? ` ${cap(second)}.` : ""}`;
   const tip = `${def.steps[0].title}: ${def.steps[0].body}`;
   let rewrite: LessonContent["rewrite"] = null;
   if (a.focus && a.evidence.quotes.length && (a.key === "fillers" || a.key === "hedging")) {

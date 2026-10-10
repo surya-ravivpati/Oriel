@@ -189,10 +189,10 @@ export function renderTemplate(ctx: RenderContext): RenderedUtterance {
       text = `${ack}${pick(["And what was the result?", "How did it turn out? What changed as a result?", "What was the outcome, and how did you measure it?"])}`;
       break;
     case "probe_number":
-      text = `${pick([`You said ${claim}. How did you measure that?`, `${capitalize(claim ?? "That number")} — what was the starting point?`, `Tell me more about ${claim}. How much of that was down to you?`])}`;
+      text = `${pick([`You said ${claim}. How did you measure that?`, `You said ${claim ?? "that number"}. What was the starting point?`, `Tell me more about ${claim}. How much of that was down to you?`])}`;
       break;
     case "challenge_claim":
-      text = `${pick([`You said ${claim}. How do you know that was your doing and not something else?`, `I'm not sure I buy that yet. ${capitalize(claim ?? "That")} — what's the evidence?`, `${capitalize(claim ?? "That")}. What would your manager say about that number?`])}`;
+      text = `${pick([`You said ${claim}. How do you know that was your doing and not something else?`, `I'm not sure I buy that yet. What's the evidence for ${claim ?? "that"}?`, `${capitalize(claim ?? "That")}. What would your manager say about that number?`])}`;
       break;
     case "cross_question":
       text = `${handoff}${pick([`You said ${claim}. What's the evidence that was you?`, `On ${claim}, how was that actually measured?`])}`;

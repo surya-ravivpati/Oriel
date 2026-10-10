@@ -44,7 +44,7 @@ export const DRILLS: DrillDef[] = [
   {
     id: "opener_30s", title: "30-second opener",
     objective: "Answer 'tell me about yourself' in under 30 seconds with a clear point.",
-    instructions: "Lead with who you are professionally, one proof point, and why this role. Stop by 30 seconds — the timer will show you.",
+    instructions: "Lead with who you are professionally, one proof point, and why this role. Stop by 30 seconds; the timer will show you.",
     prompt: "Tell me about yourself.",
     targetMetric: "opener_seconds", durationSec: 45, requiresCamera: false, direction: "lower",
     passRule: "Under 35 seconds with a role, a proof point, and a reason.",
@@ -60,7 +60,7 @@ export const DRILLS: DrillDef[] = [
   {
     id: "quantify_results", title: "Quantify results",
     objective: "Attach a number, scope, or timeframe to every result you claim.",
-    instructions: "Answer with at least three concrete numbers: how big, how much changed, how long. Estimates are fine — say they are estimates.",
+    instructions: "Answer with at least three concrete numbers: how big, how much changed, how long. Estimates are fine if you say they are estimates.",
     prompt: "Tell me about a time you improved something at work. What changed?",
     targetMetric: "quantified_claims", durationSec: 90, requiresCamera: false, direction: "higher",
     passRule: "Three or more quantified statements.",
@@ -76,7 +76,7 @@ export const DRILLS: DrillDef[] = [
   {
     id: "hold_the_lens", title: "Hold the lens",
     objective: "Keep your eyes near the camera through a difficult answer.",
-    instructions: "Put a small sticker by your camera. Answer while returning to the lens whenever you finish a thought. Looking away to think is fine — come back.",
+    instructions: "Put a small sticker by your camera. Answer while returning to the lens whenever you finish a thought. Looking away to think is fine; just come back.",
     prompt: "Tell me about a mistake you made that affected other people.",
     targetMetric: "camera_engagement", durationSec: 75, requiresCamera: true, direction: "higher",
     passRule: "Estimated camera engagement at least 10 points above your baseline.",
@@ -84,7 +84,7 @@ export const DRILLS: DrillDef[] = [
   {
     id: "star_structure", title: "Land the result",
     objective: "Finish every story with the outcome and what it meant.",
-    instructions: "Use situation, action, result — and spend the most time on the action you personally took. End with the result and one sentence on what it meant.",
+    instructions: "Use situation, action, result, and spend the most time on the action you personally took. End with the result and one sentence on what it meant.",
     prompt: "Tell me about a time you had to influence someone without authority.",
     targetMetric: "structure_score", durationSec: 90, requiresCamera: false, direction: "higher",
     passRule: "Situation, action and result all present, with a stated outcome.",
@@ -92,7 +92,7 @@ export const DRILLS: DrillDef[] = [
   {
     id: "steady_pace", title: "Steady pace",
     objective: "Answer at a conversational pace, slowing down for the key facts.",
-    instructions: "Answer for about a minute. Breathe at each full stop and slow down for numbers and results. Speak this one aloud — pace is measured from your voice.",
+    instructions: "Answer for about a minute. Breathe at each full stop and slow down for numbers and results. Speak this one aloud: pace is measured from your voice.",
     prompt: "Walk me through how you approach the first two weeks of a new project.",
     targetMetric: "pace_wpm", durationSec: 75, requiresCamera: false, requiresVoice: true, direction: "range",
     passRule: "Between 125 and 165 words a minute of speaking time.",
@@ -108,14 +108,14 @@ export const DRILLS: DrillDef[] = [
   {
     id: "own_it", title: "Own it",
     objective: "Describe your work with no softeners.",
-    instructions: "Answer without “I think”, “just”, “kind of” or “maybe”. Use strong verbs — I led, I decided, I built. If you're unsure of a figure, say so once.",
+    instructions: "Answer without “I think”, “just”, “kind of” or “maybe”. Use strong verbs: I led, I decided, I built. If you're unsure of a figure, say so once.",
     prompt: "What is your greatest strength, and where has it made a difference at work?",
     targetMetric: "hedges_per_min", durationSec: 75, requiresCamera: false, direction: "lower",
     passRule: "Under 1 hedge a minute, or half your baseline.",
   },
   {
     id: "point_first", title: "Point first",
-    objective: "One headline sentence, one example, and stop — inside 75 seconds.",
+    objective: "One headline sentence, one example, then stop, all inside 75 seconds.",
     instructions: "Start with your answer in a single sentence. Give one example and its result. Then stop: no second story, no recap.",
     prompt: "Tell me about a time you had to make an important decision quickly.",
     targetMetric: "answer_seconds", durationSec: 75, requiresCamera: false, direction: "lower",
@@ -124,7 +124,7 @@ export const DRILLS: DrillDef[] = [
   {
     id: "steady_posture", title: "Sit tall",
     objective: "Stay upright and settled through a demanding answer.",
-    instructions: "Sit back in your chair, feet flat, shoulders down — then calibrate sitting the way you want to sit. Gesture freely while you answer; just don't slump or rock.",
+    instructions: "Sit back in your chair, feet flat, shoulders down. Then calibrate sitting the way you want to sit. Gesture freely while you answer; just don't slump or rock.",
     prompt: "Tell me about a time you received difficult feedback. What did you do with it?",
     targetMetric: "posture_upright", durationSec: 75, requiresCamera: true, direction: "higher",
     passRule: "Upright at least 85% of the time, with no slouch held for 2 seconds.",

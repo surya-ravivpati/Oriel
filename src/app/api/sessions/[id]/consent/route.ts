@@ -20,7 +20,7 @@ export const POST = authed<IdParams>(async (req, { params, user }) => {
   const { id } = await params;
   loadSession(id, user.id);
   const body = await parseBody(req, Body);
-  if (body.version !== CONSENT_VERSION) throw new HttpError(409, "The consent wording changed — please reload and review it again.", "consent_version");
+  if (body.version !== CONSENT_VERSION) throw new HttpError(409, "The consent wording has changed. Reload the page and review it again.", "consent_version");
   const metrics = body.consents.find((c) => c.kind === "camera_metrics");
   if (metrics?.granted && (!body.signature || body.signature.length < 2)) {
     throw new HttpError(400, "Type your full name to sign, or turn camera-based signals off.", "signature_required");

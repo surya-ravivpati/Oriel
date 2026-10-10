@@ -128,7 +128,7 @@ export const DOMAIN_PACKS: Record<DomainId, DomainPack> = {
     roles: ["Financial Analyst", "Investment Banking Associate", "Private Equity Associate", "FP&A Manager"],
     competencies: [
       { key: "technicals", label: "Finance technicals", rubric: "Correct mechanics (valuation, three statements), explains intuition not just formulas." },
-      { key: "judgement", label: "Investment judgement", rubric: "Clear thesis, key risks, what would change their mind." },
+      { key: "judgement", label: "Investment judgment", rubric: "Clear thesis, key risks, what would change their mind." },
       { key: "detail", label: "Attention to detail", rubric: "Checks work, catches errors, explains controls." },
     ],
     questions: [
@@ -159,7 +159,7 @@ export const DOMAIN_PACKS: Record<DomainId, DomainPack> = {
     roles: ["Registered Nurse", "Physician Assistant", "Resident Physician", "Clinical Manager"],
     competencies: [
       { key: "patient_safety", label: "Patient safety", rubric: "Escalation, protocol, speaking up, documentation." },
-      { key: "clinical_judgement", label: "Clinical judgement", rubric: "Prioritisation under pressure, differential reasoning, reassessment." },
+      { key: "clinical_judgement", label: "Clinical judgment", rubric: "Prioritization under pressure, differential reasoning, reassessment." },
       { key: "teamwork", label: "Interdisciplinary teamwork", rubric: "Clear handoffs, closed-loop communication, respect across roles." },
     ],
     questions: [
@@ -167,7 +167,7 @@ export const DOMAIN_PACKS: Record<DomainId, DomainPack> = {
       { id: "cl-speakup", competency: "patient_safety", types: ["behavioral", "mixed"], text: "Describe a time you had to challenge a more senior colleague about patient safety.", difficulty: 3 },
       { id: "cl-handoff", competency: "teamwork", types: ["behavioral"], text: "How do you make sure nothing is lost in a handoff?", difficulty: 2 },
     ],
-    curveballs: ["What would you do if you realised you'd made a medication error an hour ago?"],
+    curveballs: ["What would you do if you realized you'd made a medication error an hour ago?"],
   }),
   executive: pack({
     id: "executive", label: "Executive",

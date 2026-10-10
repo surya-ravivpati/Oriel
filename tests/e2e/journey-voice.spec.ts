@@ -12,7 +12,7 @@ test("voice interview with recording and audio-derived Read", async ({ page }) =
   await page.getByRole("button", { name: "Enter the Room" }).click();
   const consent = page.getByRole("dialog");
   await consent.getByLabel("Type your full name to sign").fill("Jamie Park");
-  await consent.getByRole("button", { name: "I understand — continue" }).click();
+  await consent.getByRole("button", { name: "Agree and continue" }).click();
   await expect(page.getByText("Microphone", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Enter the Room" }).click();
 

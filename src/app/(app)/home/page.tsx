@@ -39,7 +39,7 @@ export default async function Home() {
         <div className="col-span-4 sm:col-span-8 lg:col-span-6">
           <p className="text-ui text-stone">{profile?.targetRole ?? "Practice"} · Ladder {current.level} of 6</p>
           <h1 className="mt-3 text-display-l text-ivory">Ready for the room{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}?</h1>
-          <p className="mt-5 max-w-[34rem] text-body-l text-stone">{history.length ? `${history.length} session${history.length > 1 ? "s" : ""} analysed. Next on the Ladder: ${current.name}, pressure ${current.pressure} of 5.` : "Your first session sets your baseline. Everything after is measured against you."}</p>
+          <p className="mt-5 max-w-[34rem] text-body-l text-stone">{history.length ? `${history.length} session${history.length > 1 ? "s" : ""} analyzed. Next on the Ladder: ${current.name}, pressure ${current.pressure} of 5.` : "Your first session sets your baseline. Everything after is measured against you."}</p>
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
             <ButtonLink href="/practice" size="lg">Start practice</ButtonLink>
             {sessions[0]?.analysisStatus === "complete" && <TextLink href={`/playback/${sessions[0].id}`} className="text-ui">Open your last Playback</TextLink>}
@@ -67,8 +67,8 @@ export default async function Home() {
                 return (
                   <tr key={m.key} className="border-b border-divider">
                     <th scope="row" className="py-3 pr-4 text-ui font-medium text-ivory">{m.label}</th>
-                    <td className="py-3 pr-4 font-mono text-ui tabular text-ivory">{v == null ? "n/a" : m.format(v)}</td>
-                    <td className="py-3 pr-4 font-mono text-ui tabular text-stone-dim">{baseline[m.key] == null ? "not yet" : m.format(baseline[m.key]!)}</td>
+                    <td className="py-3 pr-4 text-ui text-ivory">{v == null ? "n/a" : m.format(v)}</td>
+                    <td className="py-3 pr-4 text-ui text-stone-dim">{baseline[m.key] == null ? "not yet" : m.format(baseline[m.key]!)}</td>
                     <td className={`py-3 text-right text-meta font-medium ${c?.improved ? "text-signal-good" : "text-stone-dim"}`}>{c?.improved ? "Better" : c?.improved === false ? "Not yet" : ""}</td>
                   </tr>
                 );

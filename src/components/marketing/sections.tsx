@@ -33,7 +33,7 @@ const CAST: [PersonaId, string][] = [
   ["direct_manager", "Short on time. Redirects rambling and asks for the point."],
   ["skeptic", "Hard to read. Tests your claims, your numbers and your part in them."],
   ["peer", "Collegial and practical. Asks how the work really got done."],
-  ["executive", "Few words, long pauses. Cares about judgement and scope."],
+  ["executive", "Few words, long pauses. Cares about judgment and scope."],
 ];
 
 export function Interviewers() {

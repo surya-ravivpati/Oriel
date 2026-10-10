@@ -45,7 +45,7 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
             <section className="border-t border-divider pt-6">
               <h2 className="text-ui font-medium text-ivory">What we saw in your interview</h2>
               <p className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="font-mono text-body-l text-ivory">{l.evidence.display}</span>
+                <span className="text-body-l text-ivory">{l.evidence.display}</span>
                 <span className="text-ui text-stone-dim">target {l.evidence.target}{l.evidence.confidence !== "high" ? ` · ${l.evidence.confidence} confidence` : ""}</span>
               </p>
               {l.startValue !== null && l.latestValue !== null && l.startValue !== l.latestValue && <p className="mt-1 text-ui text-stone-dim">{l.status === "mastered" ? `Was ${formatMeasure(l.metricKey, l.startValue)}, now ${formatMeasure(l.metricKey, l.latestValue)}.` : `When this lesson started: ${formatMeasure(l.metricKey, l.startValue)}.`}</p>}
@@ -103,7 +103,7 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
               <h2 className="text-display-m text-ivory">Your answer, rewritten</h2>
               <div className="mt-5 grid gap-6 md:grid-cols-2">
                 <figure className="border-t border-divider pt-4"><figcaption className="text-meta font-medium text-stone-dim">What you said</figcaption><blockquote className="hang-sans mt-2 text-body text-stone">“{l.content.rewrite.before}”</blockquote></figure>
-                <figure className="border-t border-olive-light pt-4"><figcaption className="text-meta font-medium text-olive-light">Same story, with the lesson</figcaption><blockquote className="hang-sans mt-2 text-body text-ivory">“{l.content.rewrite.after}”</blockquote></figure>
+                <figure className="border-t border-divider pt-4"><figcaption className="text-meta font-medium text-stone-dim">Same story, with the lesson</figcaption><blockquote className="hang-sans mt-2 text-body text-ivory">“{l.content.rewrite.after}”</blockquote></figure>
               </div>
               <p className="mt-3 text-meta text-stone-dim">{l.content.rewrite.note}</p>
             </section>
@@ -125,7 +125,7 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
                   <ul className="mt-5 divide-y divide-divider border-t border-divider text-ui">
                     {found.attempts.map((a) => (
                       <li key={a.id} className="flex items-center justify-between gap-3 py-2.5">
-                        <span className="font-mono text-ivory">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</span>
+                        <span className="text-ivory">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</span>
                         <span className="text-meta text-stone-dim">{relDate(a.createdAt)}</span>
                         <Badge tone={a.passed ? "good" : "neutral"}>{a.passed ? "Pass" : a.passed === false ? "Not yet" : "—"}</Badge>
                       </li>

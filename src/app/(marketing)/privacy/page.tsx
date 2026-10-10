@@ -66,7 +66,7 @@ export default function PrivacyPage() {
         <p>Some laws (for example Illinois&apos; Biometric Information Privacy Act, Texas&apos; CUBI, and Washington&apos;s biometric law) regulate face geometry and voiceprints. We designed Oriel to avoid collecting them:</p>
         <ul className="mt-3 list-disc space-y-2 pl-5">
           <li><b>Face geometry:</b> the face and pose models run in your browser. Landmarks are reduced each frame to a handful of numbers (such as &ldquo;facing the lens: 0.8&rdquo;) and discarded. We do not create or store face templates and cannot identify you from what we keep.</li>
-          <li><b>Voice:</b> we analyse loudness, pitch movement and timing, and transcribe your words. We do not create or store voiceprints and do not identify speakers.</li>
+          <li><b>Voice:</b> we analyze loudness, pitch movement and timing, and transcribe your words. We do not create or store voiceprints and do not identify speakers.</li>
           <li><b>Written release:</b> before any camera-derived signal is computed, we ask for your electronic signature on this release, and record the exact wording, its version and the time:</li>
         </ul>
         <blockquote className="mt-3 font-display text-body-l text-ivory">{CONSENT_COPY.camera_metrics} {CONSENT_COPY.camera_metrics_release}</blockquote>

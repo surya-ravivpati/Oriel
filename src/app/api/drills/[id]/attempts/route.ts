@@ -14,7 +14,7 @@ import { medianOf } from "@/lib/practice/progress";
 import { recordLessonPractice } from "@/server/lessons";
 
 const Body = z.object({
-  transcript: z.string().trim().min(1, "We didn't catch an answer — try again").max(8000),
+  transcript: z.string().trim().min(1, "We didn't catch an answer. Try again.").max(8000),
   durationMs: z.number().min(500).max(10 * 60_000),
   firstWordLatencyMs: z.number().min(0).max(120_000).nullable(),
   cameraEngagement: z.number().min(0).max(1).nullable(),

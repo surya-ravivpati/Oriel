@@ -68,7 +68,7 @@ export function AppNav({ isAdmin, name, mockProviders }: { isAdmin: boolean; nam
             })}
           </nav>
           <div className="ml-auto flex items-center gap-3">
-            {mockProviders && <span title="No AI provider key configured: the interviewer uses deterministic templates and heuristics." className="hidden font-mono text-meta text-signal-warn sm:block">mock AI</span>}
+            {mockProviders && <span title="No AI provider key configured: the interviewer uses deterministic templates and heuristics." className="hidden text-meta text-signal-warn sm:block">mock AI</span>}
             <AccountMenu name={name} links={account} onSignOut={signOut} active={isOn("/profile") || isOn("/admin")} />
             <button ref={toggle} type="button" onClick={() => setSheet(!sheet)} aria-expanded={sheet} aria-controls="app-sheet"
               className="-mr-2 h-11 rounded-control px-3 text-ui font-medium text-ivory lg:hidden">

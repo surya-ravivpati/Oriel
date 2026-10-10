@@ -23,7 +23,7 @@ export async function extractDocumentText(file: File): Promise<string> {
   } else if (file.type.startsWith("text/") || name.endsWith(".txt") || name.endsWith(".md")) {
     text = buf.toString("utf8");
   } else {
-    throw new HttpError(415, "Upload a PDF, DOCX or text file — or paste the text instead");
+    throw new HttpError(415, "Upload a PDF, DOCX or text file, or paste the text instead");
   }
   text = text.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
   if (text.length < 40) throw new HttpError(422, "We couldn't read text from that file. If it's a scanned PDF, paste the text instead.");

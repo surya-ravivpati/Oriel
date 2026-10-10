@@ -10,7 +10,7 @@ import { VisionTracker } from "@/features/room/engine/vision";
 
 const CHECKS = [
   { key: "light", label: "Light on your face", fails: ["dim", "bright"] },
-  { key: "centre", label: "Centred in the frame", fails: ["offcentre"] },
+  { key: "centre", label: "Centered in the frame", fails: ["offcentre"] },
   { key: "height", label: "Camera at eye level", fails: ["low"] },
   { key: "distance", label: "Close enough", fails: ["far"] },
   { key: "shoulders", label: "Shoulders in view", fails: [] },

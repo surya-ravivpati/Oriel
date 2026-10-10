@@ -355,7 +355,7 @@ export function decide(state: InterviewState, input: AnswerInput): { decision: D
       return follow(s, make({
         action: "FOLLOW_UP", intent: "ask_personal_role", kind: "follow_up", seat: answeringSeat, competency, baseQuestion: null,
         claim: null, acknowledgement: ack(), handoffFromSeat: null, avatarCue: "lean_in",
-        reason: "No first-person action detected — asking what the candidate personally did.",
+        reason: "No first-person action detected; asking what the candidate personally did.",
       }));
     }
     // 7. No result / outcome stated.
@@ -363,7 +363,7 @@ export function decide(state: InterviewState, input: AnswerInput): { decision: D
       return follow(s, make({
         action: "FOLLOW_UP", intent: "ask_result", kind: "follow_up", seat: answeringSeat, competency, baseQuestion: null,
         claim: null, acknowledgement: ack(), handoffFromSeat: null, avatarCue: "lean_in",
-        reason: "Answer has no stated result — asking for the outcome.",
+        reason: "Answer has no stated result; asking for the outcome.",
       }));
     }
   }
@@ -392,7 +392,7 @@ export function decide(state: InterviewState, input: AnswerInput): { decision: D
     return primary({ ...s, curveballsUsed: s.curveballsUsed + 1 }, make({
       action: "NEXT_QUESTION", intent: "curveball", kind: "curveball", seat, competency: "communication", baseQuestion: text,
       claim: null, acknowledgement: "none", handoffFromSeat: seat !== answeringSeat ? answeringSeat : null, avatarCue: "still",
-      reason: "Curveball — unexpected question to test composure.",
+      reason: "Curveball: an unexpected question to test composure.",
     }), false);
   }
 

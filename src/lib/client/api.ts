@@ -15,7 +15,7 @@ export async function api<T = unknown>(url: string, init: RequestInit & { json?:
       body: json !== undefined ? JSON.stringify(json) : rest.body,
     });
   } catch {
-    throw new ApiError(0, "Network problem — check your connection and try again.");
+    throw new ApiError(0, "Network problem. Check your connection and try again.");
   }
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(res.status, (body as { error?: string }).error ?? `Request failed (${res.status})`, (body as { code?: string }).code);

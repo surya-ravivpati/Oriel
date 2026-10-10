@@ -40,7 +40,7 @@ export default async function LessonsPage() {
     return (
       <div>
         <h1 className="max-w-[20ch] text-display-l text-ivory">Your lessons start with one interview.</h1>
-        <p className="mt-5 max-w-[44rem] text-body-l text-stone">Lessons are built from what we measure while you practise: your pace and fillers, how your answers land, your posture and eye contact on camera. Do one interview and we&apos;ll pick the skills that will make the biggest difference for you, using your own answers as the examples.</p>
+        <p className="mt-5 max-w-[44rem] text-body-l text-stone">Lessons are built from what we measure while you practice: your pace and fillers, how your answers land, your posture and eye contact on camera. Do one interview and we&apos;ll pick the skills that will make the biggest difference for you, using your own answers as the examples.</p>
         <ButtonLink href="/practice" size="lg" className="mt-8">Start an interview</ButtonLink>
         <Library title="What you could learn" />
       </div>
@@ -68,7 +68,7 @@ export default async function LessonsPage() {
               </div>
               <div>
                 <p className="text-ui text-stone">In your interview</p>
-                <p className="mt-1 font-mono text-body-l text-ivory">{first.evidence.display}</p>
+                <p className="mt-1 text-body-l text-ivory">{first.evidence.display}</p>
                 <p className="text-ui text-stone-dim">target {first.evidence.target}</p>
                 <LessonSteps l={summarize(first)} className="mt-5" />
                 <span className="mt-5 inline-block text-ui font-medium text-ivory underline decoration-olive-light decoration-1 underline-offset-[0.2em] group-hover:decoration-2">Open the lesson</span>

@@ -47,7 +47,7 @@ export function ConsentDialog({ open, defaults, recordingAllowed, onConfirm, onC
           <Button variant="ghost" onClick={onCancel}>Not now</Button>
           <Button variant="lume" disabled={needsSignature} title={needsSignature ? "Sign to enable camera-based signals, or turn them off" : undefined}
             onClick={() => onConfirm({ ...c, recording: c.recording && recordingAllowed }, CONSENT_VERSION, c.cameraMetrics ? signature.trim() : null)}>
-            {c.microphone ? "I understand — continue" : "Continue in text mode"}
+            {c.microphone ? "Agree and continue" : "Continue in text mode"}
           </Button>
         </div>
       </div>

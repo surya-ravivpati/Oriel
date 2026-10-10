@@ -8,11 +8,6 @@ export function Card({ className, children, as: As = "div", ...rest }: { classNa
   return <As className={cn("rounded-control border border-divider", className)} {...rest}>{children}</As>;
 }
 
-/** The small label above a heading. Quiet: it orients, it doesn't decorate, and never repeats the navigation. */
-export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <p className={cn("text-meta font-medium text-stone", className)}>{children}</p>;
-}
-
 /** A status, said in words with a coloured mark, not wrapped in a pill. */
 export function Badge({ children, tone = "neutral", className }: { children: React.ReactNode; tone?: "neutral" | "lume" | "good" | "warn" | "bad"; className?: string }) {
   const tones = {

@@ -17,7 +17,7 @@ const variants: Record<Variant, string> = {
   lume: ivory,
   secondary: "border border-control text-ivory hover:border-stone hover:bg-surface-1",
   ghost: "text-stone hover:bg-surface-1 hover:text-ivory",
-  danger: "border border-signal-bad/45 text-signal-bad hover:bg-signal-bad/10",
+  danger: "border border-control text-signal-bad hover:bg-signal-bad/10",
 };
 // Touch screens get 44px targets whatever the size; lg matches the landing page's primary action.
 const sizes: Record<Size, string> = { sm: "h-8 px-3 text-meta pointer-coarse:h-11", md: "h-10 px-4 text-ui pointer-coarse:h-11", lg: "h-12 px-6 text-ui" };

@@ -157,14 +157,14 @@ export const FAR_FACE_AREA = 0.03;
 /** What a setup sample gets wrong — shared by the Read and the live setup check, so both judge the same way. */
 export function setupIssues(setup: SetupSample): { key: "dim" | "bright" | "offcentre" | "low" | "far" | "mic" | "noise"; text: string }[] {
   const out: { key: "dim" | "bright" | "offcentre" | "low" | "far" | "mic" | "noise"; text: string }[] = [];
-  if (setup.brightness !== null && setup.brightness < 70) out.push({ key: "dim", text: "Your face was dim — add light in front of you." });
-  if (setup.brightness !== null && setup.brightness > 215) out.push({ key: "bright", text: "Your image was overexposed — reduce direct light or backlight." });
-  if (setup.faceX !== null && Math.abs(setup.faceX - 0.5) > 0.15) out.push({ key: "offcentre", text: "You were off-centre in the frame." });
-  if (setup.faceY !== null && setup.faceY > 0.6) out.push({ key: "low", text: "The camera sits too high or you sat low — raise the laptop to eye level." });
+  if (setup.brightness !== null && setup.brightness < 70) out.push({ key: "dim", text: "Your face was dim. Add light in front of you." });
+  if (setup.brightness !== null && setup.brightness > 215) out.push({ key: "bright", text: "Your image was overexposed. Reduce direct light or backlight." });
+  if (setup.faceX !== null && Math.abs(setup.faceX - 0.5) > 0.15) out.push({ key: "offcentre", text: "You were off-center in the frame." });
+  if (setup.faceY !== null && setup.faceY > 0.6) out.push({ key: "low", text: "The camera sits too high or you sat low. Raise the laptop to eye level." });
   // Face area is the face mesh's bounding box. Normal head-and-shoulders framing measured 0.05–0.18
   // in validation (smaller with head coverings, which the mesh doesn't include), so only a really
   // small face counts as "far" (docs/validation/camera-report.md).
-  if (setup.faceSize !== null && setup.faceSize < FAR_FACE_AREA) out.push({ key: "far", text: "You were far from the camera — move a little closer." });
+  if (setup.faceSize !== null && setup.faceSize < FAR_FACE_AREA) out.push({ key: "far", text: "You were far from the camera. Move a little closer." });
   if (setup.micLevelDb !== null && setup.micLevelDb < -45) out.push({ key: "mic", text: "Your microphone level was low." });
   if (setup.noiseFloorDb !== null && setup.noiseFloorDb > -40) out.push({ key: "noise", text: "There was noticeable background noise." });
   return out;
@@ -195,7 +195,7 @@ export function computeRead(answers: AnswerInputRow[], audio: AudioSample[], vis
     key: "pauses", label: "Pauses", value: round(mean(allPauses.map((p) => p.durationMs / 1000)), 1),
     low: null, high: round(Math.max(0, ...allPauses.map((p) => p.durationMs / 1000)), 1), unit: "s avg",
     confidence: audio.length && spokenPer.length ? "high" : "low", targetLow: 0.5, targetHigh: 1.5,
-    note: audio.length && spokenPer.length ? `${allPauses.length} pauses over 0.7s, ${longPauses.length} over 2s. The high end is your longest.` : "Not measured — answers were typed, so there was no audio to analyse.",
+    note: audio.length && spokenPer.length ? `${allPauses.length} pauses over 0.7s, ${longPauses.length} over 2s. The high end is your longest.` : "Not measured: answers were typed, so there was no audio to analyze.",
     detail: { count: allPauses.length, long: longPauses.length },
   });
 
@@ -241,7 +241,7 @@ export function computeRead(answers: AnswerInputRow[], audio: AudioSample[], vis
     key: "recovery_ms", label: "Recovery", value: round(median(latHard.length ? latHard : latAll), 0),
     low: round(quantile(latHard.length ? latHard : latAll, 0.25), 0), high: round(quantile(latHard.length ? latHard : latAll, 0.75), 0),
     unit: "ms", confidence: latAll.length ? "medium" : "low", targetLow: 500, targetHigh: 2500,
-    note: !latAll.length ? "Not measured — recovery needs spoken answers." : latHard.length ? `Median time to your first word after ${latHard.length} harder questions (follow-ups, challenges, curveballs).` : "Median time to your first word after each question.",
+    note: !latAll.length ? "Not measured: recovery needs spoken answers." : latHard.length ? `Median time to your first word after ${latHard.length} harder questions (follow-ups, challenges, curveballs).` : "Median time to your first word after each question.",
     detail: { hardCount: latHard.length, overallMedian: median(latAll) },
   });
 
@@ -263,7 +263,7 @@ export function computeRead(answers: AnswerInputRow[], audio: AudioSample[], vis
       key: "camera_engagement", label: "Camera engagement", value: est === null ? null : round(est * 100, 0),
       low: est === null ? null : round(Math.max(0, est * 100 - 12), 0), high: est === null ? null : round(Math.min(100, est * 100 + 12), 0),
       unit: "% (estimated)", confidence: est === null ? "low" : "medium", targetLow: 55, targetHigh: 90,
-      note: "Estimated from head pose and eye position while you spoke. Webcams misread gaze, especially with glasses or off-centre cameras — treat this as approximate. Looking away to think is normal.",
+      note: "Estimated from head pose and eye position while you spoke. Webcams misread gaze, especially with glasses or off-center cameras, so treat this as approximate. Looking away to think is normal.",
       detail: { samples: inAnswers.length },
     });
   }
@@ -287,15 +287,15 @@ export function computeRead(answers: AnswerInputRow[], audio: AudioSample[], vis
       `${n("fidget")} restless stretch${n("fidget") === 1 ? "" : "es"}`,
     ].filter(Boolean).join(", ");
     const gaps = [
-      !leanMeasured ? "Slouch and lean weren't measured — they need the 2-second calibration at the start."
-        : !slouchMeasured ? "Slouch wasn't measured — your shoulders weren't in view during calibration." : "",
+      !leanMeasured ? "Slouch and lean weren't measured: they need the 2-second calibration at the start."
+        : !slouchMeasured ? "Slouch wasn't measured: your shoulders weren't in view during calibration." : "",
       shoulderShare < 0.8 ? `Your shoulders were in view ${Math.round(shoulderShare * 100)}% of the time, and posture is only measured then.` : "",
     ].filter(Boolean).join(" ");
     metrics.push({
       key: "movement", label: "Posture & movement", value: swayStd === null ? null : round(swayStd * 100, 1), low: null, high: null,
       unit: "sway", confidence: pv2.length >= 20 ? "medium" : "low", targetLow: 0, targetHigh: 4,
       note: pv2.length >= 20
-        ? `${counts[0].toUpperCase()}${counts.slice(1)}.${gaps ? ` ${gaps}` : ""} See the timeline — shifts are not good or bad on their own.`
+        ? `${counts[0].toUpperCase()}${counts.slice(1)}.${gaps ? ` ${gaps}` : ""} See the timeline; shifts are not good or bad on their own.`
         : "Not enough frames with your shoulders in view to estimate posture.",
       detail: { events, meanMotion: round(mean(motion), 3), slouchMeasured, leanMeasured, shoulderShare: round(shoulderShare, 2) },
     });
@@ -315,12 +315,12 @@ export function computeRead(answers: AnswerInputRow[], audio: AudioSample[], vis
   const cam = metrics.find((m) => m.key === "camera_engagement");
   if (cam && cam.value === null) {
     const faceFrames = vision.filter((v) => v.face).length;
-    cam.note = !vision.length ? "Not measured — no camera frames were available for this session."
-      : faceFrames >= 10 && vision.every((v) => v.engaged === null) ? "Not measured — camera engagement needs the 2-second lens calibration at the start, so it is judged against your own setup rather than a generic baseline."
+    cam.note = !vision.length ? "Not measured: no camera frames were available for this session."
+      : faceFrames >= 10 && vision.every((v) => v.engaged === null) ? "Not measured: camera engagement needs the 2-second lens calibration at the start, so it is judged against your own setup rather than a generic baseline."
       : "Not enough frames with your face visible to estimate camera engagement.";
   }
   const mov = metrics.find((m) => m.key === "movement");
-  if (mov && mov.value === null && !vision.length) mov.note = "Not measured — no camera frames were available for this session.";
+  if (mov && mov.value === null && !vision.length) mov.note = "Not measured: no camera frames were available for this session.";
   return { metrics, per };
 }
 

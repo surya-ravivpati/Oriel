@@ -295,7 +295,7 @@ export class RoomController {
       this.o.provider.store.candidateSpeaking = true;
     }
     if (this.answerStart === null) {
-      if (now - this.questionEnd > 25000 && !this.state.hint) this.set({ hint: "Take your time. Start whenever you're ready — or press Done if you'd like to move on." });
+      if (now - this.questionEnd > 25000 && !this.state.hint) this.set({ hint: "Take your time. Start whenever you're ready, or press Done to move on." });
       return;
     }
     this.o.provider.store.candidateSpeaking = mic.voiced;

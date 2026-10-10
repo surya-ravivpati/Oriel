@@ -14,7 +14,7 @@ export default function RouteError({ error, reset }: { error: Error & { digest?:
           <p className="text-ui text-stone">Something went wrong</p>
           <h1 className="mt-3 text-display-l text-ivory">This page didn&apos;t load.</h1>
           <p className="mt-5 text-body-l text-stone">Nothing you&apos;ve saved is lost. Try again, and if it keeps happening, come back in a few minutes.</p>
-          {error.digest && <p className="mt-3 text-meta text-stone-dim">Reference <span className="font-mono">{error.digest}</span></p>}
+          {error.digest && <p className="mt-3 text-meta text-stone-dim">Reference {error.digest}</p>}
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
             <button type="button" onClick={reset} className="inline-flex h-12 items-center rounded-button border border-transparent bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-ivory-press active:scale-[0.97]">Try again</button>
             <Link href="/" className="text-ui text-stone underline decoration-1 underline-offset-[0.2em] transition-colors duration-[var(--dur-press)] hover:text-ivory">Go to the home page</Link>

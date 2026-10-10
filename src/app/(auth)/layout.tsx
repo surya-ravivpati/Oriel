@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <figure className="w-full max-w-[34rem] self-center">
           <InterviewerStage personaIds={["hiring_manager"]} className="mx-auto h-[clamp(14rem,9rem+12vw,22rem)] w-full" />
           <blockquote className="hang -mt-2 text-display-m text-ivory">“Tell me about a time you had to make a decision without all the data you wanted.”</blockquote>
-          <figcaption className="mt-4 text-ui text-stone"><span className="text-ivory">Daniel</span>, hiring manager. One of six interviewers you can practise with.</figcaption>
+          <figcaption className="mt-4 text-ui text-stone"><span className="text-ivory">Daniel</span>, hiring manager. One of six interviewers you can practice with.</figcaption>
         </figure>
         <p className="text-meta text-stone-dim">Practice only. Your interviewer is an AI, and every session says so.</p>
       </aside>

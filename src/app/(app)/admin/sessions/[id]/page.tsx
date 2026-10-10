@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/session";
 import { adminSession } from "@/server/admin";
-import { Card, Eyebrow, Badge } from "@/components/ui/Card";
+import { Card, Badge } from "@/components/ui/Card";
 import { RetryButton } from "@/components/admin/RetryButton";
 import { mmss } from "@/lib/format";
 
@@ -21,31 +21,31 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ i
       <Link href="/admin" className="text-ui text-stone-dim hover:text-ivory">← Admin</Link>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Eyebrow>Session {id}</Eyebrow>
-          <h1 className="mt-3 text-display-m text-ivory">{d.interview.role} · {d.interview.mode} · pressure {d.interview.pressure}</h1>
+          <h1 className="text-display-m text-ivory">{d.interview.role} · {d.interview.mode} · pressure {d.interview.pressure}</h1>
+          <p className="mt-1 text-meta text-stone-dim">Session {id}</p>
           <div className="mt-3 flex flex-wrap gap-2"><Badge>{d.session.status}</Badge><Badge tone={d.session.analysisStatus === "complete" ? "good" : d.session.analysisStatus === "failed" ? "bad" : "neutral"}>analysis {d.session.analysisStatus}</Badge><Badge>llm {d.session.llmProvider}</Badge><Badge>tts {d.session.ttsProvider}</Badge><Badge>avatar {d.session.avatarProvider ?? "—"}</Badge>{d.signals.map((s) => <Badge key={s.kind}>{s.kind} batches {s.n}</Badge>)}</div>
-          {d.session.analysisError && <p className="mt-2 font-mono text-meta text-signal-bad">{d.session.analysisError}</p>}
+          {d.session.analysisError && <p className="mt-2 text-meta text-signal-bad">{d.session.analysisError}</p>}
         </div>
         <RetryButton sessionId={id} />
       </header>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <Card className="p-5"><Eyebrow>Cost record</Eyebrow><p className="mt-2 font-mono text-body-l text-ivory">${total.toFixed(4)}</p><ul className="mt-3 space-y-1 text-ui text-stone">{byCat.map(([k, v]) => <li key={k} className="flex justify-between"><span>{k}</span><span className="font-mono">${v.toFixed(4)}</span></li>)}</ul></Card>
-        <Card className="p-5"><Eyebrow>Pipeline</Eyebrow>{d.jobs.map((j) => <div key={j.id} className="mt-2 text-ui"><p>{j.status} · attempts {j.attempts}</p>{j.error && <p className="font-mono text-meta text-signal-bad">{j.error}</p>}<ul className="mt-2 space-y-0.5 font-mono text-meta text-stone-dim">{Object.entries(j.stepTimings ?? {}).map(([k, v]) => <li key={k}>{k}: {v}ms</li>)}</ul></div>)}</Card>
-        <Card className="p-5"><Eyebrow>Memory ledger (claims)</Eyebrow><ul className="mt-2 space-y-1 text-ui">{d.claims.map((c) => <li key={c.id}><Badge tone={c.status === "weak" ? "warn" : c.status === "probed" ? "lume" : c.status === "supported" ? "good" : "neutral"}>{c.status}</Badge> <span className="text-stone">#{c.answerSeq} {c.text}</span></li>)}</ul></Card>
+        <Card className="p-5"><h2 className="text-ui font-medium text-ivory">Cost record</h2><p className="mt-2 text-body-l text-ivory">${total.toFixed(4)}</p><ul className="mt-3 space-y-1 text-ui text-stone">{byCat.map(([k, v]) => <li key={k} className="flex justify-between"><span>{k}</span>${v.toFixed(4)}</li>)}</ul></Card>
+        <Card className="p-5"><h2 className="text-ui font-medium text-ivory">Pipeline</h2>{d.jobs.map((j) => <div key={j.id} className="mt-2 text-ui"><p>{j.status} · attempts {j.attempts}</p>{j.error && <p className="text-meta text-signal-bad">{j.error}</p>}<ul className="mt-2 space-y-0.5 text-meta text-stone-dim">{Object.entries(j.stepTimings ?? {}).map(([k, v]) => <li key={k}>{k}: {v}ms</li>)}</ul></div>)}</Card>
+        <Card className="p-5"><h2 className="text-ui font-medium text-ivory">Memory ledger (claims)</h2><ul className="mt-2 space-y-1 text-ui">{d.claims.map((c) => <li key={c.id}><Badge tone={c.status === "weak" ? "warn" : c.status === "probed" ? "lume" : c.status === "supported" ? "good" : "neutral"}>{c.status}</Badge> <span className="text-stone">#{c.answerSeq} {c.text}</span></li>)}</ul></Card>
       </section>
 
       <section>
-        <Eyebrow>Conversation &amp; interviewer decisions</Eyebrow>
+        <h2 className="text-ui font-medium text-ivory">Conversation &amp; interviewer decisions</h2>
         <ol className="mt-4 space-y-3">
           {d.questions.map((q) => {
             const a = answersByQ.get(q.id);
             return (
               <li key={q.id} className="rounded-control border border-divider p-5 text-ui">
-                <p className="font-mono text-meta text-stone-dim">{mmss(q.askedAtMs)} · {q.kind} · {q.competency ?? "—"} · difficulty {q.difficulty}</p>
+                <p className="text-meta text-stone-dim">{mmss(q.askedAtMs)} · {q.kind} · {q.competency ?? "—"} · difficulty {q.difficulty}</p>
                 <p className="mt-1 text-olive-light/90">Decision: {q.decisionReason}</p>
                 <p className="mt-2 text-ivory">Q: {q.text}</p>
-                {a && <div className="mt-3 border-t border-divider pt-3"><p className="text-stone">A ({a.inputMode}{a.interrupted ? ", interrupted" : ""}, first word {a.firstWordLatencyMs ?? "—"}ms): {a.text}</p>{a.serverText && a.serverText !== a.text && <p className="mt-1 text-stone-dim">Server transcript: {a.serverText}</p>}<p className="mt-1 font-mono text-meta text-stone-dim">flags {JSON.stringify(a.flags)}</p>{a.analysis && <p className="mt-1 font-mono text-meta text-stone-dim">analyzer {JSON.stringify(a.analysis).slice(0, 400)}</p>}</div>}
+                {a && <div className="mt-3 border-t border-divider pt-3"><p className="text-stone">A ({a.inputMode}{a.interrupted ? ", interrupted" : ""}, first word {a.firstWordLatencyMs ?? "—"}ms): {a.text}</p>{a.serverText && a.serverText !== a.text && <p className="mt-1 text-stone-dim">Server transcript: {a.serverText}</p>}<p className="mt-1 text-meta text-stone-dim">flags {JSON.stringify(a.flags)}</p>{a.analysis && <p className="mt-1 text-meta text-stone-dim">analyzer {JSON.stringify(a.analysis).slice(0, 400)}</p>}</div>}
               </li>
             );
           })}
@@ -53,13 +53,13 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ i
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Card className="p-5"><Eyebrow>Metrics &amp; confidence</Eyebrow><ul className="mt-3 space-y-1.5 text-ui">{d.metrics.map((m) => <li key={m.id} className="flex justify-between gap-4"><span>{m.key}</span><span className="font-mono text-stone">{m.value ?? "—"} {m.unit} [{m.low ?? "·"}–{m.high ?? "·"}] · {m.confidence}</span></li>)}</ul></Card>
-        <Card className="p-5"><Eyebrow>Playback generation</Eyebrow><ul className="mt-3 space-y-3 text-ui">{d.clips.map((c) => <li key={c.id}><p className="font-mono text-meta text-stone-dim">{mmss(c.startMs)}–{mmss(c.endMs)} · {c.signal} · {c.confidence} · {c.source}</p><p className="text-ivory">{c.title}</p><p className="text-stone">{c.observed}</p><p className="text-stone">{c.suggestion}</p></li>)}</ul></Card>
+        <Card className="p-5"><h2 className="text-ui font-medium text-ivory">Metrics &amp; confidence</h2><ul className="mt-3 space-y-1.5 text-ui">{d.metrics.map((m) => <li key={m.id} className="flex justify-between gap-4"><span>{m.key}</span><span className="text-stone">{m.value ?? "—"} {m.unit} [{m.low ?? "·"}–{m.high ?? "·"}] · {m.confidence}</span></li>)}</ul></Card>
+        <Card className="p-5"><h2 className="text-ui font-medium text-ivory">Playback generation</h2><ul className="mt-3 space-y-3 text-ui">{d.clips.map((c) => <li key={c.id}><p className="text-meta text-stone-dim">{mmss(c.startMs)}–{mmss(c.endMs)} · {c.signal} · {c.confidence} · {c.source}</p><p className="text-ivory">{c.title}</p><p className="text-stone">{c.observed}</p><p className="text-stone">{c.suggestion}</p></li>)}</ul></Card>
       </section>
 
       <section>
-        <Eyebrow>Event log (decisions, latency, AI outputs, errors)</Eyebrow>
-        <ol className="mt-4 max-h-[600px] overflow-y-auto rounded-control border border-divider font-mono text-meta">
+        <h2 className="text-ui font-medium text-ivory">Event log (decisions, latency, AI outputs, errors)</h2>
+        <ol className="mt-4 max-h-[600px] overflow-y-auto rounded-control border border-divider text-meta">
           {d.events.map((e) => <li key={e.id} className="border-b border-divider px-4 py-2"><span className="text-stone-dim">{e.createdAt.toLocaleTimeString()}</span> <span className={e.type === "error" ? "text-signal-bad" : e.type === "fallback" ? "text-signal-warn" : e.type === "latency" ? "text-signal-good" : "text-olive-light"}>{e.type}</span> {e.name} {e.durationMs !== null ? `${e.durationMs}ms` : ""} <span className="text-stone-dim">{JSON.stringify(e.data).slice(0, 500)}</span></li>)}
         </ol>
       </section>

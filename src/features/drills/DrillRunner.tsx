@@ -251,7 +251,7 @@ export function DrillRunner({ drill, sourceSessionId, serverStt, lesson }: { dri
               <div>
                 <p className="text-ui text-stone">{result.measurement.label}</p>
                 <p className="mt-2 flex items-baseline gap-2"><span className="text-display-l tabular-nums text-ivory">{result.measurement.value ?? "—"}</span><span className="text-body-l text-stone">{result.measurement.unit}</span></p>
-                {result.baseline !== null && <p className="mt-2 text-ui text-stone">Your baseline: <span className="font-mono">{Math.round(result.baseline * 10) / 10}</span> {result.measurement.unit}</p>}
+                {result.baseline !== null && <p className="mt-2 text-ui text-stone">Your baseline: {Math.round(result.baseline * 10) / 10} {result.measurement.unit}</p>}
               </div>
               {result.measurement.passed !== null && <Badge tone={result.measurement.passed ? "good" : "warn"}>{result.measurement.passed ? "Target met" : "Not yet"}</Badge>}
             </div>

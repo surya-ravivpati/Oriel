@@ -31,7 +31,7 @@ test("text-mode journey from signup to deletion", async ({ page }) => {
   await dialog.getByRole("switch").nth(0).click(); // microphone off
   await dialog.getByRole("switch").nth(1).click(); // camera off
   await dialog.getByRole("button", { name: "Continue in text mode" }).click();
-  await expect(page.getByText("Text mode — you'll type your answers")).toBeVisible();
+  await expect(page.getByText("Text mode: you'll type your answers")).toBeVisible();
   await page.getByRole("button", { name: "Enter the Room" }).click();
   await expect(page.getByText(/^Captain Byte · /)).toBeVisible({ timeout: 30_000 });
 
@@ -41,20 +41,20 @@ test("text-mode journey from signup to deletion", async ({ page }) => {
     "I managed a team of 9. I set weekly goals, I paired design with research, and we shipped the scheduling app to 120 clinics in five months.",
   ];
   for (const a of answers) {
-    const box = page.getByPlaceholder("Type your answer — Enter to send");
+    const box = page.getByPlaceholder("Type your answer. Enter sends it.");
     await expect(box).toBeVisible({ timeout: 60_000 });
     await box.fill(a);
     await box.press("Enter");
     await expect(box).toBeHidden();
   }
-  await expect(page.getByPlaceholder("Type your answer — Enter to send")).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByPlaceholder("Type your answer. Enter sends it.")).toBeVisible({ timeout: 60_000 });
   await page.getByRole("button", { name: "End", exact: true }).click();
   await page.getByRole("button", { name: "End and see my Read" }).click();
 
   await expect(page).toHaveURL(/playback\//, { timeout: 60_000 });
   await expect(page.getByText("The moments that mattered")).toBeVisible({ timeout: 120_000 });
   await expect(page.getByText("What we measured")).toBeVisible();
-  await expect(page.getByText("Not measured — recovery needs spoken answers.")).toBeVisible();
+  await expect(page.getByText("Not measured: recovery needs spoken answers.")).toBeVisible();
   const transcript = page.getByText("Transcript", { exact: true });
   await expect(transcript).toBeVisible();
   await expect(page.getByText(/I'm an AI interviewer|I am an AI interviewer|AI interviewer/).first()).toBeVisible();

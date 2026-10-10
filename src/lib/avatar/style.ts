@@ -57,7 +57,7 @@ export const BOT_VOICES = [
 export type BotVoice = (typeof BOT_VOICES)[number]["id"];
 
 /** One fixed line for previews, so each voice is synthesised once and then served from cache. */
-export const VOICE_SAMPLE = "Thanks for making the time today. Let's start with you — tell me about yourself.";
+export const VOICE_SAMPLE = "Thanks for making the time today. Let's start with you: tell me about yourself.";
 
 export interface AvatarStyle {
   shape: BotShape;

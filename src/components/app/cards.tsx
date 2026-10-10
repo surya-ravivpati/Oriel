@@ -15,7 +15,7 @@ export function PlaybackClipCard({ clip, href, active, onClick, compact }: {
   const body = (
     <>
       <div className="flex items-baseline gap-3">
-        <span className="font-mono text-meta text-olive-light">{mmss(clip.startMs)}</span>
+        <span className="text-meta text-olive-light">{mmss(clip.startMs)}</span>
         <span className="text-ui font-medium text-ivory">{clip.title}</span>
         <span className="ml-auto hidden sm:block"><ConfidenceMark confidence={clip.confidence} /></span>
       </div>
@@ -24,14 +24,14 @@ export function PlaybackClipCard({ clip, href, active, onClick, compact }: {
       <p className="mt-2 text-ui text-ivory">{clip.suggestion.startsWith("Try:") ? <><span className="font-medium text-olive-light">Try:</span>{clip.suggestion.slice(4)}</> : clip.suggestion}</p>
     </>
   );
-  const cls = cn("-mx-2 block w-[calc(100%+1rem)] rounded-control border-t px-2 py-5 text-left transition-colors duration-[var(--dur-press)]", active ? "border-olive-light bg-olive-ground/60" : "border-divider hover:bg-surface-1");
+  const cls = cn("-mx-2 block w-[calc(100%+1rem)] rounded-control border-t px-2 py-5 text-left transition-colors duration-[var(--dur-press)]", active ? "border-transparent bg-surface-2" : "border-divider hover:bg-surface-1");
   if (href) return <Link href={href} className={cls}>{body}</Link>;
   return <button type="button" onClick={onClick} className={cls} aria-pressed={active}>{body}</button>;
 }
 
 export function DrillCard({ drill, recommended, lastValue }: { drill: { id: string; title: string; objective: string; durationSec: number; requiresCamera: boolean }; recommended?: string | null; lastValue?: string | null }) {
   return (
-    <Link href={`/drills/${drill.id}`} className={cn("group flex flex-col border-t pb-2 pt-4 transition-colors duration-[var(--dur-press)]", recommended ? "border-olive-light" : "border-divider-strong hover:border-stone-dim")}>
+    <Link href={`/drills/${drill.id}`} className={cn("group flex flex-col border-t pb-2 pt-4 transition-colors duration-[var(--dur-press)]", "border-divider-strong hover:border-stone-dim")}>
       <div className="flex items-center justify-between gap-3">
         <span className="text-meta text-stone-dim">{Math.round(drill.durationSec / 60) || 1} min{drill.requiresCamera ? " · camera" : ""}</span>
         {recommended && <span className="text-meta font-medium text-olive-light">Recommended</span>}
@@ -49,7 +49,7 @@ export function DrillCard({ drill, recommended, lastValue }: { drill: { id: stri
 
 export function LadderStep({ step, current }: { step: { level: number; name: string; description: string; unlocked: boolean; completed: boolean; qualifying: number; mode: string; personaIds: string[]; pressure: number }; current: boolean }) {
   return (
-    <div className={cn("relative grid grid-cols-[2.25rem_1fr] items-baseline gap-x-4 border-t py-5", current ? "border-olive-light" : "border-divider")}>
+    <div className="relative grid grid-cols-[2.25rem_1fr] items-baseline gap-x-4 border-t border-divider py-5">
       <span className={cn("font-display text-display-m leading-none", step.completed ? "text-signal-good" : current ? "text-olive-light" : "text-stone-dim")}>{step.level}</span>
       <div className="min-w-0">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">

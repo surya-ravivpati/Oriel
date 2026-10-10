@@ -7,8 +7,8 @@ export type MetricMap = Record<string, number | null>;
 
 export const PROGRESS_METRICS: { key: string; label: string; unit: string; better: "lower" | "higher" | "target"; target?: number; format: (v: number) => string }[] = [
   { key: "filler_per_min", label: "Filler", unit: "/min", better: "lower", format: (v) => `${v.toFixed(1)}/min` },
-  { key: "recovery_ms", label: "Recovery", unit: "s", better: "lower", format: (v) => `${(v / 1000).toFixed(1)} sec` },
-  { key: "pace_wpm", label: "Pace", unit: "wpm", better: "target", target: 140, format: (v) => `${Math.round(v)} WPM` },
+  { key: "recovery_ms", label: "Recovery", unit: "s", better: "lower", format: (v) => `${(v / 1000).toFixed(1)} s` },
+  { key: "pace_wpm", label: "Pace", unit: "wpm", better: "target", target: 140, format: (v) => `${Math.round(v)} wpm` },
   { key: "structure_score", label: "Structure", unit: "%", better: "higher", format: (v) => `${Math.round(v)}%` },
   { key: "specificity", label: "Specificity", unit: "%", better: "higher", format: (v) => `${Math.round(v)}%` },
   { key: "hedges_per_min", label: "Hedging", unit: "/min", better: "lower", format: (v) => `${v.toFixed(1)}/min` },
@@ -70,5 +70,5 @@ export function recommendDrill(latest: MetricMap): { drillId: string; reason: st
     [(latest.camera_engagement ?? 100) < 45, "hold_the_lens", "Estimated camera engagement was low."],
   ];
   const hit = checks.find(([c]) => c);
-  return hit ? { drillId: hit[1], reason: hit[2] } : { drillId: "opener_30s", reason: "Sharpen your opener — it sets the tone for everything after." };
+  return hit ? { drillId: hit[1], reason: hit[2] } : { drillId: "opener_30s", reason: "Sharpen your opener. It sets the tone for everything after." };
 }

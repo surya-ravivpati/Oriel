@@ -48,7 +48,7 @@ export default function TrustPage() {
                 ["Filler count error", mean(abs(s.map((r) => r.error.fillers))).toFixed(2)],
                 ["First-word timing error", `${Math.round(mean(abs(s.map((r) => r.error.recoveryMs))))} ms`],
                 ["Pause length error", `${Math.round(mean(abs(s.map((r) => r.error.pauseMs))))} ms`],
-              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-body-l text-ivory">{v}</p><p className="text-meta text-stone-dim">mean absolute</p></div>)}
+              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 text-body-l text-ivory">{v}</p><p className="text-meta text-stone-dim">mean absolute</p></div>)}
             </div>
             <div className="mt-6 overflow-x-auto" tabIndex={0} role="region" aria-label="Speech measurement errors by accent">
               <table className="w-full min-w-[560px] text-ui">
@@ -78,13 +78,13 @@ export default function TrustPage() {
                 ["Face detected", `${Math.round((c.filter((r) => r.faceDetected).length / c.length) * 100)}%`],
                 ["Lens gaze recognised", `${Math.round((c.filter((r) => r.gaze === "camera" && r.classifiedAs === "camera").length / Math.max(1, c.filter((r) => r.gaze === "camera").length)) * 100)}%`],
                 ["Looking away recognised", `${Math.round((c.filter((r) => r.gaze === "away" && r.classifiedAs === "away").length / Math.max(1, c.filter((r) => r.gaze === "away").length)) * 100)}%`],
-              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-body-l text-ivory">{v}</p></div>)}
+              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 text-body-l text-ivory">{v}</p></div>)}
             </div>
             <div className="mt-6 overflow-x-auto" tabIndex={0} role="region" aria-label="Camera signal results">
               <table className="w-full min-w-[560px] text-ui">
                 <thead className="text-left text-meta text-stone-dim"><tr><th className="py-2 font-normal">Image</th><th className="font-normal">Skin tone · eyewear · covering · light</th><th className="font-normal">Truth</th><th className="font-normal">Estimate</th><th className="font-normal">Result</th></tr></thead>
                 <tbody>{c.map((r) => (
-                  <tr key={r.file} className="border-t border-divider"><td className="py-2 font-mono text-meta">{r.file}</td><td>{r.skinTone} · {r.eyewear} · {r.headCovering} · {r.lighting}</td><td>{r.gaze}</td><td>{r.engagement ?? "n/a"}</td><td className={r.classifiedAs === r.gaze ? "text-signal-good" : "text-signal-bad"}>{r.classifiedAs === r.gaze ? "correct" : `missed (${r.classifiedAs})`}</td></tr>
+                  <tr key={r.file} className="border-t border-divider"><td className="py-2 text-meta">{r.file}</td><td>{r.skinTone} · {r.eyewear} · {r.headCovering} · {r.lighting}</td><td>{r.gaze}</td><td>{r.engagement ?? "n/a"}</td><td className={r.classifiedAs === r.gaze ? "text-signal-good" : "text-signal-bad"}>{r.classifiedAs === r.gaze ? "correct" : `missed (${r.classifiedAs})`}</td></tr>
                 ))}</tbody>
               </table>
             </div>
@@ -101,7 +101,7 @@ export default function TrustPage() {
                 ["Sitting back / leaning in recognised", `${p.filter((r) => r.kind === r.expected).length}/${p.length}`],
                 ["Slouches from distance alone", `${p.filter((r) => r.kind === "slouch").length}`],
                 ["Still frames read as restless", `${still.reduce((a, r) => a + r.restless, 0)}/${still.reduce((a, r) => a + r.frames, 0)}`],
-              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-body-l text-ivory">{v}</p></div>)}
+              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 text-body-l text-ivory">{v}</p></div>)}
             </div>
             <p className="mt-4 text-ui text-stone"><span className="text-ivory">What we changed:</span> slouch used to be measured as a raw head-to-shoulder height, which shrinks as you sit back, so sitting back could read as slouching. It is now a proportion of your shoulder width, which distance doesn&apos;t change; frames where you&apos;re looking down at notes are ignored; and the Read says when posture wasn&apos;t measured instead of reporting zero. Restlessness used to include your wrists, which are usually off-screen and guessed; a perfectly still person flickered as &ldquo;moving&rdquo;. It now uses your head and shoulders only, so talking with your hands doesn&apos;t count. Real slouching hasn&apos;t been tested yet: that needs recordings of people.</p>
           </>

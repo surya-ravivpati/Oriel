@@ -63,13 +63,13 @@ export function measureDrill(drill: DrillDef, input: DrillInput, baseline: numbe
     }
     case "pace_wpm": {
       const wpm = spoken ? answer().wpm : null;
-      if (wpm === null) return { value: null, unit: "wpm", label: "Pace", passed: null, details: { reason: spoken ? "Too few words to measure pace — answer for longer." : "Pace is measured from your voice — speak this one." } };
+      if (wpm === null) return { value: null, unit: "wpm", label: "Pace", passed: null, details: { reason: spoken ? "Too few words to measure pace. Answer for longer." : "Pace is measured from your voice, so speak this one." } };
       const v = Math.round(wpm);
       return { value: v, unit: "wpm", label: "Pace", passed: v >= 125 && v <= 165, details: { direction: v > 165 ? "fast" : v < 125 ? "slow" : "steady" } };
     }
     case "vocal_variety": {
       const st = spoken ? answer().pitchVarietySt : null;
-      if (st === null) return { value: null, unit: "semitones", label: "Pitch movement", passed: null, details: { reason: spoken ? "Not enough voiced audio to measure pitch — answer for longer, a little louder." : "Pitch is measured from your voice — speak this one." } };
+      if (st === null) return { value: null, unit: "semitones", label: "Pitch movement", passed: null, details: { reason: spoken ? "Not enough voiced audio to measure pitch. Answer for longer, a little louder." : "Pitch is measured from your voice, so speak this one." } };
       const v = r1(st);
       return { value: v, unit: "semitones", label: "Pitch movement", passed: v >= 2.5 || (baseline !== null && v >= baseline * 1.2), details: {} };
     }
@@ -86,7 +86,7 @@ export function measureDrill(drill: DrillDef, input: DrillInput, baseline: numbe
       const face = (input.vision ?? []).filter((v) => v.face);
       const measured = face.filter((v) => v.slouch !== null);
       if (face.length < 12 || measured.length < face.length * 0.6) {
-        return { value: null, unit: "%", label: "Upright", passed: null, details: { reason: "Posture wasn't measured — calibrate with your shoulders in view, then answer." } };
+        return { value: null, unit: "%", label: "Upright", passed: null, details: { reason: "Posture wasn't measured. Calibrate with your shoulders in view, then answer." } };
       }
       const off = measured.filter((v) => { const k = postureKind(v); return k === "slouch" || k === "fidget"; }).length;
       const upright = Math.round((1 - off / measured.length) * 100);

@@ -83,7 +83,7 @@ export function assess(input: PlannerInput): Assessment[] {
       key: "pace", metricKey: "pace_wpm", value: v, need: v > 160 ? (v - 160) / 40 : v < 120 ? (120 - v) / 40 : 0,
       evidence: {
         value: v, unit: "wpm", display: `${v} words a minute`, target: "120–160 words a minute", confidence: pace.confidence,
-        facts: [`${v} words a minute overall — ${fast ? "faster" : v < 120 ? "slower" : "within"} than the 120–160 range`, ...(extreme ? [`${fast ? "fastest" : "slowest"} answer: ${Math.round(extreme.wpm!)} words a minute`] : [])],
+        facts: [`${v} words a minute overall, ${fast ? "faster than" : v < 120 ? "slower than" : "within"} the 120–160 range`, ...(extreme ? [`${fast ? "fastest" : "slowest"} answer: ${Math.round(extreme.wpm!)} words a minute`] : [])],
         quotes: extreme ? [quoteOf(sessionId, extreme, sentences(extreme.answer.text).slice(0, 2).join(" "), `${Math.round(extreme.wpm!)} words a minute`)] : [],
       },
       focus: null,

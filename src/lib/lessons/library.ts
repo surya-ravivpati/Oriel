@@ -40,7 +40,7 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
     drillId: "replace_filler", goal: "Under 3 fillers a minute in an interview.", rewrites: true,
   },
   pace: {
-    key: "pace", track: "delivery", title: "Find a steady pace", promise: "Speak at a pace people can follow — and slow down for what matters.",
+    key: "pace", track: "delivery", title: "Find a steady pace", promise: "Speak at a pace people can follow, and slow down for what matters.",
     why: "Rushing reads as nerves and makes your best results fly past; dragging loses attention. A conversational pace, slowing for key facts, sounds in control.",
     steps: [
       { title: "Aim for 130–150 words a minute", body: "Quick enough to sound energetic, slow enough to follow. The drill shows you where you are." },
@@ -56,18 +56,18 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
     steps: [
       { title: "Pick three words to stress", body: "In each answer: your action, the number, the result. Give those words more pitch and a touch more volume." },
       { title: "Pause before the payoff", body: "A short pause right before the key number makes it land." },
-      { title: "Smile on the good news", body: "It lifts your pitch naturally — they can hear it." },
+      { title: "Smile on the good news", body: "It lifts your pitch naturally, and they can hear it." },
       { title: "Vary the length of sentences", body: "A short sentence after a long one sounds decisive." },
     ],
     drillId: "emphasis", goal: "At least 2 semitones of pitch movement in an interview.", rewrites: false,
   },
   structure: {
     key: "structure", track: "responses", title: "Land the result", promise: "Tell stories that finish: situation, what you did, what changed.",
-    why: "Interviewers score what you did and what happened. Stories that stop at the situation leave them guessing — and guessing rarely goes your way.",
+    why: "Interviewers score what you did and what happened. Stories that stop at the situation leave them guessing, and guessing rarely goes your way.",
     steps: [
       { title: "One sentence of context", body: "Situation and task in a breath: where you were and what was at stake." },
       { title: "Most of your time on your actions", body: "Say “I”, name the decision, and why you made it." },
-      { title: "Always end with the result", body: "What changed — with a number if you have one." },
+      { title: "Always end with the result", body: "What changed, with a number if you have one." },
       { title: "Close the loop", body: "One line on what it meant, or what you'd do again." },
     ],
     drillId: "star_structure", goal: "Structure score of 70% or more in an interview.", rewrites: true,
@@ -77,7 +77,7 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
     why: "“Improved the process” is forgettable; “cut onboarding from nine days to four” is a fact they can repeat in the debrief.",
     steps: [
       { title: "Size, change, time", body: "For every result: how big, how much it changed, how long it took." },
-      { title: "Estimates are fine — say so", body: "“Roughly 30%” beats “a lot”. Never invent; approximate honestly." },
+      { title: "Estimates are fine if you say so", body: "“Roughly 30%” beats “a lot”. Never invent; approximate honestly." },
       { title: "Real nouns, not “stuff”", body: "Name the team, the tool, the customer group." },
       { title: "Prepare five numbers", body: "Before any interview, write down five results with numbers you can defend." },
     ],
@@ -87,9 +87,9 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
     key: "hedging", track: "responses", title: "Say it like you mean it", promise: "Drop the softeners and own your work.",
     why: "“I think I maybe helped with” tells them you're not sure of your own work. Every hedge gives away credit you earned.",
     steps: [
-      { title: "Delete the softeners", body: "“I think”, “just”, “kind of”, “maybe” — most can go without changing what you mean." },
-      { title: "Own the verb", body: "“I led”, “I decided”, “I built” — not “I was involved in”." },
-      { title: "Be uncertain once, clearly", body: "If you don't know, say it once: “I don't have the exact figure — it was around 20%.”" },
+      { title: "Delete the softeners", body: "“I think”, “just”, “kind of”, “maybe”: most can go without changing what you mean." },
+      { title: "Own the verb", body: "“I led”, “I decided”, “I built”. Not “I was involved in”." },
+      { title: "Be uncertain once, clearly", body: "If you don't know, say it once: “I don't have the exact figure; it was around 20%.”" },
     ],
     drillId: "own_it", goal: "Under 2 hedges a minute in an interview.", rewrites: true,
   },
@@ -98,7 +98,7 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
     why: "A hard question tests composure. A long silence and a scramble read as rattled; a calm first sentence buys you time to think.",
     steps: [
       { title: "Breathe once", body: "One breath through the nose. It stops the rush." },
-      { title: "Use a framing sentence", body: "“That's a fair challenge — here's how I see it.” Your answer has started while you think." },
+      { title: "Use a framing sentence", body: "“That's a fair challenge. Here's how I see it.” Your answer has started while you think." },
       { title: "Answer the concern", body: "Address what they're worried about directly, then give evidence." },
       { title: "One acknowledgement, no apologies", body: "Acknowledge once, then move forward." },
     ],
@@ -106,7 +106,7 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
   },
   concision: {
     key: "concision", track: "responses", title: "Get to the point", promise: "Headline first, one example, stop at the result.",
-    why: "Long answers lose the thread — and the interviewer's attention. Most strong answers fit in 60 to 90 seconds; they'll ask for more if they want it.",
+    why: "Long answers lose the thread, and the interviewer's attention. Most strong answers fit in 60 to 90 seconds; they'll ask for more if they want it.",
     steps: [
       { title: "Headline first", body: "Answer in one sentence, then support it." },
       { title: "One story, not three", body: "Pick your best example and go deep instead of wide." },
@@ -119,7 +119,7 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
     why: "Your opener sets the tone for everything after it. A crisp one makes them lean in; a long biography makes them wait for the point.",
     steps: [
       { title: "Present", body: "Who you are professionally, in one sentence." },
-      { title: "Proof", body: "One result you're known for — with a number." },
+      { title: "Proof", body: "One result you're known for, with a number." },
       { title: "Future", body: "Why this role, and why now." },
       { title: "Stop at 30 seconds", body: "Then let them ask. A short opener invites the conversation." },
     ],
@@ -130,7 +130,7 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
     why: "On video, the lens is their eyes. Looking at your own face, or theirs, on screen reads as looking away.",
     steps: [
       { title: "Move their window", body: "Put the interviewer's video right under your camera so the two are close." },
-      { title: "Lens for the key points", body: "Look at the lens for results and conclusions — that's when it counts." },
+      { title: "Lens for the key points", body: "Look at the lens for results and conclusions. That's when it counts." },
       { title: "Look away to think, then come back", body: "Nobody stares. Just return when you start speaking again." },
       { title: "Use a sticker", body: "A small sticker beside the camera is a reminder that works." },
     ],
@@ -149,7 +149,7 @@ export const LESSONS: Record<LessonKey, LessonDef> = {
   },
   setup: {
     key: "setup", track: "presence", title: "Fix your setup", promise: "Light, framing and sound that show you at your best.",
-    why: "Before you say a word, your setup speaks: dim light, an off-centre frame or a noisy room make you seem less engaged than you are.",
+    why: "Before you say a word, your setup speaks: dim light, an off-center frame or a noisy room make you seem less engaged than you are.",
     steps: [
       { title: "Light in front of you", body: "Face a window or a lamp. Light behind you turns you into a silhouette." },
       { title: "Camera at eye level", body: "Stack books under your laptop so you're not looking down into it." },

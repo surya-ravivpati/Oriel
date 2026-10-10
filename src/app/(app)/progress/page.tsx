@@ -35,7 +35,7 @@ export default async function ProgressPage() {
     <div>
       <header className="max-w-[44rem]">
         <h1 className="text-display-l text-ivory">{history.length > 1 ? "You against you." : "Baseline set."}</h1>
-        <p className="mt-5 text-body-l text-stone">{history.length} analysed session{history.length > 1 ? "s" : ""}. Comparisons are always with your own history, never other people.</p>
+        <p className="mt-5 text-body-l text-stone">{history.length} analyzed session{history.length > 1 ? "s" : ""}. Comparisons are always with your own history, never other people.</p>
       </header>
 
       <table className="mt-[var(--spacing-group)] w-full text-left">
@@ -55,12 +55,12 @@ export default async function ProgressPage() {
                 <span className="block text-ui font-medium text-ivory">{m.label}</span>
                 <span className="mt-0.5 block text-meta text-stone-dim">{m.better === "lower" ? "Lower is better" : m.better === "higher" ? "Higher is better" : `Aim for about ${m.target}`}</span>
               </th>
-              <td className="py-4 pr-4 align-top font-mono text-ui text-stone-dim">{a == null ? "n/a" : m.format(a)}</td>
+              <td className="py-4 pr-4 align-top text-ui text-stone-dim">{a == null ? "n/a" : m.format(a)}</td>
               <td className="py-4 pr-4 align-top">
-                <span className="block font-mono text-ui text-ivory">{b == null ? "n/a" : m.format(b)}</span>
+                <span className="block text-ui text-ivory">{b == null ? "n/a" : m.format(b)}</span>
                 {better && <span className="mt-0.5 block text-meta font-medium text-signal-good">Better</span>}
               </td>
-              <td className="hidden py-4 pr-4 align-top font-mono text-ui text-stone-dim md:table-cell">{base == null ? <span className="font-sans text-meta">After two sessions</span> : m.format(base)}</td>
+              <td className="hidden py-4 pr-4 align-top text-ui text-stone-dim md:table-cell">{base == null ? <span className="text-meta">After two sessions</span> : m.format(base)}</td>
               <td className="hidden w-[38%] py-4 align-middle sm:table-cell">
                 {series.length > 1 ? <Sparkline values={series} baseline={base} better={m.better} className="h-10 w-full max-w-[22rem]" /> : <span className="text-meta text-stone-dim">One session so far</span>}
               </td>

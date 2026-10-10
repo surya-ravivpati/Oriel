@@ -235,11 +235,11 @@ export async function generateCoaching(
 
 export function heuristicCoaching(input: { moments: MomentForCoaching[]; weakestAnswer: { question: string; answer: string } | null }): Coaching {
   const SUGGEST: Record<string, [string, string]> = {
-    recovery: ["Slow start", "Try: buy two seconds out loud — 'Good question, let me think about the best example' — then lead with your answer."],
+    recovery: ["Slow start", "Try: buy two seconds out loud ('Good question, let me think about the best example'), then lead with your answer."],
     fillers: ["Filler-heavy stretch", "Try: when you feel an 'um' coming, close your mouth and pause for a beat instead."],
     hedges: ["Hedged claims", "Try: state the claim plainly first ('I led…'), then add the caveat if it matters."],
     vague: ["Missing specifics", "Try: attach one number, one name, and one timeframe to the result."],
-    structure: ["No clear result", "Try: finish with the result and what it meant — 'As a result, … which meant …'."],
+    structure: ["No clear result", "Try: finish with the result and what it meant: 'As a result, … which meant …'."],
     length: ["Long answer", "Try: give the headline in your first sentence, then offer detail: 'Happy to go deeper on any part.'"],
     pace: ["Rushed delivery", "Try: pause at the end of each sentence; aim for about 140 words per minute."],
     camera: ["Looked away from the lens", "Try: return your eyes to the camera each time you finish a thought."],

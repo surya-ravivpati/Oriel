@@ -113,8 +113,8 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
                 {baseline.map((c) => (
                   <tr key={c.label} className="border-b border-divider">
                     <th scope="row" className="py-2.5 pr-4 text-ui font-normal text-ivory">{c.label}</th>
-                    <td className="py-2.5 pr-4 font-mono text-ui text-ivory">{c.current}</td>
-                    <td className="py-2.5 pr-4 font-mono text-ui text-stone-dim">{c.baseline}</td>
+                    <td className="py-2.5 pr-4 text-ui text-ivory">{c.current}</td>
+                    <td className="py-2.5 pr-4 text-ui text-stone-dim">{c.baseline}</td>
                     <td className={cn("py-2.5 text-right text-meta font-medium", c.improved ? "text-signal-good" : "text-stone-dim")}>{c.improved ? "Better" : c.improved === false ? "Not yet" : ""}</td>
                   </tr>
                 ))}
@@ -184,7 +184,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
               ))}
               <span className="absolute top-1/2 h-5 w-px -translate-y-1/2 bg-ivory" style={{ left: `${Math.min(100, ((time * 1000) / tl) * 100)}%` }} />
             </div>
-            <div className="flex justify-between font-mono text-meta text-stone-dim"><span>00:00</span><span>{mmss(tl)}</span></div>
+            <div className="flex justify-between text-meta text-stone-dim"><span>00:00</span><span>{mmss(tl)}</span></div>
             {d.posture.length > 0 && (
               <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-meta text-stone-dim">
                 <span>Posture:</span>
@@ -248,7 +248,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
               <p className="hang mt-3 max-w-[40rem] font-display text-body-l text-stone">“{d.rewrite.question}”</p>
               <div className="page-grid mt-6 gap-y-6">
                 <figure className="col-span-4 border-t border-divider pt-4 sm:col-span-8 lg:col-span-6"><figcaption className="text-meta font-medium text-stone-dim">What you said</figcaption><blockquote className="mt-2 text-body-l text-stone">{d.rewrite.original}</blockquote></figure>
-                <figure className="col-span-4 border-t border-olive-light pt-4 sm:col-span-8 lg:col-span-6"><figcaption className="text-meta font-medium text-olive-light">Same facts, tighter</figcaption><blockquote className="mt-2 text-body-l text-ivory">{d.rewrite.rewritten}</blockquote><p className="mt-3 text-meta text-stone-dim">{d.rewrite.note} Only facts from your answer are used; [brackets] mark details only you can fill in.</p></figure>
+                <figure className="col-span-4 border-t border-divider pt-4 sm:col-span-8 lg:col-span-6"><figcaption className="text-meta font-medium text-stone-dim">Same facts, tighter</figcaption><blockquote className="mt-2 text-body-l text-ivory">{d.rewrite.rewritten}</blockquote><p className="mt-3 text-meta text-stone-dim">{d.rewrite.note} Only facts from your answer are used; [brackets] mark details only you can fill in.</p></figure>
               </div>
             </div>
           )}
@@ -271,7 +271,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
           {d.transcript.map((x) => (
             <li key={x.id}>
               <button type="button" onClick={() => seek(x.startMs)} disabled={!d.media} className={cn("grid w-full grid-cols-[3rem_minmax(0,1fr)] items-baseline gap-x-4 px-1 py-4 text-left transition-colors duration-[var(--dur-press)] enabled:hover:bg-surface-1 sm:grid-cols-[3rem_8rem_minmax(0,1fr)]", d.media && time > 0 && time * 1000 >= x.startMs && time * 1000 < x.endMs && "bg-olive-ground")}>
-                <span className="font-mono text-meta text-stone-dim">{mmss(x.startMs)}</span>
+                <span className="text-meta text-stone-dim">{mmss(x.startMs)}</span>
                 <span className={cn("text-meta font-medium", x.speaker === "interviewer" ? "text-stone-dim" : "text-ivory")}>{x.who}</span>
                 <span className={cn("col-start-2 sm:col-start-auto", x.speaker === "interviewer" ? "font-display text-body-l leading-snug text-stone" : "text-body text-ivory")}>{x.text}</span>
               </button>
@@ -365,7 +365,7 @@ function MeasureRow({ m }: { m: Row }) {
         <div className="mt-1"><ConfidenceMark confidence={m.confidence} /></div>
       </div>
       <p className="flex items-baseline gap-1.5 sm:block">
-        <span className={cn("font-mono text-body-l leading-none", mark === "off" ? "text-signal-warn" : "text-ivory")}>{m.value === null ? "n/a" : fmt(m.value)}</span>
+        <span className={cn(" text-body-l leading-none", mark === "off" ? "text-signal-warn" : "text-ivory")}>{m.value === null ? "n/a" : fmt(m.value)}</span>
         <span className="text-meta text-stone-dim sm:ml-1">{unit}</span>
       </p>
       <div className="min-w-0">
@@ -377,7 +377,7 @@ function MeasureRow({ m }: { m: Row }) {
           </div>
         )}
         {m.targetLow !== null && m.targetHigh !== null && m.value !== null && (
-          <p className="mt-2 font-mono text-meta text-stone-dim">target {fmt(m.targetLow)}–{fmt(m.targetHigh)}{m.low !== null && m.high !== null ? ` · your range ${fmt(m.low)}–${fmt(m.high)}` : ""}</p>
+          <p className="mt-2 text-meta text-stone-dim">target {fmt(m.targetLow)}–{fmt(m.targetHigh)}{m.low !== null && m.high !== null ? ` · your range ${fmt(m.low)}–${fmt(m.high)}` : ""}</p>
         )}
         {m.note && <p className="mt-2 text-meta leading-relaxed text-stone">{m.note}</p>}
       </div>

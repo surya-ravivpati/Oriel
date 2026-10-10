@@ -107,7 +107,7 @@ export function ProfileClient(p: {
 
         <section id="interviewers">
           <h2 className="text-display-m text-ivory">Your interviewers</h2>
-          <p className="mt-2 max-w-[40rem] text-ui text-stone">Give any of them a new shape, colour, name and voice. They keep their interviewing style; the look and sound are yours.</p>
+          <p className="mt-2 max-w-[40rem] text-ui text-stone">Give any of them a new shape, color, name and voice. They keep their interviewing style; the look and sound are yours.</p>
           {/* The whole cast, standing together: each the real avatar, as it appears in the Room. */}
           <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3">
             {(Object.keys(PERSONAS) as PersonaId[]).map((id) => {
@@ -146,14 +146,14 @@ export function ProfileClient(p: {
         <section id="plan">
           <h2 className="text-display-m text-ivory">Plan</h2>
           <p className="mt-2 text-ui text-stone">You&apos;re on <span className="text-ivory">{p.plan.name}</span>{p.plan.periodEnd ? ` until ${longDate(new Date(p.plan.periodEnd))}` : ""}. {p.plan.sessionsThisWeek} session{p.plan.sessionsThisWeek === 1 ? "" : "s"} this week.</p>
-          {/* Plans as ruled columns, as on the pricing page: the current one marked by an olive rule. */}
+          {/* Plans as ruled columns, as on the pricing page: the current one says so in words. */}
           <div className="mt-6 grid gap-x-6 gap-y-10 md:grid-cols-3">
             {(["free", "sprint", "pro"] as const).map((id) => (
-              <div key={id} className={`flex flex-col border-t pt-5 ${p.plan.id === id ? "border-olive-light" : "border-divider"}`}>
-                <p className="text-display-m text-ivory">{PLANS[id].name}</p>
+              <div key={id} className="flex flex-col border-t border-divider pt-5">
+                <p className="flex items-baseline justify-between gap-3"><span className="text-display-m text-ivory">{PLANS[id].name}</span>{p.plan.id === id && <span className="text-meta font-medium text-olive-light">Your plan</span>}</p>
                 <p className="mt-2 flex items-baseline gap-2"><span className="font-display text-display-l leading-none text-ivory">{PLANS[id].price}</span><span className="text-ui text-stone">{PLANS[id].cadence}</span></p>
                 <ul className="mt-4 flex-1 space-y-1.5 text-ui text-stone">{PLANS[id].features.map((f) => <li key={f}>{f}</li>)}</ul>
-                <Button className="mt-5 self-start" size="sm" variant={p.plan.id === id ? "secondary" : "primary"} disabled={p.plan.id === id} loading={busy === id} onClick={() => choosePlan(id)}>{p.plan.id === id ? "Current plan" : `Switch to ${PLANS[id].name}`}</Button>
+                {p.plan.id !== id && <Button className="mt-5 self-start" size="sm" variant="secondary" loading={busy === id} onClick={() => choosePlan(id)}>Switch to {PLANS[id].name}</Button>}
               </div>
             ))}
           </div>
@@ -175,7 +175,7 @@ export function ProfileClient(p: {
                 <tr key={c.id} className="border-b border-divider">
                   <th scope="row" className="py-3 pr-4 font-normal capitalize text-ivory">{c.kind.replaceAll("_", " ")}</th>
                   <td className={c.granted ? "py-3 pr-4 text-signal-good" : "py-3 pr-4 text-stone-dim"}>{c.granted ? "Granted" : "Declined"}</td>
-                  <td className="hidden py-3 pr-4 font-mono text-meta text-stone-dim sm:table-cell">v{c.version}</td>
+                  <td className="hidden py-3 pr-4 text-meta text-stone-dim sm:table-cell">v{c.version}</td>
                   <td className="py-3 text-right text-stone">{longDate(new Date(c.at))}</td>
                 </tr>
               ))}
@@ -187,7 +187,7 @@ export function ProfileClient(p: {
         <div className="p-8">
           <h2 className="text-display-m text-ivory">Delete your account?</h2>
           <p className="mt-3 text-ui text-stone">This permanently deletes your profile, resume, every session, recording, transcript, metric and drill. It can&apos;t be undone.</p>
-          <p className="mt-5 text-ui text-stone">Type <span className="font-mono text-ivory">DELETE</span> to confirm.</p>
+          <p className="mt-5 text-ui text-stone">Type <span className="font-medium text-ivory">DELETE</span> to confirm.</p>
           <Input className="mt-2" value={deleteWord} onChange={(e) => setDeleteWord(e.target.value)} aria-label="Type DELETE to confirm" />
           <div className="mt-7 flex justify-end gap-2"><Button variant="ghost" onClick={() => setConfirmDelete(false)}>Cancel</Button><Button variant="danger" disabled={deleteWord !== "DELETE"} loading={busy === "delete"} onClick={deleteAccount}>Delete everything</Button></div>
         </div>

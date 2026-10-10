@@ -68,8 +68,8 @@ export default async function DrillsPage() {
               {attempts.slice(0, 8).map((a) => (
                 <tr key={a.id} className="border-b border-divider">
                   <th scope="row" className="py-3 pr-4 font-normal text-ivory">{DRILLS.find((d) => d.id === a.drillId)?.title}</th>
-                  <td className="py-3 pr-4 font-mono text-stone">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</td>
-                  <td className="hidden py-3 pr-4 text-stone-dim sm:table-cell">{a.baselineValue !== null ? <>baseline <span className="font-mono">{Math.round(a.baselineValue * 10) / 10}</span></> : "First attempt"}</td>
+                  <td className="py-3 pr-4 text-stone">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</td>
+                  <td className="hidden py-3 pr-4 text-stone-dim sm:table-cell">{a.baselineValue !== null ? <>baseline {Math.round(a.baselineValue * 10) / 10}</> : "First attempt"}</td>
                   <td className={a.passed ? "py-3 pr-4 text-signal-good" : "py-3 pr-4 text-stone-dim"}>{a.passed ? "Target met" : a.passed === false ? "Not yet" : ""}</td>
                   <td className="py-3 text-right text-stone-dim">{relDate(a.createdAt)}</td>
                 </tr>
