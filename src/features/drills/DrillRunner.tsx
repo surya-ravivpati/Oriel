@@ -187,7 +187,7 @@ export function DrillRunner({ drill, sourceSessionId, serverStt, lesson }: { dri
       {lesson ? <Link href={`/lessons/${lesson.key}`} className="-ml-1 inline-flex h-9 items-center rounded-control px-1 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">← Lesson: {lesson.title}</Link> : <Link href="/drills" className="-ml-1 inline-flex h-9 items-center rounded-control px-1 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">← Drills</Link>}
       <p className="mt-6 text-ui text-stone">Drill · {Math.round(drill.durationSec / 60) || 1} min{drill.requiresCamera ? " · camera" : ""}</p>
       <h1 className="mt-3 text-display-l text-ivory">{drill.title}</h1>
-      <p className="mt-4 text-body-l text-stone">{drill.objective}</p>
+      <p className="mt-5 text-body-l text-stone">{drill.objective}</p>
 
       {stage === "brief" && (
         <section className="mt-10 border-t border-divider pt-6">

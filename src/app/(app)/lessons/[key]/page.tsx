@@ -35,7 +35,7 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
           {TRACKS[def.track].label} · {status === "active" ? <span className="text-olive-light">In your plan</span> : status === "queued" ? "Up next" : status === "mastered" ? <span className="text-signal-good">Mastered</span> : "Lesson"}
         </p>
         <h1 className="mt-3 text-display-l text-ivory">{def.title}</h1>
-        <p className="mt-4 text-body-l text-stone">{def.promise}</p>
+        <p className="mt-5 text-body-l text-stone">{def.promise}</p>
         {l && <LessonSteps l={{ ...summarize(l), viewed: true }} className="mt-8 max-w-[34rem]" />}
       </header>
 

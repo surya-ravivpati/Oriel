@@ -86,10 +86,10 @@ export function SetupForm(p: Props) {
       <div className="col-span-4 sm:col-span-8 lg:col-span-7">
         <header>
           <h1 className="text-display-l text-ivory">{p.firstRun ? "Your first interview." : "Set up the room."}</h1>
-          {p.firstRun && <p className="mt-4 max-w-[36rem] text-body-l text-stone">We&apos;ve started you at Realistic pressure. Speak naturally: the interviewer can hear pauses, follow-ups adapt to what you say, and nothing is scored until afterwards.</p>}
+          {p.firstRun && <p className="mt-5 max-w-[36rem] text-body-l text-stone">We&apos;ve started you at Realistic pressure. Speak naturally: the interviewer can hear pauses, follow-ups adapt to what you say, and nothing is scored until afterwards.</p>}
         </header>
 
-        <div className="mt-12 space-y-10">
+        <div className="mt-[var(--spacing-group)] space-y-10">
           {p.limits.ladder && (
             <Group label="Climb the Ladder" hint="Optional: sets the interviewer and pressure for you">
               <Segmented name="Ladder" value={ladderLevel ? String(ladderLevel) : "custom"} onChange={(v) => setLadderLevel(v === "custom" ? null : Number(v))}
@@ -199,6 +199,14 @@ export function SetupForm(p: Props) {
           <p className="mt-3 text-center text-meta text-stone-dim">You&apos;ll confirm camera and microphone consent first.</p>
         </div>
       </aside>
+      {/* On phones and tablets the ticket sits after every setting, so its action also rides along at the bottom. */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-divider bg-ink/95 pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <div className="frame flex h-16 items-center justify-between gap-4">
+          <p className="min-w-0 truncate text-ui text-stone"><span className="text-ivory">{rung ? rung.name : mode === "panel" ? `${panelSize}-person panel` : nameOf(persona as PersonaId)}</span> · {minutes} min</p>
+          <Button className="shrink-0" onClick={start} loading={busy} disabled={!!p.limits.canStart}>Enter the Room</Button>
+        </div>
+      </div>
+      <div className="h-16 lg:hidden" aria-hidden />
       <AvatarStudio personaId={editing} saved={styles} onClose={() => setEditing(null)} onSaved={setStyles} />
     </div>
   );

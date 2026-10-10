@@ -17,7 +17,14 @@ Oriel is an interview studio: a quiet room where you practise a hard conversatio
 | Hairlines | `divider` | ivory at 12% | 1.4 (decorative) |
 | The visible edge of a control | `control` | ivory at 40% | 3.5 / 3.5 / 3.4 |
 
-The landing page uses no other hues. In the app, the signals (good, warn, bad) describe measurements and nothing else. Legacy names (`ink-950`…`ink-500`, `mist-*`, `lume*`, `line*`, `accent*`) map onto these values, so existing pages read the new palette. The page declares `color-scheme: dark`; a selection is olive with ivory text. There is no pure black or white, no glow, no gradient.
+Three more tokens cover specific jobs:
+- `ivory-press`: an ivory fill under the pointer.
+- `olive-ground`: the ground under a chosen option.
+- `divider-strong`: tracks and emphatic rules.
+
+The landing page uses no other hues. In the app, the signals (good, warn, bad) describe measurements and nothing else; confidence is never coloured, because certainty isn't quality. The page declares `color-scheme: dark`; a selection is olive with ivory text. There is no pure black or white, no glow, no gradient.
+
+**The build enforces this.** `@theme` switches off Tailwind's default palette, radii and type sizes (`--color-*`, `--radius-*`, `--text-*: initial`), so the only values that exist are Oriel's. A class like `bg-red-500`, `rounded-xl` or `text-2xl` generates nothing.
 
 ## Type: three faces, one job each
 
@@ -41,6 +48,7 @@ The scale is fluid and exposed as `text-*` utilities:
 
 Nothing is set below 12px, and body text on a phone is at least 16px.
 
+- **Two voices, two typefaces.** Everywhere a conversation appears (the landing preview, the Room, transcripts, Playback moments, rewrites, then-vs-now), the interviewer speaks in the serif and you speak in the sans. You can scan a transcript and see who is talking.
 - **Italics.** One italic phrase, and it is always *the room*, the brand's subject: in the H1 and in the statement that answers it. Italic is never used for emphasis anywhere else.
 - **Line breaks.** Headings balance their lines; running text avoids a last word alone (`text-wrap: pretty`). Non-breaking spaces keep short phrases together ("the room", "in it", "No card required").
 - **Hanging quotes.** Opening quotes hang in the margin (`.hang` for the serif, `.hang-sans` for the sans), so quoted lines keep the edge of their speaker's label.
@@ -84,10 +92,33 @@ Only things that float (menus, dialogs) get a shadow, `shadow-sheet`. There is n
   - It has three states: idle, listening and speaking.
   - It blinks only after hydration, so server and client markup match.
   - It holds still under reduced motion.
+- **`Segmented`.** A single choice. Short options read as a row of words, and only the chosen one is drawn: a raised chip with a control edge. Options with a hint become a ruled list of radio rows. The same "chosen is raised" language covers the avatar studio's voices, shapes and accessories.
+- **`Toggle`**, **`Field`.** Field edges use `control`, so they meet 3:1. Field text is at least 16px, so phones never zoom.
+- **Status.** Words with a coloured dot (`Badge`), never a pill. Confidence is a neutral three-dot scale with its words (`ConfidenceMark`).
 - **`SiteHeader`.**
   - It is transparent over the first screen, then ink at 95% with a hairline once you scroll.
   - The navigation appears from 1024px. Below that, a disclosure menu takes over: focus moves in, Escape closes it and returns focus, and the page behind becomes inert and stops scrolling.
 - **Skip link.** Every marketing page starts with "Skip to content", which leads to a focusable `<main>`.
+
+## The interviewers (the avatar system)
+
+The six interviewers are Oriel's identity and are never redrawn by hand: Maya, Daniel, Priya, Tom, Eleanor and Sam.
+
+- **What they're made of.** Each is an abstract face (one of eight shapes, ten colours, six accessories) with two capsule eyes and no mouth. They're drawn by `components/avatar/bot/` and animated by `BotAvatar`: blinks, saccades, listening nods, and the voice light that breathes while they speak. People can rename, restyle and re-voice any of them in the studio.
+- **Presenting them.** The rule is to stand them on the page: the face and its own floor shadow, generous space, and no box.
+  - **Live.** `InterviewerStage` uses the real engine wherever an interviewer is presented on a page: Home, the practice ticket, the Room lobby, the ladder, sign-in and the 404. It only animates on screen in a visible tab, and holds still under reduced motion.
+  - **Choosing.** `BotStill` draws them where they are chosen between. The chosen one is lit (`surface-1`), never outlined.
+  - **On the landing page.** The preview's interviewer is the real engine, with a still rendered by that engine beneath it until the canvas paints.
+- **The mark.** The logo, the loader and the favicon are a vector reduction of the Classic interviewer, computed from the renderer's own outline, eye proportions and colours (`components/brand/Interviewer.tsx`). They can't drift apart.
+
+## App pages
+
+- **Frame.** Every app page sits on the same frame and grid as the marketing pages, under a bar whose mark shares the content's edge.
+- **Header.** A page opens with its title (`display-l`) and a lead (`body-l`, 20px below). There is no eyebrow repeating the navigation.
+- **Sections.** A section's title sits in the margin (columns 1–3) with its content from column 4, as a document's would. Paired content splits 7 / 5.
+- **Boxes.** Boxes are for real objects only: a form, a recording, a dialog, the session ticket.
+- **Numbers.** No page shows big-number metric rows. A measurement sits in a table with its target, baseline and change, and a trend is drawn small, in the row. The one exception is a drill's result, which is the single number that page exists to give.
+- **States.** A branded 404, an error page with Try again, and a loading state that appears only after 400ms.
 
 ## Motion
 
@@ -139,24 +170,28 @@ Short, specific, sentence case. There are no em dashes in copy; in tables a dash
 
 - Gradient text.
 - Glassmorphism.
-- Coloured side-stripe borders.
 - Glow backgrounds.
+- Coloured side-stripe borders, on quotes, callouts or anything else.
 - Identical icon-card grids.
-- Hero-metric rows.
-- Uppercase tracked micro-labels.
-- Stock photography on the landing page.
+- Big-number metric rows, or the same data summarised twice.
+- Uppercase tracked micro-labels, or an eyebrow that repeats the navigation.
+- A box around the interviewer.
+- Stock photography, or an invented recording presented as real.
+- A submit button that is disabled without saying why.
 
 ## The two screens that define Oriel
 
 - **The Room** (`features/room/Room.tsx`):
-  - A session bar shows the role, the recording and the time.
-  - Then comes the interviewer, then the conversation: who is speaking, and the question you're answering, set in the serif once it has been asked.
-  - A rail lists the questions so far, who is interviewing and the keyboard shortcuts (Space, M, C, T).
-  - The controls sit in one quiet bar; the only coloured control is End.
-- **The report** (`features/playback/PlaybackView.tsx`) reads as a document, in this order:
-  1. Where you stand: each part of the Read as on-target ticks, beside numbered next steps.
-  2. The moments in your recording.
-  3. Lessons.
-  4. Every measure, grouped by part, with its range and confidence.
-  5. Your weakest answer, rewritten.
-  6. The transcript.
+  - A session bar shows the role, the recording (a still dot and the word) and the time.
+  - Then the interviewer, then the conversation: who is speaking and the question you're answering, set in the serif once it has been asked.
+  - On wide screens a rail lists the questions so far, and nothing else.
+  - The controls are a quiet toolbar. Shortcuts (Space, M, C, T) are shown inside the controls, the active toggle is filled, and the only coloured control is End.
+  - With no camera, the lobby shows the interviewer who is waiting, not an empty frame.
+- **The report** (`features/playback/PlaybackView.tsx`) reads as a professional assessment, in this order:
+  1. The session in words, and the overall assessment as its title.
+  2. Where you stand: each part of the Read as on-target ticks, with your baseline as a small table. Beside it, numbered next steps, the drill to do, and what worked.
+  3. The moments in your recording. With no recording, the timeline remains and a sentence replaces the empty frame.
+  4. Lessons.
+  5. Every measure, grouped by part, with its range, target and confidence.
+  6. Your weakest answer, rewritten, and then vs now.
+  7. The transcript, in two voices.
