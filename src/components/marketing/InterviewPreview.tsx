@@ -71,7 +71,7 @@ export function InterviewPreview() {
   const label = state === "speaking" ? "Asking" : "Listening";
 
   return (
-    <section ref={root} aria-labelledby="sample-title" className="rounded-panel bg-surface-1"
+    <section ref={root} aria-labelledby="sample-title" className="rounded-panel border border-transparent bg-surface-1"
       onPointerEnter={(e) => { if (e.pointerType === "mouse") setHeld((h) => ({ ...h, hover: true })); }}
       onPointerLeave={() => setHeld((h) => ({ ...h, hover: false }))}
       onFocus={() => setHeld((h) => ({ ...h, focus: true }))}

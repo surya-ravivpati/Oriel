@@ -63,11 +63,11 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
           </nav>
           <div className="flex items-center gap-2">
             {signedIn ? (
-              <Link href="/home" className="hidden h-9 items-center whitespace-nowrap rounded-button bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] sm:inline-flex">Open Oriel</Link>
+              <Link href="/home" className="hidden h-9 items-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] sm:inline-flex">Open Oriel</Link>
             ) : (
               <>
                 <Link href="/login" className="hidden whitespace-nowrap rounded-control px-3 py-2 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory lg:block">Sign in</Link>
-                <Link href="/signup" className="hidden h-9 items-center whitespace-nowrap rounded-button bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] sm:inline-flex">Start practicing</Link>
+                <Link href="/signup" className="hidden h-9 items-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] sm:inline-flex">Start practicing</Link>
               </>
             )}
             <button ref={toggle} type="button" onClick={() => (open ? close() : setOpen(true))} aria-expanded={open} aria-controls="site-menu"
@@ -78,17 +78,17 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
         </div>
       </header>
       {open && (
-        <div ref={menu} id="site-menu" className="fixed inset-x-0 bottom-0 top-16 z-50 overflow-y-auto overscroll-contain bg-ink lg:hidden">
+        <div ref={menu} id="site-menu" className="fixed inset-x-0 bottom-0 top-16 z-50 overflow-y-auto overscroll-contain bg-ink transition-[opacity,translate] duration-[var(--dur-state)] ease-[var(--ease-enter)] starting:-translate-y-1 starting:opacity-0 lg:hidden">
           <nav aria-label="Menu" className="frame flex flex-col pb-10 pt-2">
             {LINKS.map(([href, label]) => (
               <a key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-14 items-center border-b border-divider font-display text-[1.625rem] text-ivory">{label}</a>
             ))}
             <div className="mt-8 flex flex-col gap-3">
               {signedIn ? (
-                <Link href="/home" onClick={() => setOpen(false)} className="inline-flex h-12 items-center justify-center rounded-button bg-ivory text-ui font-medium text-ink">Open Oriel</Link>
+                <Link href="/home" onClick={() => setOpen(false)} className="inline-flex h-12 items-center justify-center rounded-button border border-transparent bg-ivory text-ui font-medium text-ink">Open Oriel</Link>
               ) : (
                 <>
-                  <Link href="/signup" onClick={() => setOpen(false)} className="inline-flex h-12 items-center justify-center rounded-button bg-ivory text-ui font-medium text-ink">Start practicing</Link>
+                  <Link href="/signup" onClick={() => setOpen(false)} className="inline-flex h-12 items-center justify-center rounded-button border border-transparent bg-ivory text-ui font-medium text-ink">Start practicing</Link>
                   <Link href="/login" onClick={() => setOpen(false)} className="inline-flex h-12 items-center justify-center text-ui text-stone underline decoration-1 underline-offset-[0.2em]">Sign in</Link>
                 </>
               )}

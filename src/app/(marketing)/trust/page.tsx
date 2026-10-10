@@ -32,7 +32,7 @@ export default function TrustPage() {
   const still = postureRun?.stillness ?? [];
   const portraits = [...new Set(p.map((r) => r.file))];
   return (
-    <main id="content" className="mx-auto max-w-[900px] px-5 pb-28 pt-28 sm:px-8 sm:pt-36">
+    <main id="content" tabIndex={-1} className="focus:outline-none mx-auto max-w-[900px] px-5 pb-28 pt-28 sm:px-8 sm:pt-36">
       <p className="text-[17px] font-semibold tracking-[-0.012em] text-lume">Trust · validation</p>
       <h1 className="mt-4 text-display text-mist-100">How accurate is the Read?</h1>
       <p className="mt-6 max-w-2xl text-lead text-mist-300">We test every measurement against known ground truth and across accents, skin tones, eyewear, head coverings and lighting, and publish the results, including what failed and what we changed. These are early, synthetic tests; testing with real people is still owed and will be published here.</p>

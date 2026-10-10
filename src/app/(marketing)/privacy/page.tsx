@@ -22,7 +22,7 @@ const PROCESSORS: [string, string, string][] = [
 
 export default function PrivacyPage() {
   return (
-    <main id="content" className="mx-auto max-w-[760px] px-5 pb-28 pt-28 sm:px-8 sm:pt-36">
+    <main id="content" tabIndex={-1} className="focus:outline-none mx-auto max-w-[760px] px-5 pb-28 pt-28 sm:px-8 sm:pt-36">
       <p className="text-caption font-medium text-signal-warn">Draft, pending review by privacy counsel</p>
       <h1 className="mt-4 text-display text-mist-100">Privacy &amp; biometric policy</h1>
       <p className="mt-6 text-lead text-mist-300">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview. Consent version {CONSENT_VERSION}.</p>

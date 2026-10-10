@@ -18,7 +18,7 @@ export function Hero({ cta, signedIn }: { cta: string; signedIn: boolean }) {
             Oriel is an AI interviewer for anyone with an interview coming up. It asks the follow-ups a real interviewer would, then shows you what landed and what to change.
           </p>
           <div className="mt-6 flex items-center gap-6">
-            <Link href={cta} className="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-button bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] min-[480px]:w-auto lg:h-11">
+            <Link href={cta} className="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] min-[480px]:w-auto lg:h-11">
               {signedIn ? "Practice an interview" : "Start practicing free"}
             </Link>
             {/* On a phone the preview is the next thing on screen, so the second action steps aside. */}

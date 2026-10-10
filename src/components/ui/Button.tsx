@@ -10,8 +10,8 @@ type Size = "sm" | "md" | "lg";
  * thing to do next. Everything else is outlined or plain text. "lume" is kept as an alias
  * of primary for existing call sites.
  */
-const base = "relative inline-flex items-center justify-center gap-2 rounded-button font-medium transition-[background-color,color,border-color,opacity,transform] duration-[var(--dur-press)] ease-[var(--ease-state)] active:scale-[0.985] disabled:opacity-40 disabled:pointer-events-none select-none whitespace-nowrap";
-const ivory = "bg-mist-100 text-ink-950 hover:bg-mist-200";
+const base = "relative inline-flex items-center justify-center gap-2 rounded-button font-medium transition-[background-color,color,border-color,opacity,transform] duration-[var(--dur-press)] ease-[var(--ease-enter)] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none select-none whitespace-nowrap";
+const ivory = "border border-transparent bg-mist-100 text-ink-950 hover:bg-mist-200"; // the transparent border is what forced-colors mode draws
 const variants: Record<Variant, string> = {
   primary: ivory,
   lume: ivory,
