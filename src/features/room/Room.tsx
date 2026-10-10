@@ -391,8 +391,7 @@ export function Room(props: RoomProps) {
             </figure>
           )}
           <div>
-            <p className="text-meta font-medium text-stone-dim">{props.resuming ? "Rejoining" : "Before you walk in"}</p>
-            <h1 className="mt-3 text-display-l text-ivory">{props.resuming ? "Pick up where you left off." : "Check your setup."}</h1>
+            <h1 className="text-display-l text-ivory">{props.resuming ? "Pick up where you left off." : "Check your setup."}</h1>
             <ul className="mt-8 border-t border-divider text-ui">
               <Check ok={!!devices.mic} label={devices.mic ? "Microphone" : devices.micError ?? "Microphone off"}>
                 {devices.mic && <div className="mt-2 h-0.5 w-40 overflow-hidden bg-divider-strong"><div className="h-full origin-left bg-olive-light transition-transform duration-100" style={{ transform: `scaleX(${micLevel})` }} /></div>}

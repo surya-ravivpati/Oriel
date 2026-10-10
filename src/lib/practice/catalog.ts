@@ -68,7 +68,7 @@ export const DRILLS: DrillDef[] = [
   {
     id: "hard_recovery", title: "Hard recovery",
     objective: "Start answering a hostile question within two seconds, calmly.",
-    instructions: "You'll hear a pointed question. Take one breath, then begin with a short framing sentence. Don't apologise, don't over-explain.",
+    instructions: "You'll hear a pointed question. Take one breath, then begin with a short framing sentence. Don't apologize, don't over-explain.",
     prompt: "Honestly, your background doesn't look like a fit for this role. Why should I keep talking to you?",
     targetMetric: "recovery_ms", durationSec: 60, requiresCamera: false, direction: "lower",
     passRule: "First word within 2.5 seconds and a structured answer.",

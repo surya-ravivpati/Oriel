@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CONSENT_COPY, CONSENT_VERSION } from "@/lib/privacy/consent";
 
-export const metadata = { title: "Privacy & biometric policy" };
+export const metadata = { title: "Privacy and biometric policy" };
 
 const RETENTION: [string, string, string][] = [
   ["Raw session recording (your video and audio, plus the interviewer's voice)", "Your setting: 1, 7, 30 (default) or 90 days", "Deleted automatically at the end of the period, or immediately when you delete the session"],
@@ -29,9 +29,9 @@ export default function PrivacyPage() {
   return (
     <main id="content" tabIndex={-1} className="frame pb-section pt-[calc(var(--header-h)+var(--spacing-hero))] focus:outline-none">
       <header className="max-w-[48rem]">
-        <p className="text-ui text-signal-warn">Draft, pending review by privacy counsel</p>
-        <h1 className="mt-4 text-display-l text-ivory">Privacy &amp; biometric policy</h1>
-        <p className="mt-5 text-body-l text-stone">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview. Consent version {CONSENT_VERSION}.</p>
+        <h1 className="text-display-l text-ivory">Privacy and biometric policy</h1>
+        <p className="mt-5 text-body-l text-stone">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview.</p>
+        <p className="mt-4 text-ui text-stone-dim">Draft, pending review by privacy counsel. Consent version {CONSENT_VERSION}.</p>
       </header>
       {/* A long document reads with its contents in the margin, as the profile does. */}
       <div className="page-grid mt-[var(--spacing-group)] gap-y-10">
@@ -109,7 +109,7 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="Campus and employer programs" id="campus">
-        <p>Where a school or organisation provides Oriel seats, they see aggregate reporting only. Individual results are never shared without your explicit, separate consent.</p>
+        <p>Where a school or organization provides Oriel seats, they see aggregate reporting only. Individual results are never shared without your explicit, separate consent.</p>
       </Section>
 
       <p className="mt-16 text-ui text-stone-dim">Questions: privacy@oriel.example. This policy is a working draft prepared for review by privacy counsel and is not legal advice.</p>

@@ -264,7 +264,7 @@ export function DrillRunner({ drill, sourceSessionId, serverStt, lesson }: { dri
           </div>
           {result.lesson && (
             <div className="mt-8 flex flex-wrap items-baseline justify-between gap-3 border-y border-divider py-4">
-              <p className="text-ui text-stone">Lesson practice · <span className="text-ivory">{result.lesson.title}</span>: {Math.min(result.lesson.passes, result.lesson.needed)} of {result.lesson.needed} passes{result.lesson.passes >= result.lesson.needed ? ". Practised. Now use it in an interview." : ""}</p>
+              <p className="text-ui text-stone">Lesson practice · <span className="text-ivory">{result.lesson.title}</span>: {Math.min(result.lesson.passes, result.lesson.needed)} of {result.lesson.needed} passes{result.lesson.passes >= result.lesson.needed ? ". Practiced. Now use it in an interview." : ""}</p>
               <Link href={`/lessons/${result.lesson.key}`} className="text-ui text-stone underline decoration-1 underline-offset-[0.2em] hover:text-ivory">Back to the lesson</Link>
             </div>
           )}

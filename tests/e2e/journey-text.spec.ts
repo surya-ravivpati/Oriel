@@ -80,7 +80,7 @@ test("text-mode journey from signup to deletion", async ({ page }) => {
   await expect(page.getByText("Next try:")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/Lesson practice/)).toBeVisible();
   await page.goto(lessonUrl);
-  await expect(page.getByText(/of 2 passes|Practised/).first()).toBeVisible();
+  await expect(page.getByText(/of 2 passes|Practiced/).first()).toBeVisible();
 
   // Lesson practice is a drill: the free plan's one drill a day is now used.
   await page.goto("/playback");

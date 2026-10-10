@@ -31,7 +31,7 @@ export default async function PlaybackIndex() {
                 <p className="font-display text-body-l text-ivory">{s.summary?.headline ?? `${s.role} · ${TYPE_LABEL[s.type] ?? s.type}`}</p>
                 <p className="mt-1 text-ui text-stone-dim">{relDate(s.createdAt)} · {s.role} · {TYPE_LABEL[s.type] ?? s.type} · with {(ivs.get(s.id) ?? []).map((i) => callName(i.name, i.style)).join(", ")} · pressure {s.pressure} of 5{s.ladderLevel ? ` · Ladder ${s.ladderLevel}` : ""}</p>
               </div>
-              <div>{s.status !== "ended" ? <Badge tone="warn">Unfinished: rejoin</Badge> : s.analysisStatus === "complete" ? <Badge tone="good">Read ready</Badge> : s.analysisStatus === "failed" ? <Badge tone="bad">Analysis failed: retry</Badge> : <Badge>Analysing</Badge>}</div>
+              <div>{s.status !== "ended" ? <Badge tone="warn">Unfinished: rejoin</Badge> : s.analysisStatus === "complete" ? <Badge>Read ready</Badge> : s.analysisStatus === "failed" ? <Badge tone="bad">Analysis failed: retry</Badge> : <Badge>Analyzing</Badge>}</div>
             </Link>
           </li>
         ))}

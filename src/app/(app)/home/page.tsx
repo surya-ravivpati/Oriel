@@ -37,9 +37,12 @@ export default async function Home() {
       {/* The promise of the page, and the interviewer it promises: standing on the page, not boxed. */}
       <section className="page-grid items-center gap-y-6 pb-[var(--spacing-group)]">
         <div className="col-span-4 sm:col-span-8 lg:col-span-6">
-          <p className="text-ui text-stone">{profile?.targetRole ?? "Practice"} · Ladder {current.level} of 6</p>
-          <h1 className="mt-3 text-display-l text-ivory">Ready for the room{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}?</h1>
-          <p className="mt-5 max-w-[34rem] text-body-l text-stone">{history.length ? `${history.length} session${history.length > 1 ? "s" : ""} analyzed. Next on the Ladder: ${current.name}, pressure ${current.pressure} of 5.` : "Your first session sets your baseline. Everything after is measured against you."}</p>
+          <h1 className="text-display-l text-ivory">Ready for the room{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}?</h1>
+          <p className="mt-5 max-w-[34rem] text-body-l text-stone">
+            {history.length
+              ? `${history.length} session${history.length > 1 ? "s" : ""} analyzed${profile?.targetRole ? ` for ${profile.targetRole}` : ""}. Next on the Ladder, rung ${current.level} of 6: ${current.name}, pressure ${current.pressure} of 5.`
+              : "Your first session sets your baseline. Everything after is measured against you."}
+          </p>
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
             <ButtonLink href="/practice" size="lg">Start practice</ButtonLink>
             {sessions[0]?.analysisStatus === "complete" && <TextLink href={`/playback/${sessions[0].id}`} className="text-ui">Open your last Playback</TextLink>}
@@ -86,7 +89,7 @@ export default async function Home() {
       </Band>
 
       {/* The two lists close the page side by side, each under its own rule, aligned to the 12-column grid. */}
-      <section className="page-grid gap-y-12 border-t border-divider pt-12">
+      <section className="page-grid gap-y-12 pt-16">
         <div className="col-span-4 sm:col-span-8 lg:col-span-7">
           <div className="flex items-baseline justify-between gap-4"><h2 className="text-ui font-medium text-ivory">What you struggled with</h2><TextLink href="/playback" className="text-meta">All Playback</TextLink></div>
           <div className="mt-3 border-b border-divider">
@@ -103,7 +106,7 @@ export default async function Home() {
                     <p className="truncate text-ui text-ivory">{s.role} · {TYPE_LABEL[s.type] ?? s.type}{s.mode === "panel" ? " · panel" : ""}</p>
                     <p className="mt-0.5 text-meta text-stone-dim">{relDate(s.createdAt)} · pressure {s.pressure} of 5</p>
                   </div>
-                  {s.status !== "ended" ? <Badge tone="warn">Unfinished</Badge> : s.analysisStatus === "complete" ? <Badge tone="good">Read ready</Badge> : s.analysisStatus === "failed" ? <Badge tone="bad">Needs retry</Badge> : <Badge>Analysing</Badge>}
+                  {s.status !== "ended" ? <Badge tone="warn">Unfinished</Badge> : s.analysisStatus === "complete" ? <Badge>Read ready</Badge> : s.analysisStatus === "failed" ? <Badge tone="bad">Needs retry</Badge> : <Badge>Analyzing</Badge>}
                 </Link>
               </li>
             )) : <li className="py-5 text-ui text-stone-dim">No sessions yet.</li>}
@@ -114,10 +117,10 @@ export default async function Home() {
   );
 }
 
-/** A section of the page as a document reads: its title in the margin (columns 1–3), its content from column 4. */
+/** A section of the page as a document reads: its title in the margin (columns 1–3), its content from column 4. Space, not a rule, sets it apart. */
 function Band({ title, link, children }: { title: string; link?: [string, string]; children: React.ReactNode }) {
   return (
-    <section className="page-grid gap-y-5 border-t border-divider py-12">
+    <section className="page-grid gap-y-5 pt-16">
       <div className="col-span-4 flex items-baseline justify-between gap-4 sm:col-span-8 lg:col-span-3 lg:block">
         <h2 className="text-ui font-medium text-ivory">{title}</h2>
         {link && <TextLink href={link[0]} className="text-meta lg:mt-1.5 lg:inline-block">{link[1]}</TextLink>}

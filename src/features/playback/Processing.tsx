@@ -43,8 +43,7 @@ export function Processing({ sessionId, initialStatus }: { sessionId: string; in
         </>
       ) : (
         <>
-          <p className="text-meta text-stone-dim font-medium">Preparing your Read</p>
-          <h1 className="mt-4 text-display-l text-ivory">Now let&apos;s see what happened.</h1>
+          <h1 className="text-display-l text-ivory">Now let&apos;s see what happened.</h1>
           <ProgressBar className="mt-10" value={status === "complete" ? STEPS.length : idx + (status === "running" ? 0.5 : 0)} max={STEPS.length} label="Analysis progress" />
           <p className="mt-4 text-ui text-stone" aria-live="polite">{status === "queued" ? "Queued…" : STEPS[idx]?.[1] ?? "Working…"}</p>
         </>

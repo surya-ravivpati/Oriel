@@ -53,7 +53,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
 
   return (
     <>
-      <header className={cn("fixed inset-x-0 top-0 z-50 border-b transition-colors duration-[var(--dur-state)]", scrolled || open ? "border-divider bg-ink/95" : "border-transparent bg-transparent")}>
+      <header className={cn("fixed inset-x-0 top-0 z-50 border-b transition-colors duration-[var(--dur-state)]", scrolled || open ? "border-divider bg-ink" : "border-transparent bg-transparent")}>
         <div className="frame flex h-16 items-center justify-between gap-6">
           <Link href="/" aria-label="Oriel home" className="-ml-1 inline-flex shrink-0 items-center rounded-control p-1" onClick={() => setOpen(false)}><Logo /></Link>
           <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">

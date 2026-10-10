@@ -52,7 +52,7 @@ export function AppNav({ isAdmin, name, mockProviders }: { isAdmin: boolean; nam
 
   return (
     <>
-      <header className={cn("sticky top-0 z-40 border-b bg-ink/95 transition-colors duration-[var(--dur-state)]", scrolled || sheet ? "border-divider" : "border-transparent")}>
+      <header className={cn("sticky top-0 z-40 border-b bg-ink transition-colors duration-[var(--dur-state)]", scrolled || sheet ? "border-divider" : "border-transparent")}>
         <div className="frame flex h-14 items-center gap-10">
           <Link href="/home" aria-label="Oriel home" className="-ml-1 inline-flex shrink-0 items-center rounded-control p-1" onClick={() => setSheet(false)}><Logo /></Link>
           <nav aria-label="Main" className="hidden h-full items-stretch gap-7 lg:flex">

@@ -7,7 +7,6 @@ import { BotAvatar } from "@/components/avatar/BotAvatar";
 import { BotStill } from "@/components/avatar/BotStill";
 import { Button } from "@/components/ui/Button";
 import { FieldError, Input, Label, Segmented, Textarea } from "@/components/ui/Field";
-import { Badge } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/components/ui/cn";
 import { api, ApiError } from "@/lib/client/api";
@@ -413,7 +412,7 @@ function Parsed({ title, ai, children }: { title: string; ai: boolean; children:
     <motion.div className="mt-8 border-t border-divider pt-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, ease: EASE }}>
       <div className="mb-5 flex items-baseline justify-between gap-3">
         <p className="text-display-m text-ivory">{title}</p>
-        <Badge tone={ai ? "lume" : "neutral"}>{ai ? "AI-parsed" : "Pattern-parsed"}</Badge>
+        <p className="text-meta text-stone-dim">{ai ? "Read by the AI" : "Read by pattern matching"}</p>
       </div>
       {children}
     </motion.div>

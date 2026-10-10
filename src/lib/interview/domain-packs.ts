@@ -94,7 +94,7 @@ export const DOMAIN_PACKS: Record<DomainId, DomainPack> = {
     id: "product", label: "Product Management",
     roles: ["Product Manager", "Senior Product Manager", "Group Product Manager", "Director of Product"],
     competencies: [
-      { key: "product_sense", label: "Product sense", rubric: "Starts from a user and problem, prioritises with explicit criteria." },
+      { key: "product_sense", label: "Product sense", rubric: "Starts from a user and problem, prioritizes with explicit criteria." },
       { key: "metrics", label: "Metrics & analytics", rubric: "Defines a north-star and guardrail metrics, explains movement causally." },
       { key: "prioritization", label: "Prioritization", rubric: "Names what was cut and why, handles stakeholder pressure." },
     ],
@@ -111,7 +111,7 @@ export const DOMAIN_PACKS: Record<DomainId, DomainPack> = {
     id: "consulting", label: "Consulting",
     roles: ["Consultant", "Associate", "Senior Consultant", "Engagement Manager"],
     competencies: [
-      { key: "structuring", label: "Structuring", rubric: "MECE framework stated up front, hypothesis-led, prioritised branches." },
+      { key: "structuring", label: "Structuring", rubric: "MECE framework stated up front, hypothesis-led, prioritized branches." },
       { key: "quant", label: "Quantitative reasoning", rubric: "Clear assumptions, sanity-checks orders of magnitude, states the so-what." },
       { key: "client", label: "Client presence", rubric: "Synthesises crisply, handles pushback, recommends a decision." },
     ],
@@ -174,12 +174,12 @@ export const DOMAIN_PACKS: Record<DomainId, DomainPack> = {
     roles: ["Director", "Vice President", "Chief of Staff", "General Manager", "C-level"],
     competencies: [
       { key: "strategy", label: "Strategy", rubric: "Clear choices, what was not done, link to market and capability." },
-      { key: "org_building", label: "Building organisations", rubric: "Hiring, structure, culture changes with evidence of outcome." },
+      { key: "org_building", label: "Building organizations", rubric: "Hiring, structure, culture changes with evidence of outcome." },
       { key: "exec_judgement", label: "Judgement under uncertainty", rubric: "Frames the decision, options, reversibility, and how it played out." },
     ],
     questions: [
       { id: "ex-strategy", competency: "strategy", types: ["leadership", "mixed", "case"], text: "What's the most consequential strategic choice you've made, and what did you give up?", difficulty: 3 },
-      { id: "ex-org", competency: "org_building", types: ["leadership", "mixed"], text: "Tell me about an organisation you built or turned around. What did you change first?", difficulty: 3 },
+      { id: "ex-org", competency: "org_building", types: ["leadership", "mixed"], text: "Tell me about an organization you built or turned around. What did you change first?", difficulty: 3 },
       { id: "ex-bet", competency: "exec_judgement", types: ["leadership", "behavioral"], text: "Describe a bet you made with incomplete information. How did it turn out?", difficulty: 3 },
       { id: "ex-exit", competency: "org_building", types: ["leadership"], text: "Tell me about the hardest person you've had to move out of a role.", difficulty: 3 },
     ],

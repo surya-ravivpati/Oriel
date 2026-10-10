@@ -86,7 +86,7 @@ export function ProfileClient(p: {
           <h2 className="text-display-m text-ivory">Resume &amp; role</h2>
           <div className="mt-6 grid gap-x-6 gap-y-10 md:grid-cols-2">
             <div className="border-t border-divider pt-5">
-              <div className="flex items-center justify-between"><h3 className="text-ui font-medium text-ivory">Resume</h3>{p.resume && <Badge tone="good">Active</Badge>}</div>
+              <div className="flex items-center justify-between"><h3 className="text-ui font-medium text-ivory">Resume</h3>{p.resume && <Badge>Active</Badge>}</div>
               {p.resume ? (<><p className="mt-3 text-body text-ivory">{p.resume.name}</p><ul className="mt-2 space-y-1 text-ui text-stone">{p.resume.roles.slice(0, 4).map((r) => <li key={r}>{r}</li>)}</ul></>) : <p className="mt-3 text-ui text-stone">No resume yet.</p>}
               <div className="mt-5 flex gap-2">
                 <Button size="sm" variant="secondary" onClick={() => fileRef.current?.click()} loading={busy === "resume"}>Upload PDF or DOCX</Button>
@@ -96,7 +96,7 @@ export function ProfileClient(p: {
               {resumeText.trim().length >= 40 && <Button size="sm" className="mt-2" onClick={() => uploadResume()} loading={busy === "resume"}>Save pasted resume</Button>}
             </div>
             <div className="border-t border-divider pt-5">
-              <div className="flex items-center justify-between"><h3 className="text-ui font-medium text-ivory">Job description</h3>{p.jd && <Badge tone="good">Active</Badge>}</div>
+              <div className="flex items-center justify-between"><h3 className="text-ui font-medium text-ivory">Job description</h3>{p.jd && <Badge>Active</Badge>}</div>
               {p.jd ? (<><p className="mt-3 text-body text-ivory">{p.jd.title}</p><p className="mt-2 text-ui text-stone">{p.jd.competencies.join(" · ") || "No specific competencies found"}</p></>) : <p className="mt-3 text-ui text-stone">No job description yet.</p>}
               <Textarea className="mt-5" rows={4} value={jdText} onChange={(e) => setJdText(e.target.value)} placeholder="Paste a job description" aria-label="Job description text" />
               <Button size="sm" className="mt-2" onClick={saveJd} disabled={jdText.trim().length < 40} loading={busy === "jd"}>Save job description</Button>
@@ -131,7 +131,7 @@ export function ProfileClient(p: {
           <p className="mt-2 max-w-[40rem] text-ui text-stone">Camera signals are computed on your device; only derived numbers are stored. We never sell biometric data or share individual results with employers.</p>
           <div className="mt-6 divide-y divide-divider border-y border-divider">
             <Toggle checked={privacy.cameraMetricsEnabled} onChange={(v) => savePrivacy({ cameraMetricsEnabled: v })} label="Camera-based signals" description="Estimate camera engagement and posture. Off: you still see yourself and can record, but no camera measurements are made." />
-            <Toggle checked={privacy.gazeMetricEnabled} disabled={!privacy.cameraMetricsEnabled} onChange={(v) => savePrivacy({ gazeMetricEnabled: v })} label="Camera engagement (gaze)" description="Turn off if you avoid eye contact for cultural, neurological or personal reasons; nothing is penalised." />
+            <Toggle checked={privacy.gazeMetricEnabled} disabled={!privacy.cameraMetricsEnabled} onChange={(v) => savePrivacy({ gazeMetricEnabled: v })} label="Camera engagement (gaze)" description="Turn off if you avoid eye contact for cultural, neurological or personal reasons; nothing is penalized." />
             <Toggle checked={privacy.postureMetricEnabled} disabled={!privacy.cameraMetricsEnabled} onChange={(v) => savePrivacy({ postureMetricEnabled: v })} label="Posture and movement" description="Lean, slouch, sway and fidgeting, shown as a timeline." />
             <Toggle checked={privacy.recordVideo} onChange={(v) => savePrivacy({ recordVideo: v })} label="Record sessions" description="Needed for video Playback. Off: you still get the transcript and the Read." />
             <div className="py-4">

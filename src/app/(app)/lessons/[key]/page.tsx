@@ -113,14 +113,14 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
         {/* One panel beside the lesson: the practice that proves it, then the goal that confirms it. */}
         <aside className="col-span-4 sm:col-span-8 lg:col-span-5 lg:col-start-8 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-panel bg-surface-1 px-6 py-6 sm:px-8 sm:py-7">
-            <h2 className="text-ui font-medium text-ivory">Practise it</h2>
+            <h2 className="text-ui font-medium text-ivory">Practice it</h2>
             {drill ? (
               <>
                 <p className="mt-3 text-display-m text-ivory">{drill.title}</p>
                 <p className="mt-1 text-ui text-stone">{drill.objective}</p>
                 <p className="mt-3 text-meta text-stone-dim">Pass: {drill.passRule}</p>
                 <ButtonLink href={`/drills/${drill.id}?lesson=${def.key}${l?.sourceSessionId ? `&from=${l.sourceSessionId}` : ""}`} size="lg" className="mt-6 w-full">Start practice</ButtonLink>
-                {l && <p className="mt-3 text-center text-meta text-stone-dim">{passes >= PRACTICE_PASSES_NEEDED ? "Practised. Now use it in an interview." : `${passes} of ${PRACTICE_PASSES_NEEDED} passes`}</p>}
+                {l && <p className="mt-3 text-center text-meta text-stone-dim">{passes >= PRACTICE_PASSES_NEEDED ? "Practiced. Now use it in an interview." : `${passes} of ${PRACTICE_PASSES_NEEDED} passes`}</p>}
                 {found && found.attempts.length > 0 && (
                   <ul className="mt-5 divide-y divide-divider border-t border-divider text-ui">
                     {found.attempts.map((a) => (

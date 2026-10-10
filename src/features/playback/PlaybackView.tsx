@@ -94,14 +94,15 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
 
   return (
     <article>
+      {/* The assessment as the title; the session it describes as its byline. */}
       <header className="pb-[var(--spacing-group)]">
-        <p className="text-ui text-stone">{d.subtitle}</p>
-        <h1 className="mt-4 max-w-[28ch] text-display-l text-ivory">{d.headline ?? "Now you know what happened."}</h1>
-        {d.summarySource === "heuristic" && <p className="mt-4 text-meta text-stone-dim">Coaching generated from measurements (no language model configured).</p>}
+        <h1 className="max-w-[28ch] text-display-l text-ivory">{d.headline ?? "Now you know what happened."}</h1>
+        <p className="mt-5 max-w-[48rem] text-ui text-stone">{d.subtitle}</p>
+        {d.summarySource === "heuristic" && <p className="mt-2 text-meta text-stone-dim">Coaching generated from measurements (no language model configured).</p>}
       </header>
 
       {/* At a glance: where you stand, and what to do about it. */}
-      <section aria-label="At a glance" className="page-grid gap-y-12 border-t border-divider py-12">
+      <section aria-label="At a glance" className="page-grid gap-y-12">
         <div className="col-span-4 sm:col-span-8 lg:col-span-7">
           <h2 className="text-ui font-medium text-ivory">Where you stand</h2>
           <Breakdown metrics={metrics} />
@@ -128,7 +129,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
             <ol className="mt-3 border-t border-divider">
               {d.focus.slice(0, 3).map((f, i) => (
                 <li key={f} className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-baseline border-b border-divider py-3.5">
-                  <span className="font-display text-body-l text-olive-light">{i + 1}</span>
+                  <span className="font-display text-body-l text-stone-dim">{i + 1}</span>
                   <span className="text-ui text-ivory">{f}</span>
                 </li>
               ))}
@@ -141,14 +142,14 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
           {d.strengths.length > 0 && (
             <div className="mt-10">
               <h3 className="text-ui font-medium text-ivory">What worked</h3>
-              <ul className="mt-3 space-y-2 border-t border-divider pt-3 text-ui text-stone">{d.strengths.map((x) => <li key={x} className="flex gap-2.5"><span className="mt-[0.6em] size-1 shrink-0 rounded-full bg-olive-light" aria-hidden />{x}</li>)}</ul>
+              <ul className="mt-3 space-y-2 border-t border-divider pt-3 text-ui text-stone">{d.strengths.map((x) => <li key={x} className="flex gap-2.5"><span className="mt-[0.6em] size-1 shrink-0 rounded-full bg-stone-dim" aria-hidden />{x}</li>)}</ul>
             </div>
           )}
         </div>
       </section>
 
       {/* The recording, and the moments in it worth watching. */}
-      <section className="border-t border-divider py-12">
+      <section className="pt-20">
         <div className="mb-6 flex items-baseline justify-between gap-4">
           <h2 className="text-display-m text-ivory">The moments that mattered</h2>
           {d.playbackLevel === "basic" && <Badge>Basic Playback</Badge>}
@@ -201,7 +202,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
       </section>
 
       {d.lessons.length > 0 && (
-        <section className="border-t border-divider py-12">
+        <section className="pt-20">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
             <h2 className="text-display-m text-ivory">What to work on next</h2>
             <Link href="/lessons" className="text-meta text-stone underline decoration-1 underline-offset-[0.2em] hover:text-ivory">All lessons</Link>
@@ -212,7 +213,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
       )}
 
       {/* The Read, part by part. */}
-      <section className="border-t border-divider py-12">
+      <section className="pt-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h2 className="text-display-m text-ivory">What we measured</h2>
           <p className="max-w-md text-meta text-stone">Each measure shows your range and how far to trust it. Camera-based signals are estimates. Nothing here judges appearance, accent or emotion.</p>
@@ -241,7 +242,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
       </section>
 
       {(d.rewrite || d.comparison) && (
-        <section className="border-t border-divider py-12">
+        <section className="pt-20">
           {d.rewrite && (
             <div>
               <h2 className="text-display-m text-ivory">Your weakest answer, tightened</h2>
@@ -265,7 +266,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
         </section>
       )}
 
-      <section className="border-t border-divider py-12">
+      <section className="pt-20">
         <h2 className="text-display-m text-ivory">Transcript</h2>
         <ol className="mt-5 divide-y divide-divider border-y border-divider">
           {d.transcript.map((x) => (
@@ -280,7 +281,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
         </ol>
       </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-divider pt-8 text-meta text-stone">
+      <footer className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-divider pt-8 text-meta text-stone">
         <p>{d.media?.expiresAt ? `Raw video is deleted automatically on ${new Date(d.media.expiresAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}.` : "Transcript and Read are kept until you delete them."}</p>
         <div className="flex items-center gap-6">
           <Link href="/playback" className="hover:text-ivory">All sessions</Link>
@@ -323,7 +324,7 @@ function grouped(metrics: Row[], keepEmpty = false) {
   return keepEmpty ? out : out.filter((g) => g.rows.length);
 }
 
-/** One line per part of the Read: how many measures landed on target, as a row of ticks. */
+/** One line per part of the Read: how many measures landed on target, and which missed. */
 function Breakdown({ metrics }: { metrics: Row[] }) {
   return (
     <ul className="mt-3 border-t border-divider">
@@ -338,12 +339,7 @@ function Breakdown({ metrics }: { metrics: Row[] }) {
           <li key={g.title} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-1 border-b border-divider py-3.5 sm:grid-cols-[8rem_minmax(0,1fr)_auto]">
             <p className="text-body font-medium text-ivory">{g.title}</p>
             <p className="col-span-2 row-start-2 text-meta text-stone-dim sm:col-span-1 sm:row-start-auto">{off.length ? `Off target: ${off.join(", ")}` : why}</p>
-            <div className="col-start-2 row-start-1 flex items-center gap-3 sm:col-start-auto sm:row-start-auto">
-              <span className={cn("text-meta", verdict === "On target" ? "text-olive-light" : "text-stone")}>{verdict}</span>
-              <span className="flex gap-1" aria-hidden>
-                {marks.map((x, i) => <span key={i} className={cn("h-3 w-1.5 rounded-sm", x === "on" ? "bg-olive-light" : x === "off" ? "bg-signal-warn" : x === "open" ? "bg-stone-dim" : "border border-control")} />)}
-              </span>
-            </div>
+            <p className={cn("col-start-2 row-start-1 text-right text-ui sm:col-start-auto sm:row-start-auto", verdict === "On target" ? "text-ivory" : "text-stone")}>{verdict}</p>
           </li>
         );
       })}
@@ -365,7 +361,7 @@ function MeasureRow({ m }: { m: Row }) {
         <div className="mt-1"><ConfidenceMark confidence={m.confidence} /></div>
       </div>
       <p className="flex items-baseline gap-1.5 sm:block">
-        <span className={cn(" text-body-l leading-none", mark === "off" ? "text-signal-warn" : "text-ivory")}>{m.value === null ? "n/a" : fmt(m.value)}</span>
+        <span className={cn("text-body-l leading-none", mark === "off" ? "text-signal-warn" : "text-ivory")}>{m.value === null ? "n/a" : fmt(m.value)}</span>
         <span className="text-meta text-stone-dim sm:ml-1">{unit}</span>
       </p>
       <div className="min-w-0">
@@ -377,7 +373,7 @@ function MeasureRow({ m }: { m: Row }) {
           </div>
         )}
         {m.targetLow !== null && m.targetHigh !== null && m.value !== null && (
-          <p className="mt-2 text-meta text-stone-dim">target {fmt(m.targetLow)}–{fmt(m.targetHigh)}{m.low !== null && m.high !== null ? ` · your range ${fmt(m.low)}–${fmt(m.high)}` : ""}</p>
+          <p className="mt-2 text-meta text-stone-dim">Target {fmt(m.targetLow)} to {fmt(m.targetHigh)}{m.low !== null && m.high !== null ? `. Your range ${fmt(m.low)} to ${fmt(m.high)}.` : "."}</p>
         )}
         {m.note && <p className="mt-2 text-meta leading-relaxed text-stone">{m.note}</p>}
       </div>

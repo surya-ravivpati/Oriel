@@ -49,7 +49,7 @@ export function FieldError({ children, id }: { children?: React.ReactNode; id?: 
  * as a raised chip with a control edge, so a form of five choices shows five marks, not thirty
  * boxes. Options that need a sentence of explanation become a ruled list of radio rows.
  */
-export function Segmented<T extends string>({ value, onChange, options, name, className }: { value: T; onChange: (v: T) => void; options: { value: T; label: string; hint?: string; disabled?: boolean }[]; name: string; className?: string }) {
+export function Segmented<T extends string>({ value, onChange, options, name, className }: { value: T; onChange: (v: T) => void; options: { value: T; label: string; hint?: string; disabled?: boolean; /** The option's full name when its label is a number or a word out of context. */ spoken?: string }[]; name: string; className?: string }) {
   const rows = options.some((o) => o.hint);
   return (
     <div role="radiogroup" aria-label={name} className={cn(rows ? "grid border-t border-divider" : "flex flex-wrap gap-1", className)}>
@@ -68,8 +68,8 @@ export function Segmented<T extends string>({ value, onChange, options, name, cl
             </span>
           </button>
         ) : (
-          <button key={o.value} type="button" role="radio" aria-checked={on} aria-label={o.label} disabled={o.disabled} onClick={() => onChange(o.value)}
-            className={cn("h-9 whitespace-nowrap rounded-control px-3 text-ui transition-[background-color,color,box-shadow] duration-[var(--dur-press)] disabled:cursor-not-allowed disabled:opacity-40 pointer-coarse:h-11",
+          <button key={o.value} type="button" role="radio" aria-checked={on} aria-label={o.spoken ?? o.label} disabled={o.disabled} onClick={() => onChange(o.value)}
+            className={cn("h-9 min-w-9 whitespace-nowrap rounded-control px-3 text-ui transition-[background-color,color,box-shadow] duration-[var(--dur-press)] disabled:cursor-not-allowed disabled:opacity-40 pointer-coarse:h-11",
               on ? "bg-surface-2 text-ivory shadow-[inset_0_0_0_1px_var(--color-control)]" : "text-stone hover:bg-surface-1 hover:text-ivory")}>
             {o.label}
           </button>

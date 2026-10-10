@@ -17,7 +17,7 @@ export function PlaybackClipCard({ clip, href, active, onClick, compact }: {
       <div className="flex items-baseline gap-3">
         <span className="text-meta text-olive-light">{mmss(clip.startMs)}</span>
         <span className="text-ui font-medium text-ivory">{clip.title}</span>
-        <span className="ml-auto hidden sm:block"><ConfidenceMark confidence={clip.confidence} /></span>
+        {!compact && <span className="ml-auto hidden sm:block"><ConfidenceMark confidence={clip.confidence} /></span>}
       </div>
       {!compact && <p className="mt-1.5 line-clamp-1 font-display text-body text-stone-dim">“{clip.questionText}”</p>}
       <p className="mt-2.5 text-ui text-stone">{clip.observed}</p>

@@ -33,8 +33,7 @@ export default function TrustPage() {
   const portraits = [...new Set(p.map((r) => r.file))];
   return (
     <main id="content" tabIndex={-1} className="frame pb-section pt-[calc(var(--header-h)+var(--spacing-hero))] focus:outline-none">
-      <p className="text-ui text-stone">Trust · validation</p>
-      <h1 className="mt-4 text-display-l text-ivory">How accurate is the Read?</h1>
+      <h1 className="text-display-l text-ivory">How accurate is the Read?</h1>
       <p className="mt-6 max-w-2xl text-body-l text-stone">We test every measurement against known ground truth and across accents, skin tones, eyewear, head coverings and lighting, and publish the results, including what failed and what we changed. These are early, synthetic tests; testing with real people is still owed and will be published here.</p>
 
       <section className="mt-20">
@@ -76,8 +75,8 @@ export default function TrustPage() {
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               {[
                 ["Face detected", `${Math.round((c.filter((r) => r.faceDetected).length / c.length) * 100)}%`],
-                ["Lens gaze recognised", `${Math.round((c.filter((r) => r.gaze === "camera" && r.classifiedAs === "camera").length / Math.max(1, c.filter((r) => r.gaze === "camera").length)) * 100)}%`],
-                ["Looking away recognised", `${Math.round((c.filter((r) => r.gaze === "away" && r.classifiedAs === "away").length / Math.max(1, c.filter((r) => r.gaze === "away").length)) * 100)}%`],
+                ["Lens gaze recognized", `${Math.round((c.filter((r) => r.gaze === "camera" && r.classifiedAs === "camera").length / Math.max(1, c.filter((r) => r.gaze === "camera").length)) * 100)}%`],
+                ["Looking away recognized", `${Math.round((c.filter((r) => r.gaze === "away" && r.classifiedAs === "away").length / Math.max(1, c.filter((r) => r.gaze === "away").length)) * 100)}%`],
               ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 text-body-l text-ivory">{v}</p></div>)}
             </div>
             <div className="mt-6 overflow-x-auto" tabIndex={0} role="region" aria-label="Camera signal results">
@@ -98,7 +97,7 @@ export default function TrustPage() {
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 ["Shoulders found at calibration", `${portraits.filter((f) => p.find((r) => r.file === f)?.postureReady).length}/${portraits.length}`],
-                ["Sitting back / leaning in recognised", `${p.filter((r) => r.kind === r.expected).length}/${p.length}`],
+                ["Sitting back or leaning in, recognized", `${p.filter((r) => r.kind === r.expected).length}/${p.length}`],
                 ["Slouches from distance alone", `${p.filter((r) => r.kind === "slouch").length}`],
                 ["Still frames read as restless", `${still.reduce((a, r) => a + r.restless, 0)}/${still.reduce((a, r) => a + r.frames, 0)}`],
               ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 text-body-l text-ivory">{v}</p></div>)}
