@@ -1,34 +1,34 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
 import { InterviewPreview } from "./InterviewPreview";
 
 /**
- * The promise and the proof, as one composition on the page grid. The headline holds column 1;
- * the copy and the call to action step in to column 7, the same edge where the preview's
- * conversation begins, so the eye runs headline → copy → the interview itself.
+ * The first screen holds two things: the promise, and the interviewer who keeps it. On desktop they
+ * sit side by side, centred on each other, so the headline and the face are read in one glance;
+ * on narrower screens the interviewer follows the call to action.
  */
 export function Hero({ cta, signedIn }: { cta: string; signedIn: boolean }) {
   return (
-    <section aria-labelledby="hero-title" className="frame pb-section pt-[calc(var(--header-h)+var(--spacing-hero))]">
-      <h1 id="hero-title" className="-ml-[0.035em] max-w-[11.5em] text-display-xl text-ivory">
-        Practice for <em>the&nbsp;room</em> before you’re in&nbsp;it.
-      </h1>
-      <div className="page-grid mt-6 sm:mt-8">
-        <div className="col-span-4 sm:col-span-6 sm:col-start-3 lg:col-span-6 lg:col-start-7">
-          <p className="max-w-[34rem] text-body-l text-stone">
+    <section aria-labelledby="hero-title" className="frame pt-[calc(var(--header-h)+var(--spacing-hero))]">
+      <div className="page-grid items-center gap-y-16 lg:min-h-[min(calc(100svh-var(--header-h)-2*var(--spacing-hero)),38rem)]">
+        <div className="col-span-4 sm:col-span-7 lg:col-span-7">
+          <h1 id="hero-title" className="max-w-[10em] text-display-xl text-ivory">
+            Practice for the&nbsp;room before you’re in&nbsp;it.
+          </h1>
+          <p className="mt-6 max-w-[33rem] text-body-l text-stone">
             Oriel is an AI interviewer for anyone with an interview coming up. It asks the follow-ups a real interviewer would, then shows you what landed and what to change.
           </p>
-          <div className="mt-6 flex items-center gap-6">
-            <Link href={cta} className="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-ivory-press active:scale-[0.97] min-[480px]:w-auto lg:h-11">
+          <div className="mt-8 flex items-center gap-6">
+            <ButtonLink href={cta} size="lg" className="w-full min-[480px]:w-auto">
               {signedIn ? "Practice an interview" : "Start practicing free"}
-            </Link>
-            {/* On a phone the preview is the next thing on screen, so the second action steps aside. */}
-            <a href="#session" className="hidden whitespace-nowrap text-ui text-stone underline decoration-1 underline-offset-[0.2em] transition-colors duration-[var(--dur-press)] hover:text-ivory min-[480px]:inline">See how it works</a>
+            </ButtonLink>
+            {/* On a phone the interviewer is the next thing on screen, so the second action steps aside. */}
+            <a href="#how" className="hidden whitespace-nowrap text-ui text-stone underline decoration-1 underline-offset-[0.2em] transition-colors duration-[var(--dur-press)] hover:text-ivory min-[480px]:inline">See how it works</a>
           </div>
           {!signedIn && <p className="mt-3 text-ui text-stone-dim">Free: one 10-minute interview a week. No&nbsp;card&nbsp;required.</p>}
         </div>
-      </div>
-      <div className="mt-12">
-        <InterviewPreview />
+        <div className="col-span-4 sm:col-span-8 lg:col-span-5">
+          <InterviewPreview />
+        </div>
       </div>
     </section>
   );

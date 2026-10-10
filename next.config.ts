@@ -28,6 +28,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // The floating dev-tools badge sits over the page in development; errors still open the overlay.
+  devIndicators: false,
   serverExternalPackages: ["better-sqlite3"],
   // Runtime data (SQLite, encrypted media) and tests must never be traced into a deployment bundle.
   outputFileTracingExcludes: { "*": ["data/**", "tests/**", "playwright-report/**", "test-results/**"] },

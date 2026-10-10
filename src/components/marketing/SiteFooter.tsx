@@ -6,10 +6,10 @@ const linkCls = "inline-block py-1 text-stone transition-colors duration-[var(--
 /** The colophon, on the page grid: what Oriel is and how to reach it, then the directory from the spine. */
 export function SiteFooter({ signedIn }: { signedIn: boolean }) {
   const columns: [string, [string, string][]][] = [
-    ["Product", [["/#in-the-room", "In the room"], ["/#read", "The Read"], ["/#playback", "Playback"], ["/#practice", "Lessons and drills"]]],
+    ["Product", [["/#how", "Interviewers"], ["/#read", "The Read"], ["/#practice", "Lessons and drills"], ["/#pricing", "Pricing"]]],
     ["Practice", signedIn
       ? [["/home", "Open Oriel"], ["/practice", "Practice an interview"], ["/progress", "Your progress"]]
-      : [["/signup", "Start practicing"], ["/login", "Sign in"], ["/#pricing", "Pricing"]]],
+      : [["/signup", "Start practicing"], ["/login", "Sign in"]]],
     ["Trust", [["/#privacy", "How your data is handled"], ["/trust", "How accurate is the Read"], ["/privacy", "Privacy and biometric policy"]]],
   ];
   return (

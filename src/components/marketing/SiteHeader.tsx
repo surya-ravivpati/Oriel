@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/components/ui/cn";
 
-const LINKS = [["/#session", "How it works"], ["/#read", "The Read"], ["/#privacy", "Privacy"], ["/#pricing", "Pricing"]] as const;
+const LINKS = [["/#how", "Interviewers"], ["/#read", "The Read"], ["/#privacy", "Privacy"], ["/#pricing", "Pricing"]] as const;
 
 /**
  * Almost invisible until needed: transparent over the first screen, near-opaque ink with a

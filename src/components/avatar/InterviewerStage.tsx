@@ -13,9 +13,11 @@ import { cn } from "@/components/ui/cn";
  * breathes, blinks and glances around. It only animates while on screen in a visible tab, and
  * holds still under reduced motion. A panel shows every seat, the lead in front.
  */
-export function InterviewerStage({ personaIds, styles, className }: {
+export function InterviewerStage({ personaIds, styles, still, className }: {
   personaIds: string[];
   styles?: Partial<Record<string, Partial<AvatarStyle> | null>>;
+  /** A still of the same frame, drawn by the same engine, shown until the canvas paints (and without scripts). */
+  still?: string;
   className?: string;
 }) {
   const box = useRef<HTMLDivElement>(null);
@@ -46,6 +48,8 @@ export function InterviewerStage({ personaIds, styles, className }: {
 
   return (
     <div ref={box} className={cn("relative", className)} aria-hidden>
+      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size still under the canvas, not content */}
+      {still && <img src={still} alt="" width={352} height={352} loading="lazy" decoding="async" className="absolute inset-0 size-full" />}
       <BotAvatar store={store} seats={seats} paused={!live} compact className="absolute inset-0" />
     </div>
   );

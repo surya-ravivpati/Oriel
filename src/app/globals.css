@@ -3,15 +3,13 @@
 /*
  * Oriel: the interview studio.
  *
- * Every screen in Oriel is a take and its notes: what was said, when, and what to change.
- * The system encodes that directly:
- *   - Newsreader (serif) is speech: the interviewer's lines, your answers, and Oriel's own headlines.
- *   - IBM Plex Mono is evidence: timecodes, measurements, counts.
- *   - Schibsted Grotesk is the interface: labels, buttons, explanations.
- * Surfaces are warm charcoal, ruled with hairlines; boxes are reserved for real objects (a video
- * frame, a field, a menu). Ivory carries the text and the one high-contrast action in a view.
- * Olive and stone are the only accents: a mark under a word, the current place, a chosen
- * option. Never a glow, never a gradient.
+ * Two voices. Newsreader (serif) is Oriel's: headlines and every line an interviewer speaks.
+ * Schibsted Grotesk is yours and the interface's: answers, labels, numbers, buttons. Numbers are
+ * set with tabular figures in the sans; there is no third face.
+ * Surfaces are warm charcoal. Space separates most things; a hairline separates rows; a box is
+ * reserved for a real object (a field, a recording, a dialog). Ivory carries the text and the one
+ * high-contrast action in a view. Olive is a rare signal: the chosen option, the current place.
+ * Never a glow, a gradient, a blur or a coloured border.
  */
 @theme {
   /*
@@ -45,19 +43,19 @@
   --font-sans: var(--font-schibsted), "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
   --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, Menlo, monospace;
 
-  /* Type scale. Serif for Oriel's voice (display-xl/l/m), sans for yours and the interface. */
-  --text-display-xl: clamp(2.5rem, 1.5rem + 5vw, 6.5rem);
-  --text-display-xl--line-height: 1;
-  --text-display-xl--letter-spacing: -0.015em;
+  /* Type scale. Serif for Oriel's voice (display-*), sans for yours and the interface. Each step is
+     at least 1.25x the next, so hierarchy comes from size, never from a second weight or an italic. */
+  --text-display-xl: clamp(2.5rem, 1.9rem + 2.6vw, 4.25rem);    /* 40 → 68px: the H1 of the landing page */
+  --text-display-xl--line-height: 1.02;
+  --text-display-xl--letter-spacing: -0.018em;
   --text-display-xl--font-weight: 400;
-  --text-display-l: clamp(2rem, 1.25rem + 2.6vw, 3.5rem);
-  --text-display-l--line-height: 1.08;
-  --text-display-l--letter-spacing: -0.01em;
+  --text-display-l: clamp(1.875rem, 1.5rem + 1.5vw, 2.75rem);   /* 30 → 44px: page and section titles */
+  --text-display-l--line-height: 1.1;
+  --text-display-l--letter-spacing: -0.012em;
   --text-display-l--font-weight: 400;
-  --text-display-m: clamp(1.375rem, 1.1rem + 0.9vw, 1.875rem);
-  --text-display-m--line-height: 1.25;
+  --text-display-m: clamp(1.25rem, 1.12rem + 0.5vw, 1.625rem);  /* 20 → 26px: spoken lines, names */
+  --text-display-m--line-height: 1.28;
   --text-display-m--font-weight: 400;
   --text-body-l: clamp(1.125rem, 1.07rem + 0.25vw, 1.25rem);
   --text-body-l--line-height: 1.5;
@@ -126,7 +124,7 @@
   * { scrollbar-width: thin; scrollbar-color: var(--color-control) transparent; }
   /* A phone on its side: a smaller headline and less air above it, so the call to action stays in view. */
   @media (orientation: landscape) and (max-height: 30rem) {
-    :root { --text-display-xl: clamp(2.25rem, 1rem + 4vw, 3.25rem); --spacing-hero: 1.25rem; }
+    :root { --text-display-xl: clamp(2.25rem, 1rem + 3vw, 3rem); --spacing-hero: 1.25rem; }
   }
 }
 

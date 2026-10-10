@@ -13,7 +13,7 @@ test.describe("landing page", () => {
     await page.goto("/");
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Practice for the room before you’re in it.");
-    await expect(page.getByText("Sample session").first()).toBeVisible();
+    await expect(page.getByText(/^Sample interview with Daniel/).first()).toBeVisible();
 
     const cta = page.getByRole("main").getByRole("link", { name: "Start practicing free" }).first();
     await expect(cta).toHaveAttribute("href", "/signup");
