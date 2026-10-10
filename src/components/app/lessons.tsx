@@ -46,13 +46,13 @@ export function TrackLabel({ track, className }: { track: Track; className?: str
 export function LessonCard({ l }: { l: LessonSummary }) {
   const def = LESSONS[l.key];
   return (
-    <Link href={`/lessons/${l.key}`} className={cn("group block border-t pb-2 pt-4 transition-colors duration-150", l.status === "active" ? "border-stone-dim hover:border-olive-light" : "border-divider hover:border-stone-dim")}>
+    <Link href={`/lessons/${l.key}`} className={cn("group block border-t pb-2 pt-4 transition-colors duration-[var(--dur-press)]", l.status === "active" ? "border-stone-dim hover:border-olive-light" : "border-divider hover:border-stone-dim")}>
       <div className="flex items-start justify-between gap-3">
         <TrackLabel track={def.track} />
         {l.status === "queued" && <span className="text-meta font-medium text-stone-dim">Up next</span>}
         {l.status === "mastered" && <span className="text-meta font-medium text-signal-good">Mastered</span>}
       </div>
-      <p className="mt-2 font-display text-[26px] leading-[1.15] text-ivory">{def.title}</p>
+      <p className="mt-2 text-display-m text-ivory">{def.title}</p>
       {l.status === "mastered" && l.metricKey && l.startValue != null && l.latestValue != null && l.startValue !== l.latestValue ? (
         <p className="mt-2 text-ui text-stone-dim">was {formatMeasure(l.metricKey, l.startValue)} · <span className="text-signal-good">now {formatMeasure(l.metricKey, l.latestValue)}</span></p>
       ) : l.evidence && <p className="mt-2 text-ui text-stone"><span className="text-ivory">{l.evidence.display}</span> <span className="text-stone-dim">· target {l.evidence.target}</span></p>}
