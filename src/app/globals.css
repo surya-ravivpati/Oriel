@@ -189,6 +189,9 @@
 
 /* The interviewer blinks: a quick squint, then a long pause. Used by the mark when Oriel is working. */
 @keyframes blink { 0%, 88%, 100% { transform: scaleY(1); } 92% { transform: scaleY(0.12); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+/* The interviewer speaking: a slow, small lift of the eyes. Never a spinner. */
+@keyframes speak { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-1.5px); } }
 /* A live microphone level, faked for illustrations of the Room. */
 @keyframes meter { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
 /* Things that float in (menus, dialogs) arrive from just below where they settle. */
