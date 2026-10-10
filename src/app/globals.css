@@ -118,6 +118,14 @@
   --radius-button: 10px;
   --radius-panel: 16px;
 
+  /*
+   * Spacing: the 4px scale (p-1 = 4px, p-2 = 8px, p-3 = 12px, p-4 = 16px, p-6 = 24px, p-8 = 32px,
+   * p-12 = 48px, p-16 = 64px) for components, plus three named rhythms for the page itself.
+   */
+  --spacing-section: clamp(4rem, 2.4rem + 6vw, 8rem); /* between chapters of a page: 64 → 128px */
+  --spacing-group: clamp(3rem, 2rem + 3vw, 5rem);     /* a section's opening to its body: 48 → 80px */
+  --spacing-hero: clamp(2rem, 0.5rem + 4vw, 4rem);    /* the header to the headline: 32 → 64px */
+
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);   /* entrances */
@@ -130,8 +138,6 @@
   --line-strong: var(--color-line-strong);
   /* One elevation, only for things that float over the page: menus and dialogs. */
   --shadow-sheet: 0 24px 64px -16px rgb(4 5 6 / 0.75), 0 0 0 1px var(--color-line-strong);
-  /* Vertical rhythm between chapters of a page: 64–96px on phones, 96–160px on desktop. */
-  --space-section: clamp(4rem, 2.4rem + 6vw, 8rem);
   /* Page frame: about 1240px of content, gutters from 20px at 320 to 64px on wide screens. */
   --gutter: clamp(1.25rem, 5vw, 4rem);
   --frame: 1240px;
@@ -154,13 +160,18 @@
   }
   /* The serif voice, wherever a page asks for it. */
   .font-display { font-weight: 400; letter-spacing: -0.012em; font-optical-sizing: auto; }
-  h1, h2, h3 { text-wrap: balance; }
-  p { text-wrap: pretty; }
+  /* Headings break into even lines; running text avoids a last word alone on its line. */
+  body { text-wrap: pretty; }
+  h1, h2, h3, dt { text-wrap: balance; }
   ::selection { background: var(--color-olive); color: var(--color-ivory); }
   /* Focus is an ivory outline (not a shadow), so it survives forced-colors mode. */
   :focus-visible { outline: 2px solid var(--color-ivory); outline-offset: 2px; }
   @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
   * { scrollbar-width: thin; scrollbar-color: var(--color-ink-500) transparent; }
+  /* A phone on its side: a smaller headline and less air above it, so the call to action stays in view. */
+  @media (orientation: landscape) and (max-height: 30rem) {
+    :root { --text-display-xl: clamp(2.25rem, 1rem + 4vw, 3.25rem); --spacing-hero: 1.25rem; }
+  }
 }
 
 @layer components {
@@ -182,7 +193,6 @@
   .text-balance { text-wrap: balance; }
   .tabular { font-variant-numeric: tabular-nums; }
   .shadow-sheet { box-shadow: var(--shadow-sheet); }
-  .section-y { padding-block: var(--space-section); }
   /* An editor's mark under a word: the one place gold touches running text. */
   .mark-gold { text-decoration: underline; text-decoration-color: var(--color-lume); text-decoration-thickness: 2px; text-underline-offset: 0.22em; }
 }

@@ -90,7 +90,7 @@ export function InterviewPreview() {
           <p className="hidden text-meta text-stone-dim sm:block" aria-hidden>Sample session</p>
           {motionOk && (
             <button type="button" onClick={() => setUserPaused((p) => !p)} aria-label={userPaused ? "Play the sample interview" : "Pause the sample interview"}
-              className="-my-1 -mr-2 grid size-8 place-items-center rounded-control text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">
+              className="-my-2.5 -mr-3 grid size-11 place-items-center rounded-control text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">
               <svg viewBox="0 0 12 12" className="size-3" aria-hidden>
                 {userPaused ? <path d="M3 1.8v8.4l7-4.2z" fill="currentColor" /> : <path d="M3 2h2v8H3zM7 2h2v8H7z" fill="currentColor" />}
               </svg>

@@ -8,7 +8,7 @@ import { InterviewPreview } from "./InterviewPreview";
  */
 export function Hero({ cta, signedIn }: { cta: string; signedIn: boolean }) {
   return (
-    <section aria-labelledby="hero-title" className="frame pb-[var(--space-section)] pt-[calc(var(--header-h)+clamp(2rem,0.5rem+4vw,4rem))]">
+    <section aria-labelledby="hero-title" className="frame pb-section pt-[calc(var(--header-h)+var(--spacing-hero))]">
       <h1 id="hero-title" className="-ml-[0.045em] max-w-[11.5em] text-display-xl text-ivory">
         Practice for <em>the&nbsp;room</em> before you’re in&nbsp;it.
       </h1>
@@ -17,13 +17,14 @@ export function Hero({ cta, signedIn }: { cta: string; signedIn: boolean }) {
           <p className="max-w-[34rem] text-body-l text-stone">
             Oriel is an AI interviewer for anyone with an interview coming up. It asks the follow-ups a real interviewer would, then shows you what landed and what to change.
           </p>
-          <div className="mt-6 flex flex-col gap-4 min-[480px]:flex-row min-[480px]:items-center min-[480px]:gap-6">
-            <Link href={cta} className="inline-flex h-12 items-center justify-center rounded-button bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.985] lg:h-11">
+          <div className="mt-6 flex items-center gap-6">
+            <Link href={cta} className="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-button bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] min-[480px]:w-auto lg:h-11">
               {signedIn ? "Practice an interview" : "Start practicing free"}
             </Link>
-            <a href="#session" className="self-center text-ui text-stone underline decoration-1 underline-offset-[0.2em] transition-colors duration-[var(--dur-press)] hover:text-ivory min-[480px]:self-auto">See how it works</a>
+            {/* On a phone the preview is the next thing on screen, so the second action steps aside. */}
+            <a href="#session" className="hidden whitespace-nowrap text-ui text-stone underline decoration-1 underline-offset-[0.2em] transition-colors duration-[var(--dur-press)] hover:text-ivory min-[480px]:inline">See how it works</a>
           </div>
-          {!signedIn && <p className="mt-3 text-ui text-stone-dim">Free: one 10-minute interview a week. No card required.</p>}
+          {!signedIn && <p className="mt-3 text-ui text-stone-dim">Free: one 10-minute interview a week. No&nbsp;card&nbsp;required.</p>}
         </div>
       </div>
       <div className="mt-12">

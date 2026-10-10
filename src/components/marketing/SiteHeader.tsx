@@ -33,11 +33,16 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
     const first = requestAnimationFrame(() => menu.current?.querySelector<HTMLElement>("a")?.focus());
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     window.addEventListener("keydown", esc);
+    // Widening the window past the menu's breakpoint hides it, so release the page too.
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const onWide = () => { if (wide.matches) setOpen(false); };
+    wide.addEventListener("change", onWide);
     return () => {
       cancelAnimationFrame(first);
       document.documentElement.style.overflow = "";
       behind.forEach((el) => { el.inert = false; });
       window.removeEventListener("keydown", esc);
+      wide.removeEventListener("change", onWide);
     };
   }, [open]);
 
@@ -50,30 +55,30 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
     <>
       <header className={cn("fixed inset-x-0 top-0 z-50 border-b transition-colors duration-[var(--dur-state)]", scrolled || open ? "border-divider bg-ink/95" : "border-transparent bg-transparent")}>
         <div className="frame flex h-16 items-center justify-between gap-6">
-          <Link href="/" aria-label="Oriel home" className="-ml-1 shrink-0 rounded-control px-1 py-1" onClick={() => setOpen(false)}><Logo /></Link>
-          <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+          <Link href="/" aria-label="Oriel home" className="-ml-1 inline-flex shrink-0 items-center rounded-control p-1" onClick={() => setOpen(false)}><Logo /></Link>
+          <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
             {LINKS.map(([href, label]) => (
-              <a key={href} href={href} className="rounded-control px-3 py-2 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">{label}</a>
+              <a key={href} href={href} className="whitespace-nowrap rounded-control px-3 py-2 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">{label}</a>
             ))}
           </nav>
           <div className="flex items-center gap-2">
             {signedIn ? (
-              <Link href="/home" className="hidden h-9 items-center rounded-button bg-ivory px-4 text-ui font-medium text-ink transition-colors duration-[var(--dur-press)] hover:bg-mist-200 sm:inline-flex">Open Oriel</Link>
+              <Link href="/home" className="hidden h-9 items-center whitespace-nowrap rounded-button bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] sm:inline-flex">Open Oriel</Link>
             ) : (
               <>
-                <Link href="/login" className="hidden rounded-control px-3 py-2 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory sm:block">Sign in</Link>
-                <Link href="/signup" className="hidden h-9 items-center rounded-button bg-ivory px-4 text-ui font-medium text-ink transition-colors duration-[var(--dur-press)] hover:bg-mist-200 md:inline-flex">Start practicing</Link>
+                <Link href="/login" className="hidden whitespace-nowrap rounded-control px-3 py-2 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory lg:block">Sign in</Link>
+                <Link href="/signup" className="hidden h-9 items-center whitespace-nowrap rounded-button bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] sm:inline-flex">Start practicing</Link>
               </>
             )}
             <button ref={toggle} type="button" onClick={() => (open ? close() : setOpen(true))} aria-expanded={open} aria-controls="site-menu"
-              className="-mr-2 h-11 rounded-control px-3 text-ui font-medium text-ivory md:hidden">
+              className="-mr-2 h-11 rounded-control px-3 text-ui font-medium text-ivory lg:hidden">
               {open ? "Close" : "Menu"}
             </button>
           </div>
         </div>
       </header>
       {open && (
-        <div ref={menu} id="site-menu" className="fixed inset-x-0 bottom-0 top-16 z-50 overflow-y-auto bg-ink md:hidden">
+        <div ref={menu} id="site-menu" className="fixed inset-x-0 bottom-0 top-16 z-50 overflow-y-auto overscroll-contain bg-ink lg:hidden">
           <nav aria-label="Menu" className="frame flex flex-col pb-10 pt-2">
             {LINKS.map(([href, label]) => (
               <a key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-14 items-center border-b border-divider font-display text-[1.625rem] text-ivory">{label}</a>
