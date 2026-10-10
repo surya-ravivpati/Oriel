@@ -23,7 +23,7 @@ export default async function ProfilePage() {
     <div>
       <Eyebrow>Profile</Eyebrow>
       <h1 className="mt-3 font-display text-5xl">{profile.name}</h1>
-      <p className="mt-2 text-mist-400">{user.email} · {profile.targetRole}</p>
+      <p className="mt-2 text-stone-dim">{user.email} · {profile.targetRole}</p>
       <ProfileClient
         privacy={{ cameraMetricsEnabled: profile.cameraMetricsEnabled, gazeMetricEnabled: profile.gazeMetricEnabled, postureMetricEnabled: profile.postureMetricEnabled, recordVideo: profile.recordVideo, videoRetentionDays: profile.videoRetentionDays }}
         resume={resume ? { name: resume.fileName ?? "Pasted resume", roles: resume.parsed?.roles.map((r) => `${r.title}${r.organization ? ` · ${r.organization}` : ""}`) ?? [], createdAt: resume.createdAt.toISOString() } : null}

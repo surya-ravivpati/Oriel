@@ -19,7 +19,7 @@ export function Logo({ className }: { className?: string }) {
 /** A waiting state in Oriel's own shape: the face, blinking slowly, with a line beside it. */
 export function Thinking({ label, className }: { label: string; className?: string }) {
   return (
-    <span role="status" className={cn("inline-flex items-center gap-2.5 text-callout text-mist-300", className)}>
+    <span role="status" className={cn("inline-flex items-center gap-2.5 text-ui text-stone", className)}>
       <LogoMark blink className="size-5" />
       {label}
     </span>

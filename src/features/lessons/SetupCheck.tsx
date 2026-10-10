@@ -74,28 +74,28 @@ export function SetupCheck({ passes, needed, inPlan }: { passes: number; needed:
   return (
     <div>
       <p className="mt-3 font-display text-2xl">Setup check</p>
-      <p className="mt-1 text-sm text-mist-400">Turn on your camera and adjust until every line turns green for three seconds. Nothing is recorded.</p>
-      <div className={cn("mt-4 overflow-hidden rounded-lg border hairline bg-ink-900", stage === "idle" && "hidden")}>
+      <p className="mt-1 text-ui text-stone-dim">Turn on your camera and adjust until every line turns green for three seconds. Nothing is recorded.</p>
+      <div className={cn("mt-4 overflow-hidden rounded-control border border-divider bg-surface-1", stage === "idle" && "hidden")}>
         <video ref={video} muted playsInline className="aspect-video w-full -scale-x-100 object-cover" />
       </div>
       {stage !== "idle" && (
-        <ul className="mt-4 space-y-1.5 text-sm" aria-live="polite">
+        <ul className="mt-4 space-y-1.5 text-ui" aria-live="polite">
           {CHECKS.map((c) => (
             <li key={c.key} className="flex items-center gap-2">
-              <span className={cn("size-2 rounded-full", state[c.key] === true ? "bg-signal-good" : state[c.key] === false ? "bg-signal-warn" : "bg-white/20")} />
-              <span className={state[c.key] === false ? "text-mist-100" : "text-mist-300"}>{c.label}</span>
+              <span className={cn("size-2 rounded-full", state[c.key] === true ? "bg-signal-good" : state[c.key] === false ? "bg-signal-warn" : "bg-ivory/20")} />
+              <span className={state[c.key] === false ? "text-ivory" : "text-stone"}>{c.label}</span>
             </li>
           ))}
         </ul>
       )}
       {stage === "passed" ? (
-        <p className="mt-4 text-sm text-signal-good">Your setup looks good.{inPlan ? ` ${Math.min(count, needed)} of ${needed} checks passed.` : ""}</p>
+        <p className="mt-4 text-ui text-signal-good">Your setup looks good.{inPlan ? ` ${Math.min(count, needed)} of ${needed} checks passed.` : ""}</p>
       ) : (
         <Button variant="lume" className="mt-5 w-full" onClick={start} loading={stage === "starting"} disabled={stage === "checking"}>{stage === "checking" ? "Checking…" : "Start the check"}</Button>
       )}
       {stage === "passed" && <Button variant="secondary" size="sm" className="mt-3" onClick={start}>Check again</Button>}
       <FieldError>{error}</FieldError>
-      <p className="mt-3 text-xs text-mist-400">Sound is checked in the Room&apos;s setup screen before each interview.</p>
+      <p className="mt-3 text-meta text-stone-dim">Sound is checked in the Room&apos;s setup screen before each interview.</p>
     </div>
   );
 }

@@ -25,7 +25,7 @@ export default async function DrillsPage() {
     <div>
       <Eyebrow>Drills</Eyebrow>
       <h1 className="mt-3 font-display text-5xl">Five minutes on one thing.</h1>
-      <p className="mt-3 max-w-xl text-mist-300">Each drill has one objective, one measurement and your baseline to beat.</p>
+      <p className="mt-3 max-w-xl text-stone">Each drill has one objective, one measurement and your baseline to beat.</p>
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[...DRILLS].sort((a, b) => (a.id === rec.drillId ? -1 : b.id === rec.drillId ? 1 : 0)).map((d) => (
           <DrillCard key={d.id} drill={d} recommended={d.id === rec.drillId ? rec.reason : null} lastValue={last(d.id)} />
@@ -34,14 +34,14 @@ export default async function DrillsPage() {
       {attempts.length > 0 && (
         <section className="mt-16">
           <Eyebrow>Recent attempts</Eyebrow>
-          <ul className="mt-4 divide-y divide-white/[0.06] rounded-lg border hairline">
+          <ul className="mt-4 divide-y divide-divider rounded-control border border-divider">
             {attempts.slice(0, 8).map((a) => (
-              <li key={a.id} className="flex flex-wrap items-center gap-4 px-5 py-4 text-sm">
-                <span className="w-40 text-mist-100">{DRILLS.find((d) => d.id === a.drillId)?.title}</span>
-                <span className="font-mono text-mist-300">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</span>
-                <span className="text-mist-400">{a.baselineValue !== null ? `baseline ${Math.round(a.baselineValue * 10) / 10}` : "first attempt"}</span>
-                <span className={a.passed ? "text-signal-good" : "text-mist-400"}>{a.passed ? "Target met" : a.passed === false ? "Not yet" : ""}</span>
-                <span className="ml-auto text-mist-400">{relDate(a.createdAt)}</span>
+              <li key={a.id} className="flex flex-wrap items-center gap-4 px-5 py-4 text-ui">
+                <span className="w-40 text-ivory">{DRILLS.find((d) => d.id === a.drillId)?.title}</span>
+                <span className="font-mono text-stone">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</span>
+                <span className="text-stone-dim">{a.baselineValue !== null ? `baseline ${Math.round(a.baselineValue * 10) / 10}` : "first attempt"}</span>
+                <span className={a.passed ? "text-signal-good" : "text-stone-dim"}>{a.passed ? "Target met" : a.passed === false ? "Not yet" : ""}</span>
+                <span className="ml-auto text-stone-dim">{relDate(a.createdAt)}</span>
               </li>
             ))}
           </ul>

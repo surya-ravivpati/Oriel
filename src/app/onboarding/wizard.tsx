@@ -109,7 +109,7 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
     <div className="relative min-h-dvh lg:grid lg:grid-cols-2">
       <header className="absolute inset-x-0 top-0 z-20 flex h-14 items-center justify-between px-5 sm:px-8">
         <Link href="/" aria-label="Oriel home"><Logo /></Link>
-        {step > 0 && step < DONE && <p className="text-caption font-medium text-mist-400 lg:hidden">{step} of {STEPS.length}</p>}
+        {step > 0 && step < DONE && <p className="text-meta font-medium text-stone-dim lg:hidden">{step} of {STEPS.length}</p>}
       </header>
 
       <Stage personaId={p.preferredPersona} line={line} speaker={`${first} · ${persona.title}`} celebrate={step === DONE} />
@@ -124,18 +124,18 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
               <Leaving>
               {step === 0 && (
                 <StepShell title={<>Let’s get you ready <br className="hidden sm:block" />for the room.</>} lead="Five short steps, about two minutes, and your first interview is set. Your resume and the job description are optional, but they make the questions yours." autoFocus={false}>
-                  <ol className="mt-9 border-t border-line">
+                  <ol className="mt-9 border-t border-divider">
                     {[["About you", "Your name, the role you want"], ["Your field", "Sets what gets probed"], ["Your resume", "Optional"], ["The role", "Optional"], ["Your interviewer", "Who sits across from you"]].map(([t, d], i) => (
-                      <li key={t} className="flex items-baseline gap-4 border-b border-line py-3">
-                        <span className="w-6 shrink-0 font-mono text-[12px] text-mist-400">{String(i + 1).padStart(2, "0")}</span>
-                        <span className="flex-1 text-callout font-medium text-mist-100">{t}</span>
-                        <span className="text-caption text-mist-400">{d}</span>
+                      <li key={t} className="flex items-baseline gap-4 border-b border-divider py-3">
+                        <span className="w-6 shrink-0 font-mono text-meta text-stone-dim">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="flex-1 text-ui font-medium text-ivory">{t}</span>
+                        <span className="text-meta text-stone-dim">{d}</span>
                       </li>
                     ))}
                   </ol>
                   <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
                     <Button size="lg" variant="lume" onClick={() => go(1)}>Let’s begin</Button>
-                    <p className="text-caption text-mist-400">Your interviewer is an AI. What you share stays private.</p>
+                    <p className="text-meta text-stone-dim">Your interviewer is an AI. What you share stays private.</p>
                   </div>
                 </StepShell>
               )}
@@ -164,7 +164,7 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
                   {!resume ? (
                     <>
                       <DropZone busy={busy} onFile={(f) => void uploadResume(f)} />
-                      <div className="my-5 flex items-center gap-4 text-caption text-mist-400"><span className="h-px flex-1 bg-white/10" />or paste it<span className="h-px flex-1 bg-white/10" /></div>
+                      <div className="my-5 flex items-center gap-4 text-meta text-stone-dim"><span className="h-px flex-1 bg-ivory/10" />or paste it<span className="h-px flex-1 bg-ivory/10" /></div>
                       <Textarea aria-label="Resume text" value={resumeText} onChange={(e) => setResumeText(e.target.value)} rows={6} placeholder="Paste your resume text" />
                       <FieldError>{error}</FieldError>
                       <Nav onBack={() => go(2)} onNext={() => uploadResume()} nextLabel="Read resume" nextDisabled={resumeText.trim().length < 40} busy={busy} onSkip={() => go(4)} />
@@ -189,15 +189,15 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
                   ) : (
                     <>
                       <Parsed title={jd.title ?? "Job description"} ai={jd.source === "llm"}>
-                        <p className="text-caption font-semibold text-mist-300">What they&apos;ll probe</p>
+                        <p className="text-meta font-semibold text-stone">What they&apos;ll probe</p>
                         <ul className="mt-3 space-y-2.5">
                           {jd.competencies.map((c, i) => (
-                            <motion.li key={c.key} className="text-callout" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.07, duration: 0.5, ease: EASE }}>
-                              <span className="font-medium text-mist-100">{c.label}</span> <span className="text-mist-400">“{c.evidence}”</span>
+                            <motion.li key={c.key} className="text-ui" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.07, duration: 0.5, ease: EASE }}>
+                              <span className="font-medium text-ivory">{c.label}</span> <span className="text-stone-dim">“{c.evidence}”</span>
                             </motion.li>
                           ))}
                         </ul>
-                        {!jd.competencies.length && <p className="mt-2 text-callout text-mist-400">No clear competencies found. The interviewer will use the standard set for your field.</p>}
+                        {!jd.competencies.length && <p className="mt-2 text-ui text-stone-dim">No clear competencies found. The interviewer will use the standard set for your field.</p>}
                       </Parsed>
                       <Nav onBack={() => setJd(null)} backLabel="Replace" onNext={() => go(5)} />
                     </>
@@ -215,14 +215,14 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
                         const who = PERSONAS[id];
                         return (
                           <button key={id} type="button" role="radio" aria-checked={on} aria-label={`${who.name.split(" ")[0]}, ${who.title}: ${hint}`} onClick={() => set("preferredPersona", id)}
-                            className={cn("relative rounded-lg border p-3 pb-4 text-left transition-[background-color,border-color] duration-150",
-                              on ? "border-lume bg-bronze" : "border-line-strong hover:border-ink-500 hover:bg-ink-900")}>
-                            <span className={cn("absolute right-3 top-3 grid size-4 place-items-center rounded-sm border transition-colors duration-150", on ? "border-lume bg-lume text-ink-950" : "border-ink-500 text-transparent")}>
+                            className={cn("relative rounded-control border p-3 pb-4 text-left transition-[background-color,border-color] duration-150",
+                              on ? "border-olive-light bg-olive-ground" : "border-control hover:border-stone-dim hover:bg-surface-1")}>
+                            <span className={cn("absolute right-3 top-3 grid size-4 place-items-center rounded-sm border transition-colors duration-150", on ? "border-olive-light bg-olive-light text-ink" : "border-control text-transparent")}>
                               <svg viewBox="0 0 12 12" className="size-2.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m2.5 6.2 2.3 2.3 4.7-5" /></svg>
                             </span>
                             <BotStill personaId={id} accent={who.accent} className="mx-auto aspect-square w-[min(100%,128px)]" />
-                            <span className="mt-1 block px-1 font-display text-[19px] leading-tight text-mist-100">{who.name.split(" ")[0]} <span className="font-sans text-[13px] text-mist-400">{who.title}</span></span>
-                            <span className="mt-1 block px-1 text-[13px] leading-snug text-mist-400">{hint}</span>
+                            <span className="mt-1 block px-1 font-display text-[19px] leading-tight text-ivory">{who.name.split(" ")[0]} <span className="font-sans text-meta text-stone-dim">{who.title}</span></span>
+                            <span className="mt-1 block px-1 text-meta leading-snug text-stone-dim">{hint}</span>
                           </button>
                         );
                       })}
@@ -295,16 +295,16 @@ function Stage({ personaId, line, speaker, celebrate }: { personaId: PersonaChoi
   }, [celebrate, store]);
 
   return (
-    <aside aria-hidden className="relative border-b border-line bg-ink-900 lg:sticky lg:top-0 lg:h-dvh lg:border-b-0 lg:border-r">
+    <aside aria-hidden className="relative border-b border-divider bg-surface-1 lg:sticky lg:top-0 lg:h-dvh lg:border-b-0 lg:border-r">
       <div className="flex items-end gap-4 px-5 pb-5 pt-[4.5rem] sm:px-8 lg:h-full lg:flex-col lg:items-stretch lg:justify-center lg:gap-0 lg:px-[clamp(2.5rem,5vw,5rem)] lg:py-0">
         <motion.div className="relative size-[104px] shrink-0 sm:size-[132px] lg:mx-auto lg:size-[min(100%,46vh)]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, ease: EASE }}>
           <BotAvatar store={store} seats={seats} compact className="absolute inset-0" />
         </motion.div>
-        <div className="min-w-0 flex-1 pb-1 lg:mt-10 lg:flex-none lg:border-t lg:border-line lg:pt-6">
-          <p className="text-[13px] font-medium text-mist-300">{speaker} <span className="ml-1 font-mono text-[11px] text-mist-400">AI</span></p>
+        <div className="min-w-0 flex-1 pb-1 lg:mt-10 lg:flex-none lg:border-t lg:border-divider lg:pt-6">
+          <p className="text-meta font-medium text-stone">{speaker} <span className="ml-1 font-mono text-meta text-stone-dim">AI</span></p>
           <div className="mt-2 min-h-[2.7em]">
             <AnimatePresence mode="wait">
-              <motion.p key={line} className="font-display text-[19px] leading-snug text-mist-100 sm:text-[22px] lg:text-[30px]"
+              <motion.p key={line} className="font-display text-[19px] leading-snug text-ivory sm:text-[22px] lg:text-[30px]"
                 initial={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}>
                 {line.split(" ").map((w, i) => (
                   <motion.span key={i} className="inline-block pr-[0.24em]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 + i * 0.06, duration: 0.25 }}>{w}</motion.span>
@@ -324,14 +324,14 @@ function Progress({ step }: { step: number }) {
     <div className="mb-8 lg:mb-0">
       <div className="flex gap-1.5" role="progressbar" aria-label="Onboarding progress" aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={current} aria-valuetext={`Step ${current} of ${STEPS.length}: ${STEPS[current - 1]}`}>
         {STEPS.map((s, i) => (
-          <div key={s} className="h-0.5 flex-1 overflow-hidden bg-line-strong">
-            <motion.div className="h-full origin-left bg-lume" initial={false} animate={{ scaleX: i < current ? 1 : 0 }} transition={{ duration: 0.5, ease: EASE }} />
+          <div key={s} className="h-0.5 flex-1 overflow-hidden bg-divider-strong">
+            <motion.div className="h-full origin-left bg-olive-light" initial={false} animate={{ scaleX: i < current ? 1 : 0 }} transition={{ duration: 0.5, ease: EASE }} />
           </div>
         ))}
       </div>
-      <p className="mt-3 hidden justify-between text-caption lg:flex">
-        <span className="font-medium text-mist-200">{STEPS[current - 1]}</span>
-        <span className="text-mist-400">Step {current} of {STEPS.length}</span>
+      <p className="mt-3 hidden justify-between text-meta lg:flex">
+        <span className="font-medium text-ivory">{STEPS[current - 1]}</span>
+        <span className="text-stone-dim">Step {current} of {STEPS.length}</span>
       </p>
     </div>
   );
@@ -344,8 +344,8 @@ function StepShell({ title, lead, children, autoFocus = true }: { title: React.R
   }, [autoFocus]);
   return (
     <section>
-      <h1 ref={ref} tabIndex={-1} className="text-title text-mist-100 outline-none">{title}</h1>
-      {lead && <p className="mt-3 text-body text-mist-300">{lead}</p>}
+      <h1 ref={ref} tabIndex={-1} className="text-title text-ivory outline-none">{title}</h1>
+      {lead && <p className="mt-3 text-body text-stone">{lead}</p>}
       {children}
     </section>
   );
@@ -388,20 +388,20 @@ function DropZone({ busy, onFile }: { busy: boolean; onFile: (f: File) => void }
       <button type="button" onClick={() => fileRef.current?.click()} disabled={busy}
         onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
         onDrop={(e) => { e.preventDefault(); setOver(false); const f = e.dataTransfer.files?.[0]; if (f) onFile(f); }}
-        className={cn("mt-8 flex w-full flex-col items-center justify-center rounded-lg border border-dashed px-6 py-9 text-center transition-[border-color,background-color] duration-150",
-          over ? "border-lume bg-bronze" : "border-ink-500 hover:border-mist-400 hover:bg-ink-900")}>
+        className={cn("mt-8 flex w-full flex-col items-center justify-center rounded-control border border-dashed px-6 py-9 text-center transition-[border-color,background-color] duration-150",
+          over ? "border-olive-light bg-olive-ground" : "border-control hover:border-stone-dim hover:bg-surface-1")}>
         {busy ? (
           <span className="flex w-full max-w-[260px] flex-col items-center gap-2.5">
-            <span className="text-callout font-medium text-mist-100">Reading your resume…</span>
+            <span className="text-ui font-medium text-ivory">Reading your resume…</span>
             <span className="skeleton h-2 w-full" /><span className="skeleton h-2 w-4/5" /><span className="skeleton h-2 w-3/5" />
           </span>
         ) : (
           <>
-            <svg viewBox="0 0 24 24" className="size-7 text-mist-300" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <svg viewBox="0 0 24 24" className="size-7 text-stone" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8z" /><path d="M14 3.5V8h4.5M12 17.5v-6M9.5 14 12 11.5l2.5 2.5" />
             </svg>
-            <span className="mt-3 text-callout font-medium text-mist-100">{over ? "Drop to upload" : "Upload PDF or DOCX"}</span>
-            <span className="mt-1 text-caption text-mist-400">Drag it here, or choose a file · up to 8 MB</span>
+            <span className="mt-3 text-ui font-medium text-ivory">{over ? "Drop to upload" : "Upload PDF or DOCX"}</span>
+            <span className="mt-1 text-meta text-stone-dim">Drag it here, or choose a file · up to 8 MB</span>
           </>
         )}
       </button>
@@ -412,9 +412,9 @@ function DropZone({ busy, onFile }: { busy: boolean; onFile: (f: File) => void }
 
 function Parsed({ title, ai, children }: { title: string; ai: boolean; children: React.ReactNode }) {
   return (
-    <motion.div className="mt-8 border-t border-line pt-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, ease: EASE }}>
+    <motion.div className="mt-8 border-t border-divider pt-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, ease: EASE }}>
       <div className="mb-5 flex items-baseline justify-between gap-3">
-        <p className="font-display text-[24px] leading-tight text-mist-100">{title}</p>
+        <p className="font-display text-[24px] leading-tight text-ivory">{title}</p>
         <Badge tone={ai ? "lume" : "neutral"}>{ai ? "AI-parsed" : "Pattern-parsed"}</Badge>
       </div>
       {children}
@@ -425,20 +425,20 @@ function Parsed({ title, ai, children }: { title: string; ai: boolean; children:
 function ResumeSummary({ r }: { r: ParsedResume }) {
   return (
     <Parsed title={r.headline ?? "Your resume"} ai={r.source === "llm"}>
-      <p className="text-caption font-semibold text-mist-300">Roles found</p>
+      <p className="text-meta font-semibold text-stone">Roles found</p>
       <ul className="mt-3 space-y-3.5">
         {r.roles.slice(0, 5).map((ro, i) => (
           <motion.li key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.07, duration: 0.5, ease: EASE }}>
-            <p className="text-callout text-mist-100">{ro.title}{ro.organization ? <span className="text-mist-400"> · {ro.organization}</span> : null}<span className="ml-2 font-mono text-[12px] text-mist-400">{[ro.start, ro.end].filter(Boolean).join("–")}</span></p>
-            {ro.highlights[0] && <p className="mt-0.5 text-caption text-mist-400">{ro.highlights[0]}</p>}
+            <p className="text-ui text-ivory">{ro.title}{ro.organization ? <span className="text-stone-dim"> · {ro.organization}</span> : null}<span className="ml-2 font-mono text-meta text-stone-dim">{[ro.start, ro.end].filter(Boolean).join("–")}</span></p>
+            {ro.highlights[0] && <p className="mt-0.5 text-meta text-stone-dim">{ro.highlights[0]}</p>}
           </motion.li>
         ))}
-        {!r.roles.length && <li className="text-callout text-mist-400">We couldn&apos;t confidently identify roles. The interviewer won&apos;t reference specific jobs.</li>}
+        {!r.roles.length && <li className="text-ui text-stone-dim">We couldn&apos;t confidently identify roles. The interviewer won&apos;t reference specific jobs.</li>}
       </ul>
       {r.metrics.length > 0 && (
         <>
-          <p className="mt-6 text-caption font-semibold text-mist-300">Numbers you&apos;ve claimed</p>
-          <ul className="mt-2 space-y-1">{r.metrics.slice(0, 4).map((m, i) => <li key={i} className="text-caption text-mist-300">“{m}”</li>)}</ul>
+          <p className="mt-6 text-meta font-semibold text-stone">Numbers you&apos;ve claimed</p>
+          <ul className="mt-2 space-y-1">{r.metrics.slice(0, 4).map((m, i) => <li key={i} className="text-meta text-stone">“{m}”</li>)}</ul>
         </>
       )}
     </Parsed>
@@ -466,13 +466,13 @@ function Done({ name, who, onDone }: { name: string; who: string; onDone: () => 
   return (
     <section className="py-10 text-center lg:text-left" aria-live="polite">
       <motion.svg viewBox="0 0 40 40" className="mx-auto size-10 lg:mx-0" aria-hidden>
-        <motion.path d="m9 20.5 7 7L31.5 12" fill="none" stroke="var(--color-lume)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+        <motion.path d="m9 20.5 7 7L31.5 12" fill="none" stroke="var(--color-olive-light)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
           initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }} />
       </motion.svg>
-      <h1 className="mt-6 text-title text-mist-100">You’re all set{name ? `, ${name}` : ""}.</h1>
-      <p className="mt-3 text-body text-mist-300">{who} is ready for your first interview. Taking you there.</p>
-      <div className="mx-auto mt-8 h-0.5 w-40 overflow-hidden bg-line-strong lg:mx-0">
-        <motion.div className="h-full origin-left bg-lume" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.4, ease: "easeInOut" }} />
+      <h1 className="mt-6 text-title text-ivory">You’re all set{name ? `, ${name}` : ""}.</h1>
+      <p className="mt-3 text-body text-stone">{who} is ready for your first interview. Taking you there.</p>
+      <div className="mx-auto mt-8 h-0.5 w-40 overflow-hidden bg-divider-strong lg:mx-0">
+        <motion.div className="h-full origin-left bg-olive-light" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.4, ease: "easeInOut" }} />
       </div>
     </section>
   );

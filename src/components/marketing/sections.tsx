@@ -276,7 +276,7 @@ export function Pricing({ cta }: { cta: string }) {
                 <div className="pt-6">
                   <Link href={id === "executive" ? "mailto:hello@oriel.example" : cta}
                     className={cn("inline-flex h-11 items-center justify-center whitespace-nowrap rounded-button px-5 text-ui font-medium transition-[background-color,border-color,transform] duration-[var(--dur-press)] active:scale-[0.97]",
-                      featured ? "border border-transparent bg-ivory text-ink hover:bg-mist-200" : "border border-control text-ivory hover:border-stone")}>
+                      featured ? "border border-transparent bg-ivory text-ink hover:bg-ivory-press" : "border border-control text-ivory hover:border-stone")}>
                     {id === "free" ? "Start free" : id === "executive" ? "Talk to us" : `Choose ${p.name}`}
                   </Link>
                 </div>
@@ -299,7 +299,7 @@ export function Closing({ cta, signedIn }: { cta: string; signedIn: boolean }) {
         <h2 id="closing-title" className={statementCls}>Walk in ready.</h2>
         {/* The hero's action again, on the same edge it held at the top of the page. */}
         <div className="col-span-4 sm:col-span-6 sm:col-start-3 lg:col-span-6 lg:col-start-7 lg:self-end">
-          <Link href={cta} className="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] min-[480px]:w-auto lg:h-11">
+          <Link href={cta} className="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-ivory-press active:scale-[0.97] min-[480px]:w-auto lg:h-11">
             {signedIn ? "Practice an interview" : "Start practicing free"}
           </Link>
           {!signedIn && <p className="mt-3 text-ui text-stone-dim">Free: one 10-minute interview a week. No&nbsp;card&nbsp;required.</p>}

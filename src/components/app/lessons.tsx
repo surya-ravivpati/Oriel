@@ -31,8 +31,8 @@ export function LessonSteps({ l, className }: { l: LessonSummary; className?: st
     <ol className={cn("flex gap-1.5", className)} aria-label="Lesson progress">
       {steps.map((s) => (
         <li key={s.label} className="min-w-0 flex-1">
-          <span className={cn("block h-0.5", s.done ? "bg-lume" : "bg-line-strong")} />
-          <span className={cn("mt-1.5 block truncate text-[11px]", s.done ? "text-mist-200" : "text-mist-400")}>{s.label}</span>
+          <span className={cn("block h-0.5", s.done ? "bg-olive-light" : "bg-divider-strong")} />
+          <span className={cn("mt-1.5 block truncate text-meta", s.done ? "text-ivory" : "text-stone-dim")}>{s.label}</span>
         </li>
       ))}
     </ol>
@@ -40,22 +40,22 @@ export function LessonSteps({ l, className }: { l: LessonSummary; className?: st
 }
 
 export function TrackLabel({ track, className }: { track: Track; className?: string }) {
-  return <span className={cn("text-[12px] font-medium text-mist-400", className)}>{TRACKS[track].label}</span>;
+  return <span className={cn("text-meta font-medium text-stone-dim", className)}>{TRACKS[track].label}</span>;
 }
 
 export function LessonCard({ l }: { l: LessonSummary }) {
   const def = LESSONS[l.key];
   return (
-    <Link href={`/lessons/${l.key}`} className={cn("group block border-t pb-2 pt-4 transition-colors duration-150", l.status === "active" ? "border-mist-400 hover:border-lume" : "border-line hover:border-mist-400")}>
+    <Link href={`/lessons/${l.key}`} className={cn("group block border-t pb-2 pt-4 transition-colors duration-150", l.status === "active" ? "border-stone-dim hover:border-olive-light" : "border-divider hover:border-stone-dim")}>
       <div className="flex items-start justify-between gap-3">
         <TrackLabel track={def.track} />
-        {l.status === "queued" && <span className="text-[12px] font-medium text-mist-400">Up next</span>}
-        {l.status === "mastered" && <span className="text-[12px] font-medium text-signal-good">Mastered</span>}
+        {l.status === "queued" && <span className="text-meta font-medium text-stone-dim">Up next</span>}
+        {l.status === "mastered" && <span className="text-meta font-medium text-signal-good">Mastered</span>}
       </div>
-      <p className="mt-2 font-display text-[26px] leading-[1.15] text-mist-100">{def.title}</p>
+      <p className="mt-2 font-display text-[26px] leading-[1.15] text-ivory">{def.title}</p>
       {l.status === "mastered" && l.metricKey && l.startValue != null && l.latestValue != null && l.startValue !== l.latestValue ? (
-        <p className="mt-2 text-sm text-mist-400">was {formatMeasure(l.metricKey, l.startValue)} · <span className="text-signal-good">now {formatMeasure(l.metricKey, l.latestValue)}</span></p>
-      ) : l.evidence && <p className="mt-2 text-sm text-mist-300"><span className="text-mist-100">{l.evidence.display}</span> <span className="text-mist-400">· target {l.evidence.target}</span></p>}
+        <p className="mt-2 text-ui text-stone-dim">was {formatMeasure(l.metricKey, l.startValue)} · <span className="text-signal-good">now {formatMeasure(l.metricKey, l.latestValue)}</span></p>
+      ) : l.evidence && <p className="mt-2 text-ui text-stone"><span className="text-ivory">{l.evidence.display}</span> <span className="text-stone-dim">· target {l.evidence.target}</span></p>}
       {l.status !== "queued" && <LessonSteps l={l} className="mt-4" />}
     </Link>
   );

@@ -136,35 +136,35 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
   return (
     <div className="grid max-h-[calc(100dvh-48px)] overflow-y-auto md:grid-cols-[1fr_1.2fr] md:overflow-hidden">
       {/* Preview */}
-      <div className="relative flex flex-col items-center justify-center overflow-hidden border-b hairline bg-ink-900 px-6 pb-8 pt-6 md:border-b-0 md:border-r">
-        <p className="self-start text-[12px] text-mist-400 font-medium">Make it yours</p>
+      <div className="relative flex flex-col items-center justify-center overflow-hidden border-b border-divider bg-surface-1 px-6 pb-8 pt-6 md:border-b-0 md:border-r">
+        <p className="self-start text-meta text-stone-dim font-medium">Make it yours</p>
         <BotAvatar store={store} seats={[seat]} compact className="mt-2 h-52 w-full sm:h-64 md:h-72" />
         <p className="mt-1 max-w-full truncate font-display text-4xl leading-tight" aria-live="polite">{shown}</p>
-        <p className="mt-1 text-[12px] text-mist-400 font-medium">{persona.title}</p>
-        <p className="mt-5 max-w-[30ch] text-center text-[13px] leading-relaxed text-mist-400">The look, name and voice are yours. How {shown} interviews stays the same.</p>
+        <p className="mt-1 text-meta text-stone-dim font-medium">{persona.title}</p>
+        <p className="mt-5 max-w-[30ch] text-center text-meta leading-relaxed text-stone-dim">The look, name and voice are yours. How {shown} interviews stays the same.</p>
       </div>
 
       {/* Choices */}
       <div className="space-y-7 p-6 md:max-h-[calc(100dvh-48px)] md:overflow-y-auto md:p-8">
         <div>
-          <label htmlFor="bot-name" className="mb-2 block text-[13px] font-medium text-mist-200">Name</label>
+          <label htmlFor="bot-name" className="mb-2 block text-meta font-medium text-ivory">Name</label>
           <Input id="bot-name" value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder={defaultName} maxLength={NAME_MAX + 6} autoComplete="off" aria-invalid={!!problem} />
-          {problem ? <FieldError>{problem}</FieldError> : <p className="mt-2 text-xs text-mist-400">It introduces itself with this name. Leave it blank for {defaultName}.</p>}
+          {problem ? <FieldError>{problem}</FieldError> : <p className="mt-2 text-meta text-stone-dim">It introduces itself with this name. Leave it blank for {defaultName}.</p>}
         </div>
 
         <fieldset>
-          <legend className="mb-2 text-[13px] font-medium text-mist-200">Voice</legend>
+          <legend className="mb-2 text-meta font-medium text-ivory">Voice</legend>
           <div role="radiogroup" aria-label="Voice" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {BOT_VOICES.map((v) => {
               const on = voice === v.id;
               return (
-                <div key={v.id} className={cn("flex items-center rounded-xl border pl-3 pr-1 transition-colors duration-200", on ? "border-lume bg-bronze" : "hairline-strong bg-ink-900 hover:bg-ink-850")}>
+                <div key={v.id} className={cn("flex items-center rounded-panel border pl-3 pr-1 transition-colors duration-200", on ? "border-olive-light bg-olive-ground" : "border-divider-strong bg-surface-1 hover:bg-surface-2")}>
                   <button type="button" role="radio" aria-checked={on} onClick={() => setDraft({ ...draft, voice: v.id === persona.voice ? null : (v.id as BotVoice) })} className="min-w-0 flex-1 py-2 text-left">
-                    <span className={cn("block truncate text-sm", on ? "text-mist-100" : "text-mist-200")}>{v.id}</span>
-                    <span className="block truncate text-[11px] text-mist-400">{v.label}{v.id === persona.voice ? " · default" : ""}</span>
+                    <span className={cn("block truncate text-ui", on ? "text-ivory" : "text-ivory")}>{v.id}</span>
+                    <span className="block truncate text-meta text-stone-dim">{v.label}{v.id === persona.voice ? " · default" : ""}</span>
                   </button>
                   <button type="button" onClick={() => play(v.id)} aria-label={playing === v.id ? `Stop ${v.id}` : `Play ${v.id}`} title={playing === v.id ? "Stop" : "Hear it"}
-                    className={cn("grid size-8 shrink-0 place-items-center rounded-full transition-colors hover:bg-white/10", playing === v.id ? "text-lume" : "text-mist-300 hover:text-lume")}>
+                    className={cn("grid size-8 shrink-0 place-items-center rounded-full transition-colors hover:bg-ivory/10", playing === v.id ? "text-olive-light" : "text-stone hover:text-olive-light")}>
                     {playing === v.id
                       ? <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden><rect width="10" height="10" rx="1.5" fill="currentColor" /></svg>
                       : <svg width="10" height="12" viewBox="0 0 10 12" aria-hidden><path d="M0 0v12l10-6z" fill="currentColor" /></svg>}
@@ -173,19 +173,19 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
               );
             })}
           </div>
-          <p className="mt-2 text-xs text-mist-400" aria-live="polite">{voiceNote ?? "Press play to hear a voice. The interviewer speaks with it in the Room and in drills."}</p>
+          <p className="mt-2 text-meta text-stone-dim" aria-live="polite">{voiceNote ?? "Press play to hear a voice. The interviewer speaks with it in the Room and in drills."}</p>
         </fieldset>
 
         <fieldset>
-          <legend className="mb-2 text-[13px] font-medium text-mist-200">Shape</legend>
+          <legend className="mb-2 text-meta font-medium text-ivory">Shape</legend>
           <div role="radiogroup" aria-label="Shape" className="grid grid-cols-4 gap-2">
             {BOT_SHAPES.map((s) => {
               const on = draft.shape === s.id;
               return (
                 <button key={s.id} type="button" role="radio" aria-checked={on} aria-label={s.label} onClick={() => setDraft({ ...draft, shape: s.id })}
-                  className={cn("flex flex-col items-center rounded-lg border px-1 pb-2 pt-1 transition-colors duration-200", on ? "border-lume bg-bronze" : "hairline-strong bg-ink-900 hover:bg-ink-850")}>
+                  className={cn("flex flex-col items-center rounded-control border px-1 pb-2 pt-1 transition-colors duration-200", on ? "border-olive-light bg-olive-ground" : "border-divider-strong bg-surface-1 hover:bg-surface-2")}>
                   <BotStill personaId={personaId} style={{ ...draft, shape: s.id }} className="aspect-square w-full" />
-                  <span className={cn("text-xs", on ? "text-mist-100" : "text-mist-400")}>{s.label}</span>
+                  <span className={cn("text-meta", on ? "text-ivory" : "text-stone-dim")}>{s.label}</span>
                 </button>
               );
             })}
@@ -193,13 +193,13 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
         </fieldset>
 
         <fieldset>
-          <legend className="mb-2 text-[13px] font-medium text-mist-200">Colour</legend>
+          <legend className="mb-2 text-meta font-medium text-ivory">Colour</legend>
           <div role="radiogroup" aria-label="Colour" className="flex flex-wrap gap-2.5">
             {(Object.entries(BOT_COLORS) as [BotColorId, (typeof BOT_COLORS)[BotColorId]][]).map(([id, c]) => {
               const on = draft.color === id;
               return (
                 <button key={id} type="button" role="radio" aria-checked={on} aria-label={c.label} title={c.label} onClick={() => setDraft({ ...draft, color: id })}
-                  className={cn("size-8 rounded-full border transition-[box-shadow,transform] duration-200 hover:scale-110", on ? "border-transparent shadow-[0_0_0_2px_var(--color-ink-950),0_0_0_4px_var(--color-lume)]" : "border-line-strong")}
+                  className={cn("size-8 rounded-full border transition-[box-shadow,transform] duration-200 hover:scale-110", on ? "border-transparent shadow-[0_0_0_2px_var(--color-ink),0_0_0_4px_var(--color-olive-light)]" : "border-control")}
                   style={{ background: `radial-gradient(circle at 35% 30%, ${c.face}, ${c.shade})` }} />
               );
             })}
@@ -207,13 +207,13 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
         </fieldset>
 
         <fieldset>
-          <legend className="mb-2 text-[13px] font-medium text-mist-200">Accessory</legend>
+          <legend className="mb-2 text-meta font-medium text-ivory">Accessory</legend>
           <div role="radiogroup" aria-label="Accessory" className="flex flex-wrap gap-2">
             {BOT_ACCESSORIES.map((a) => {
               const on = draft.accessory === a.id;
               return (
                 <button key={a.id} type="button" role="radio" aria-checked={on} onClick={() => setDraft({ ...draft, accessory: a.id })}
-                  className={cn("rounded-full border px-3.5 py-1.5 text-sm transition-colors duration-200", on ? "border-lume bg-bronze text-mist-100" : "hairline-strong text-mist-300 hover:text-mist-100")}>
+                  className={cn("rounded-full border px-3.5 py-1.5 text-ui transition-colors duration-200", on ? "border-olive-light bg-olive-ground text-ivory" : "border-divider-strong text-stone hover:text-ivory")}>
                   {a.label}
                 </button>
               );
@@ -222,7 +222,7 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
         </fieldset>
 
         <FieldError>{error}</FieldError>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t hairline pt-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-divider pt-5">
           <Button variant="ghost" size="sm" onClick={reset} loading={busy === "reset"} disabled={!!busy || (isDefault && !saved[personaId])}>Reset to {defaultName}</Button>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={onClose} disabled={!!busy}>Cancel</Button>

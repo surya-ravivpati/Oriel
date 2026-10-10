@@ -27,7 +27,7 @@ export function Interviewer({ size = 140, state = "idle", blink = false, waiting
         <defs>
           <linearGradient id="oriel-face" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="var(--color-ivory)" />
-            <stop offset="1" stopColor="var(--color-mist-200)" />
+            <stop offset="1" stopColor="var(--color-ivory-press)" />
           </linearGradient>
         </defs>
       )}

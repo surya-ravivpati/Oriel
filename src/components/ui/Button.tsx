@@ -6,20 +6,21 @@ type Variant = "primary" | "secondary" | "ghost" | "danger" | "lume";
 type Size = "sm" | "md" | "lg";
 
 /*
- * Rectangular, square-shouldered buttons. One ivory button per view is the rule: it is the
+ * Buttons with a 10px radius (the system's button radius). One ivory button per view is the rule: it is the
  * thing to do next. Everything else is outlined or plain text. "lume" is kept as an alias
  * of primary for existing call sites.
  */
 const base = "relative inline-flex items-center justify-center gap-2 rounded-button font-medium transition-[background-color,color,border-color,opacity,transform] duration-[var(--dur-press)] ease-[var(--ease-enter)] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none select-none whitespace-nowrap";
-const ivory = "border border-transparent bg-mist-100 text-ink-950 hover:bg-mist-200"; // the transparent border is what forced-colors mode draws
+const ivory = "border border-transparent bg-ivory text-ink hover:bg-ivory-press"; // the transparent border is what forced-colors mode draws
 const variants: Record<Variant, string> = {
   primary: ivory,
   lume: ivory,
-  secondary: "border border-control text-mist-100 hover:border-mist-300 hover:bg-ink-900",
-  ghost: "text-mist-300 hover:bg-ink-900 hover:text-mist-100",
+  secondary: "border border-control text-ivory hover:border-stone hover:bg-surface-1",
+  ghost: "text-stone hover:bg-surface-1 hover:text-ivory",
   danger: "border border-signal-bad/45 text-signal-bad hover:bg-signal-bad/10",
 };
-const sizes: Record<Size, string> = { sm: "h-8 px-3 text-[13px]", md: "h-10 px-4 text-[15px]", lg: "h-12 px-5 text-[16px]" };
+// Touch screens get 44px targets whatever the size; lg matches the landing page's primary action.
+const sizes: Record<Size, string> = { sm: "h-8 px-3 text-meta pointer-coarse:h-11", md: "h-10 px-4 text-ui pointer-coarse:h-11", lg: "h-12 px-6 text-ui" };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> { variant?: Variant; size?: Size; loading?: boolean }
 

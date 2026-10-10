@@ -24,7 +24,10 @@
   --color-olive: #555c4a;      /* rare signal: fills and decoration only (2.6:1 on ink) */
   --color-olive-light: #8c957a;/* olive as text, icon or thin indicator (5.8:1 on ink, 4.8:1 on surface-2) */
   --color-divider: rgb(245 242 235 / 0.12); /* hairlines: ~1.4:1 on every surface */
+  --color-divider-strong: rgb(245 242 235 / 0.2); /* tracks and emphatic rules */
   --color-control: rgb(245 242 235 / 0.4);  /* the only visible edge of a control: ≥3:1 */
+  --color-ivory-press: #ddd8ce;   /* an ivory fill under the pointer */
+  --color-olive-ground: #23261d;  /* the ground under a chosen option */
 
   /* Legacy names, mapped onto the tokens above so every existing page reads the same values. */
   --color-ink-950: #151515;
@@ -134,10 +137,8 @@
 
 :root {
   color-scheme: dark;
-  --line: var(--color-line);
-  --line-strong: var(--color-line-strong);
   /* One elevation, only for things that float over the page: menus and dialogs. */
-  --shadow-sheet: 0 24px 64px -16px rgb(4 5 6 / 0.75), 0 0 0 1px var(--color-line-strong);
+  --shadow-sheet: 0 24px 64px -16px rgb(4 5 6 / 0.75), 0 0 0 1px var(--color-divider-strong);
   /* Page frame: about 1240px of content, gutters from 20px at 320 to 64px on wide screens. */
   --gutter: clamp(1.25rem, 5vw, 4rem);
   --frame: 1240px;
@@ -152,7 +153,7 @@
 @layer base {
   html { background: var(--color-ink); color: var(--color-ivory); -webkit-text-size-adjust: 100%; font-synthesis: none; scroll-padding-top: calc(var(--header-h) + 1rem); }
   body {
-    background: var(--color-ink-950);
+    background: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -167,7 +168,7 @@
   /* Focus is an ivory outline (not a shadow), so it survives forced-colors mode. */
   :focus-visible { outline: 2px solid var(--color-ivory); outline-offset: 2px; }
   @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
-  * { scrollbar-width: thin; scrollbar-color: var(--color-ink-500) transparent; }
+  * { scrollbar-width: thin; scrollbar-color: var(--color-control) transparent; }
   /* A phone on its side: a smaller headline and less air above it, so the call to action stays in view. */
   @media (orientation: landscape) and (max-height: 30rem) {
     :root { --text-display-xl: clamp(2.25rem, 1rem + 4vw, 3.25rem); --spacing-hero: 1.25rem; }
@@ -188,8 +189,6 @@
 @layer utilities {
   /* Display steps are always set in the serif: Oriel's voice. */
   .text-hero, .text-display, .text-title, .text-display-xl, .text-display-l, .text-display-m { font-family: var(--font-display); font-optical-sizing: auto; }
-  .hairline { border-color: var(--line); }
-  .hairline-strong { border-color: var(--line-strong); }
   .text-balance { text-wrap: balance; }
   /* Hanging punctuation: an opening quote sits in the margin so the words keep the column's edge.
      The indent is the measured width of “ in Newsreader (.hang) and Schibsted Grotesk (.hang-sans). */
@@ -197,8 +196,6 @@
   .hang-sans { text-indent: -0.46em; }
   .tabular { font-variant-numeric: tabular-nums; }
   .shadow-sheet { box-shadow: var(--shadow-sheet); }
-  /* An editor's mark under a word: the one place gold touches running text. */
-  .mark-gold { text-decoration: underline; text-decoration-color: var(--color-lume); text-decoration-thickness: 2px; text-underline-offset: 0.22em; }
 }
 
 /* The interviewer blinks: a quick squint, then a long pause. Used by the mark when Oriel is working. */
@@ -215,7 +212,7 @@
 /* Skeletons for anything that loads. */
 .skeleton {
   border-radius: 4px;
-  background: linear-gradient(90deg, var(--color-ink-800) 0%, var(--color-ink-700) 50%, var(--color-ink-800) 100%);
+  background: linear-gradient(90deg, var(--color-surface-1) 0%, var(--color-surface-2) 50%, var(--color-surface-1) 100%);
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;
 }
@@ -225,9 +222,9 @@
 }
 
 input[type="range"].dial { -webkit-appearance: none; appearance: none; background: transparent; height: 32px; cursor: pointer; }
-input[type="range"].dial::-webkit-slider-runnable-track { height: 2px; background: linear-gradient(90deg, var(--color-lume) var(--fill, 50%), var(--color-line-strong) var(--fill, 50%)); }
-input[type="range"].dial::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; margin-top: -9px; border-radius: 50%; background: var(--color-mist-100); border: 5px solid var(--color-lume); transition: transform 200ms var(--ease-out-quint); }
+input[type="range"].dial::-webkit-slider-runnable-track { height: 2px; background: linear-gradient(90deg, var(--color-olive-light) var(--fill, 50%), var(--color-divider-strong) var(--fill, 50%)); }
+input[type="range"].dial::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; margin-top: -9px; border-radius: 50%; background: var(--color-ivory); border: 5px solid var(--color-olive-light); transition: transform var(--dur-state) var(--ease-enter); }
 input[type="range"].dial:active::-webkit-slider-thumb { transform: scale(1.1); }
-input[type="range"].dial::-moz-range-track { height: 2px; background: var(--color-line-strong); }
-input[type="range"].dial::-moz-range-progress { height: 2px; background: var(--color-lume); }
-input[type="range"].dial::-moz-range-thumb { height: 12px; width: 12px; border-radius: 50%; background: var(--color-mist-100); border: 5px solid var(--color-lume); }
+input[type="range"].dial::-moz-range-track { height: 2px; background: var(--color-divider-strong); }
+input[type="range"].dial::-moz-range-progress { height: 2px; background: var(--color-olive-light); }
+input[type="range"].dial::-moz-range-thumb { height: 12px; width: 12px; border-radius: 50%; background: var(--color-ivory); border: 5px solid var(--color-olive-light); }

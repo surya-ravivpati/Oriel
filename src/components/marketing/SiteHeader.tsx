@@ -63,11 +63,11 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
           </nav>
           <div className="flex items-center gap-2">
             {signedIn ? (
-              <Link href="/home" className="hidden h-9 items-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] sm:inline-flex">Open Oriel</Link>
+              <Link href="/home" className="hidden h-9 items-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-ivory-press active:scale-[0.97] sm:inline-flex">Open Oriel</Link>
             ) : (
               <>
                 <Link href="/login" className="hidden whitespace-nowrap rounded-control px-3 py-2 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory lg:block">Sign in</Link>
-                <Link href="/signup" className="hidden h-9 items-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-mist-200 active:scale-[0.97] sm:inline-flex">Start practicing</Link>
+                <Link href="/signup" className="hidden h-9 items-center whitespace-nowrap rounded-button border border-transparent bg-ivory px-4 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-ivory-press active:scale-[0.97] sm:inline-flex">Start practicing</Link>
               </>
             )}
             <button ref={toggle} type="button" onClick={() => (open ? close() : setOpen(true))} aria-expanded={open} aria-controls="site-menu"

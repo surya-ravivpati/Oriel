@@ -23,9 +23,9 @@ const PROCESSORS: [string, string, string][] = [
 export default function PrivacyPage() {
   return (
     <main id="content" tabIndex={-1} className="focus:outline-none mx-auto max-w-[760px] px-5 pb-28 pt-28 sm:px-8 sm:pt-36">
-      <p className="text-caption font-medium text-signal-warn">Draft, pending review by privacy counsel</p>
-      <h1 className="mt-4 text-display text-mist-100">Privacy &amp; biometric policy</h1>
-      <p className="mt-6 text-lead text-mist-300">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview. Consent version {CONSENT_VERSION}.</p>
+      <p className="text-meta font-medium text-signal-warn">Draft, pending review by privacy counsel</p>
+      <h1 className="mt-4 text-display-l text-ivory">Privacy &amp; biometric policy</h1>
+      <p className="mt-6 text-body-l text-stone">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview. Consent version {CONSENT_VERSION}.</p>
 
       <Section title="The short version">
         <ul className="list-disc space-y-2 pl-5">
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
           <li><b>Voice:</b> we analyse loudness, pitch movement and timing, and transcribe your words. We do not create or store voiceprints and do not identify speakers.</li>
           <li><b>Written release:</b> before any camera-derived signal is computed, we ask for your electronic signature on this release, and record the exact wording, its version and the time:</li>
         </ul>
-        <blockquote className="mt-3 font-display text-[19px] leading-snug text-mist-100">{CONSENT_COPY.camera_metrics} {CONSENT_COPY.camera_metrics_release}</blockquote>
+        <blockquote className="mt-3 font-display text-[19px] leading-snug text-ivory">{CONSENT_COPY.camera_metrics} {CONSENT_COPY.camera_metrics_release}</blockquote>
         <ul className="mt-3 list-disc space-y-2 pl-5">
           <li><b>Purpose:</b> only to give you feedback on your own practice. Never to identify you, never for hiring decisions, never for advertising.</li>
           <li><b>No sale, no disclosure:</b> we never sell, lease, trade or otherwise profit from this data, and never disclose it except to you, or where legally required.</li>
@@ -65,18 +65,18 @@ export default function PrivacyPage() {
 
       <Section title="Retention schedule" id="retention">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
-            <thead className="text-left text-xs text-mist-400"><tr><th className="py-2 pr-4 font-normal">Data</th><th className="pr-4 font-normal">Kept for</th><th className="font-normal">How it is destroyed</th></tr></thead>
-            <tbody>{RETENTION.map(([a, b, c]) => <tr key={a} className="border-t border-line align-top"><td className="py-3 pr-4 text-mist-100">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
+          <table className="w-full min-w-[560px] text-ui">
+            <thead className="text-left text-meta text-stone-dim"><tr><th className="py-2 pr-4 font-normal">Data</th><th className="pr-4 font-normal">Kept for</th><th className="font-normal">How it is destroyed</th></tr></thead>
+            <tbody>{RETENTION.map(([a, b, c]) => <tr key={a} className="border-t border-divider align-top"><td className="py-3 pr-4 text-ivory">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
           </table>
         </div>
       </Section>
 
       <Section title="Who processes data for us" id="processors">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
-            <thead className="text-left text-xs text-mist-400"><tr><th className="py-2 pr-4 font-normal">Processor</th><th className="pr-4 font-normal">Purpose</th><th className="font-normal">Data involved</th></tr></thead>
-            <tbody>{PROCESSORS.map(([a, b, c]) => <tr key={a} className="border-t border-line align-top"><td className="py-3 pr-4 text-mist-100">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
+          <table className="w-full min-w-[560px] text-ui">
+            <thead className="text-left text-meta text-stone-dim"><tr><th className="py-2 pr-4 font-normal">Processor</th><th className="pr-4 font-normal">Purpose</th><th className="font-normal">Data involved</th></tr></thead>
+            <tbody>{PROCESSORS.map(([a, b, c]) => <tr key={a} className="border-t border-divider align-top"><td className="py-3 pr-4 text-ivory">{a}</td><td className="pr-4">{b}</td><td>{c}</td></tr>)}</tbody>
           </table>
         </div>
       </Section>
@@ -97,15 +97,15 @@ export default function PrivacyPage() {
         <p>Where a school or organisation provides Oriel seats, they see aggregate reporting only. Individual results are never shared without your explicit, separate consent.</p>
       </Section>
 
-      <p className="mt-16 text-sm text-mist-400">Questions: privacy@oriel.example. This policy is a working draft prepared for review by privacy counsel and is not legal advice.</p>
+      <p className="mt-16 text-ui text-stone-dim">Questions: privacy@oriel.example. This policy is a working draft prepared for review by privacy counsel and is not legal advice.</p>
     </main>
   );
 }
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="mt-14 scroll-mt-24 text-body text-mist-300">
-      <h2 className="mb-4 font-display text-[clamp(1.65rem,1.25rem+1.1vw,2.25rem)] leading-tight text-mist-100">{title}</h2>
+    <section id={id} className="mt-14 scroll-mt-24 text-body text-stone">
+      <h2 className="mb-4 font-display text-[clamp(1.65rem,1.25rem+1.1vw,2.25rem)] leading-tight text-ivory">{title}</h2>
       {children}
     </section>
   );

@@ -257,20 +257,20 @@ export function Room(props: RoomProps) {
     : phase === "interviewer" ? (ui?.voice === "browser" ? "Backup voice" : "Speaking") : phase === "processing" ? "Thinking" : "";
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-ink-950 text-mist-100">
+    <div className="fixed inset-0 overflow-hidden bg-ink text-ivory">
       {devices?.cam && <video ref={analysisVideoRef} muted playsInline aria-hidden className="pointer-events-none absolute size-px opacity-0" />}
 
       {live && (
         <div className="absolute inset-0 flex flex-col">
           {/* Session bar: where you are, how long, whether it's recording. */}
-          <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-line px-4 sm:px-6">
+          <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-divider px-4 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <LogoMark className="size-5 shrink-0" />
-              <p className="truncate text-[13px] text-mist-300"><span className="font-medium text-mist-100">Mock interview</span><span className="hidden sm:inline"> · {props.role}</span></p>
+              <p className="truncate text-meta text-stone"><span className="font-medium text-ivory">Mock interview</span><span className="hidden sm:inline"> · {props.role}</span></p>
             </div>
-            <div className="flex shrink-0 items-center gap-4 text-[13px]">
-              {ui?.recording && <span className="flex items-center gap-1.5 text-mist-300"><span className="size-1.5 rounded-full bg-signal-bad motion-safe:animate-pulse" aria-hidden />Recording</span>}
-              <span className="font-mono tabular text-mist-100">{clock}<span className="hidden text-mist-400 sm:inline"> · {Math.ceil(remaining / 60000)} min left</span></span>
+            <div className="flex shrink-0 items-center gap-4 text-meta">
+              {ui?.recording && <span className="flex items-center gap-1.5 text-stone"><span className="size-1.5 rounded-full bg-signal-bad motion-safe:animate-pulse" aria-hidden />Recording</span>}
+              <span className="font-mono tabular text-ivory">{clock}<span className="hidden text-stone-dim sm:inline"> · {Math.ceil(remaining / 60000)} min left</span></span>
             </div>
           </header>
 
@@ -282,7 +282,7 @@ export function Room(props: RoomProps) {
                   <AvatarBoundary fallback={<VoiceFace provider={provider} name={active.name} />} onError={() => setVoiceOnly(true)}>
                     <BotAvatar store={provider.store} seats={props.seats} className="absolute inset-0"
                       labels={props.seats.length > 1 ? (s, isActive) => (
-                        <span className={cn("block whitespace-nowrap text-[12px] font-medium transition-colors duration-500", isActive ? "text-mist-100" : "text-mist-400")}>
+                        <span className={cn("block whitespace-nowrap text-meta font-medium transition-colors duration-500", isActive ? "text-ivory" : "text-stone-dim")}>
                           {callName(s.name, s.style)} · {props.seats.find((x) => x.seat === s.seat)?.title}
                         </span>
                       ) : undefined} />
@@ -290,9 +290,9 @@ export function Room(props: RoomProps) {
                 )}
                 {/* Your camera */}
                 {devices?.cam && (
-                  <div className="absolute bottom-3 right-3 z-10 aspect-video w-[min(28vw,240px)] min-w-[112px] overflow-hidden rounded-lg border border-line-strong bg-ink-900 sm:bottom-4 sm:right-4">
+                  <div className="absolute bottom-3 right-3 z-10 aspect-video w-[min(28vw,240px)] min-w-[112px] overflow-hidden rounded-control border border-control bg-surface-1 sm:bottom-4 sm:right-4">
                     <video ref={videoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" />
-                    <span className="absolute bottom-1.5 left-2 text-[11px] font-medium text-mist-100">You</span>
+                    <span className="absolute bottom-1.5 left-2 text-meta font-medium text-ivory">You</span>
                     {phase === "listening" && ui?.inputMode === "voice" && <MicRing controller={controller.current} />}
                   </div>
                 )}
@@ -301,67 +301,67 @@ export function Room(props: RoomProps) {
               {/* The conversation: who is talking, and the question you're answering. */}
               <div className="shrink-0 px-5 pb-5 pt-2 sm:px-10">
                 <div className="mx-auto max-w-[44rem]">
-                  <p className="flex items-center gap-2 text-[13px]">
-                    <span className={cn("size-1.5 shrink-0 rounded-full transition-colors duration-300", phase === "interviewer" ? "bg-mist-100" : phase === "listening" ? "bg-lume" : "bg-mist-400")} aria-hidden />
-                    <span className="font-medium text-mist-100">{active.name} · {active.title}</span>
-                    <span className="font-mono text-[11px] text-mist-400">AI</span>
+                  <p className="flex items-center gap-2 text-meta">
+                    <span className={cn("size-1.5 shrink-0 rounded-full transition-colors duration-300", phase === "interviewer" ? "bg-ivory" : phase === "listening" ? "bg-olive-light" : "bg-stone-dim")} aria-hidden />
+                    <span className="font-medium text-ivory">{active.name} · {active.title}</span>
+                    <span className="font-mono text-meta text-stone-dim">AI</span>
                   </p>
                   <div className="mt-2 min-h-[4.25rem]">
-                    {showQuestion && <p className="font-display text-[clamp(1.2rem,1rem+0.8vw,1.65rem)] leading-snug text-mist-100">{question}</p>}
+                    {showQuestion && <p className="font-display text-[clamp(1.2rem,1rem+0.8vw,1.65rem)] leading-snug text-ivory">{question}</p>}
                   </div>
                   {stage === "live" && ui?.phase === "listening" && ui.inputMode === "text" && (
                     <form onSubmit={(e) => { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); }} className="mt-3 flex items-end gap-2">
                       <textarea autoFocus value={typed} onChange={(e) => { controller.current?.noteKeystroke(); setTyped(e.target.value); }} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); } }}
-                        rows={2} placeholder="Type your answer — Enter to send" aria-label="Your answer" className="flex-1 resize-none rounded-md border border-line-strong bg-ink-900 px-3.5 py-2.5 text-[16px] leading-relaxed outline-none transition-colors focus:border-lume" />
+                        rows={2} placeholder="Type your answer — Enter to send" aria-label="Your answer" className="flex-1 resize-none rounded-control border border-control bg-surface-1 px-3.5 py-2.5 text-body leading-relaxed outline-none transition-colors focus:border-olive-light" />
                       <Button type="submit" disabled={!typed.trim()}>Send</Button>
                     </form>
                   )}
-                  {stage === "live" && ui?.hint && <p className="mt-3 text-callout text-mist-300">{ui.hint}</p>}
+                  {stage === "live" && ui?.hint && <p className="mt-3 text-ui text-stone">{ui.hint}</p>}
                 </div>
               </div>
             </main>
 
             {/* The rail: context you can glance at without leaving the conversation. */}
-            <aside aria-label="About this interview" className="hidden w-[300px] shrink-0 flex-col border-l border-line xl:flex">
-              <div className="border-b border-line px-5 py-4">
-                <p className="text-[12px] font-medium text-mist-400">{props.seats.length > 1 ? `Panel of ${props.seats.length}` : "Interviewer"}</p>
-                <p className="mt-1 text-callout text-mist-100">{props.seats.map((x) => callName(x.name, x.style)).join(", ")}</p>
-                <p className="mt-0.5 text-[13px] text-mist-400">{props.seats.length > 1 ? "They hand off and cross-question" : active.title} · pressure {props.pressure}/5</p>
+            <aside aria-label="About this interview" className="hidden w-[300px] shrink-0 flex-col border-l border-divider xl:flex">
+              <div className="border-b border-divider px-5 py-4">
+                <p className="text-meta font-medium text-stone-dim">{props.seats.length > 1 ? `Panel of ${props.seats.length}` : "Interviewer"}</p>
+                <p className="mt-1 text-ui text-ivory">{props.seats.map((x) => callName(x.name, x.style)).join(", ")}</p>
+                <p className="mt-0.5 text-meta text-stone-dim">{props.seats.length > 1 ? "They hand off and cross-question" : active.title} · pressure {props.pressure}/5</p>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-                <p className="text-[12px] font-medium text-mist-400">Questions so far</p>
+                <p className="text-meta font-medium text-stone-dim">Questions so far</p>
                 {asked.length ? (
                   <ol className="mt-3 space-y-4">
                     {asked.map((q, i) => (
                       <li key={i} className="grid grid-cols-[2.6rem_minmax(0,1fr)] gap-x-2">
-                        <span className="pt-0.5 font-mono text-[11px] tabular text-mist-400">{Math.floor(q.t / 60000)}:{String(Math.floor((q.t % 60000) / 1000)).padStart(2, "0")}</span>
+                        <span className="pt-0.5 font-mono text-meta tabular text-stone-dim">{Math.floor(q.t / 60000)}:{String(Math.floor((q.t % 60000) / 1000)).padStart(2, "0")}</span>
                         <span>
-                          <span className="block text-[12px] text-mist-400">{q.who}</span>
-                          <span className={cn("block font-display text-[15px] leading-snug", i === asked.length - 1 ? "text-mist-100" : "text-mist-300")}>{q.text}</span>
+                          <span className="block text-meta text-stone-dim">{q.who}</span>
+                          <span className={cn("block font-display text-ui leading-snug", i === asked.length - 1 ? "text-ivory" : "text-stone")}>{q.text}</span>
                         </span>
                       </li>
                     ))}
                   </ol>
-                ) : <p className="mt-3 text-[13px] text-mist-400">Each question collects here once it has been asked.</p>}
+                ) : <p className="mt-3 text-meta text-stone-dim">Each question collects here once it has been asked.</p>}
               </div>
-              <div className="border-t border-line px-5 py-4">
-                <p className="text-[12px] font-medium text-mist-400">Keyboard</p>
-                <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 text-[13px] text-mist-300">
+              <div className="border-t border-divider px-5 py-4">
+                <p className="text-meta font-medium text-stone-dim">Keyboard</p>
+                <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 text-meta text-stone">
                   {([["Space", "Done answering"], ["M", "Mute or unmute"], ["C", "Captions"], ["T", "Type or speak"]] as const).map(([k, v]) => (
                     <div key={k} className="contents"><dt><Kbd>{k}</Kbd></dt><dd>{v}</dd></div>
                   ))}
                 </dl>
-                <p className="mt-3 text-[12px] text-mist-400">No scores on screen while you talk.</p>
+                <p className="mt-3 text-meta text-stone-dim">No scores on screen while you talk.</p>
               </div>
             </aside>
           </div>
 
           {/* Controls */}
-          <footer className="shrink-0 border-t border-line px-3 py-3 sm:px-6">
+          <footer className="shrink-0 border-t border-divider px-3 py-3 sm:px-6">
             {stage === "live" ? (
               <nav aria-label="Interview controls" className="flex items-center gap-1.5 sm:gap-2">
                 <button type="button" onClick={toggleMute} disabled={!devices?.mic} aria-label={muted ? "Unmute" : "Mute"} aria-keyshortcuts="M"
-                  className={cn("flex h-9 items-center gap-2 rounded-md border px-3 text-[13px] font-medium transition-colors disabled:opacity-40", muted ? "border-signal-bad/50 text-signal-bad" : "border-line-strong text-mist-100 hover:border-ink-500")}>
+                  className={cn("flex h-9 items-center gap-2 rounded-control border px-3 text-meta font-medium transition-colors disabled:opacity-40", muted ? "border-signal-bad/50 text-signal-bad" : "border-control text-ivory hover:border-stone-dim")}>
                   {muted ? "Mic off" : <><MicMeter controller={controller.current} live={phase === "listening" && ui?.inputMode === "voice"} />Mic</>}
                   <Kbd className="hidden md:inline-grid">M</Kbd>
                 </button>
@@ -369,7 +369,7 @@ export function Room(props: RoomProps) {
                 {ui?.inputMode === "voice"
                   ? <Ctl label="Type instead" onClick={() => controller.current?.switchToText()} shortcut="T">Type</Ctl>
                   : devices?.mic ? <Ctl label="Speak instead" onClick={() => controller.current?.switchToVoice()} shortcut="T">Speak</Ctl> : null}
-                <p aria-live="polite" className="min-w-0 flex-1 truncate text-center text-[13px] text-mist-300">{status}</p>
+                <p aria-live="polite" className="min-w-0 flex-1 truncate text-center text-meta text-stone">{status}</p>
                 {ui?.inputMode === "voice" && (
                   <Button variant="secondary" size="md" disabled={ui?.phase !== "listening"} onClick={() => void controller.current?.finishAnswer(false)} aria-label="Done answering" aria-keyshortcuts="Space" className="h-9 px-3">
                     <span className="hidden sm:inline">Done answering</span><span className="sm:hidden">Done</span><Kbd className="hidden md:inline-grid">Space</Kbd>
@@ -390,40 +390,40 @@ export function Room(props: RoomProps) {
       {/* Device check */}
       {stage === "check" && devices && (
         <div className="relative z-10 mx-auto grid min-h-dvh max-w-5xl items-center gap-10 px-5 py-20 lg:grid-cols-[1.2fr_1fr]">
-          <div className="relative aspect-video overflow-hidden rounded-lg border border-line-strong bg-ink-900">
-            {devices.cam ? <video ref={checkVideoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" /> : <div className="grid h-full place-items-center text-callout text-mist-400">{devices.camError ?? "Camera off"}</div>}
-            {calib === "running" && <div className="absolute inset-0 grid place-items-center bg-ink-950/50"><p className="rounded-md bg-ink-950 px-4 py-2 text-callout">Look straight into your camera lens…</p></div>}
+          <div className="relative aspect-video overflow-hidden rounded-control border border-control bg-surface-1">
+            {devices.cam ? <video ref={checkVideoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" /> : <div className="grid h-full place-items-center text-ui text-stone-dim">{devices.camError ?? "Camera off"}</div>}
+            {calib === "running" && <div className="absolute inset-0 grid place-items-center bg-ink/50"><p className="rounded-control bg-ink px-4 py-2 text-ui">Look straight into your camera lens…</p></div>}
           </div>
           <div>
-            <p className="text-[13px] font-medium text-mist-400">{props.resuming ? "Rejoining" : "Before you walk in"}</p>
-            <h1 className="mt-3 text-title text-mist-100">{props.resuming ? "Pick up where you left off." : "Check your setup."}</h1>
-            <ul className="mt-8 border-t border-line text-callout">
+            <p className="text-meta font-medium text-stone-dim">{props.resuming ? "Rejoining" : "Before you walk in"}</p>
+            <h1 className="mt-3 text-title text-ivory">{props.resuming ? "Pick up where you left off." : "Check your setup."}</h1>
+            <ul className="mt-8 border-t border-divider text-ui">
               <Check ok={!!devices.mic} label={devices.mic ? "Microphone" : devices.micError ?? "Microphone off"}>
-                {devices.mic && <div className="mt-2 h-0.5 w-40 overflow-hidden bg-line-strong"><div className="h-full origin-left bg-lume transition-transform duration-100" style={{ transform: `scaleX(${micLevel})` }} /></div>}
-                {devices.mic && <p className="mt-1.5 text-[13px] text-mist-400">Say something; the line should move.</p>}
+                {devices.mic && <div className="mt-2 h-0.5 w-40 overflow-hidden bg-divider-strong"><div className="h-full origin-left bg-olive-light transition-transform duration-100" style={{ transform: `scaleX(${micLevel})` }} /></div>}
+                {devices.mic && <p className="mt-1.5 text-meta text-stone-dim">Say something; the line should move.</p>}
               </Check>
               <Check ok={!!devices.cam} label={devices.cam ? "Camera" : devices.camError ?? "Camera off"} />
               <Check ok={!devices.mic ? false : LiveTranscriber.supported() || props.serverStt} label={!devices.mic ? "Text mode — you'll type your answers" : LiveTranscriber.supported() ? "Live speech recognition" : props.serverStt ? "Server transcription (answers are transcribed after you finish)" : "No speech recognition, so you'll type"} />
               {consent?.cameraMetrics && devices.cam && (
                 <Check ok={calib === "done"} label={calib === "done" ? "Camera lens calibrated" : calib === "unavailable" ? "On-device tracking unavailable, so camera signals will be skipped" : "Calibrate to measure camera engagement and posture (skip it and we won't measure gaze, slouch or lean)"}>
                   {calib !== "done" && calib !== "unavailable" && <Button size="sm" variant="secondary" className="mt-2" onClick={calibrate} loading={calib === "running"} disabled={!visionReady}>{visionReady ? "Sit as you normally would and look at the lens for 2 seconds" : "Loading on-device model…"}</Button>}
-                  {calib === "failed" && <p className="mt-1.5 text-[13px] text-signal-warn">We couldn&apos;t see your face clearly. Check your lighting and try again.</p>}
+                  {calib === "failed" && <p className="mt-1.5 text-meta text-signal-warn">We couldn&apos;t see your face clearly. Check your lighting and try again.</p>}
                 </Check>
               )}
               {consent?.cameraMetrics && props.privacy.posture && devices.cam && calib === "done" && (
                 <Check ok={postureReady} label={postureReady ? "Posture" : "Posture: shoulders not in view"}>
                   {postureReady ? (
-                    <p className="mt-1.5 text-[13px] text-mist-400" aria-live="polite">Right now: <span className="text-mist-100">{livePosture ?? "…"}</span>. Try sitting back or leaning in. Nothing here is saved.</p>
+                    <p className="mt-1.5 text-meta text-stone-dim" aria-live="polite">Right now: <span className="text-ivory">{livePosture ?? "…"}</span>. Try sitting back or leaning in. Nothing here is saved.</p>
                   ) : (
                     <>
-                      <p className="mt-1.5 text-[13px] text-signal-warn">Sit back a little or tilt your camera down so your shoulders are in view, then recalibrate. Without that we can measure sway, but not slouch.</p>
+                      <p className="mt-1.5 text-meta text-signal-warn">Sit back a little or tilt your camera down so your shoulders are in view, then recalibrate. Without that we can measure sway, but not slouch.</p>
                       <Button size="sm" variant="secondary" className="mt-2" onClick={calibrate}>Recalibrate</Button>
                     </>
                   )}
                 </Check>
               )}
             </ul>
-            {(devices.micError || devices.camError) && <p className="mt-6 text-[13px] text-mist-400">To allow access later, use the camera icon in your browser&apos;s address bar, then reload.</p>}
+            {(devices.micError || devices.camError) && <p className="mt-6 text-meta text-stone-dim">To allow access later, use the camera icon in your browser&apos;s address bar, then reload.</p>}
             <div className="mt-10 flex gap-3">
               <Button size="lg" onClick={enter}>{props.resuming ? "Rejoin the Room" : "Enter the Room"}</Button>
               <Button variant="ghost" size="lg" onClick={() => router.push("/practice")}>Back</Button>
@@ -437,9 +437,9 @@ export function Room(props: RoomProps) {
       )}
 
       {(stage === "ending" || phase === "ending" || phase === "ended") && (
-        <div className="absolute inset-0 z-30 grid place-items-center bg-ink-950/90">
+        <div className="absolute inset-0 z-30 grid place-items-center bg-ink/90">
           <div className="text-center">
-            <p className="text-title text-mist-100">{ui?.complete ? "That's the interview." : "Wrapping up."}</p>
+            <p className="text-title text-ivory">{ui?.complete ? "That's the interview." : "Wrapping up."}</p>
             <p className="mt-4"><Thinking label="Saving your session and preparing your Read" /></p>
           </div>
         </div>
@@ -448,8 +448,8 @@ export function Room(props: RoomProps) {
       {/* Recovery */}
       <Modal open={stage === "live" && phase === "error"} onClose={() => {}} title="Connection problem" dismissible={false}>
         <div className="p-8">
-          <h2 className="text-title text-mist-100">{ui?.error?.message ?? "We lost the interviewer connection."}</h2>
-          <p className="mt-3 text-callout text-mist-300">Everything you&apos;ve said so far is saved.</p>
+          <h2 className="text-title text-ivory">{ui?.error?.message ?? "We lost the interviewer connection."}</h2>
+          <p className="mt-3 text-ui text-stone">Everything you&apos;ve said so far is saved.</p>
           <div className="mt-7 flex flex-wrap gap-2">
             <Button onClick={() => void controller.current?.retry()}>Reconnect</Button>
             {!voiceOnly && <Button variant="secondary" onClick={() => { setVoiceOnly(true); void controller.current?.retry(); }}>Continue with voice</Button>}
@@ -460,8 +460,8 @@ export function Room(props: RoomProps) {
 
       <Modal open={confirmEnd} onClose={() => setConfirmEnd(false)} title="End the interview?">
         <div className="p-8">
-          <h2 className="text-title text-mist-100">End the interview?</h2>
-          <p className="mt-3 text-callout text-mist-300">You&apos;ll still get a Read and Playback for everything you said so far.</p>
+          <h2 className="text-title text-ivory">End the interview?</h2>
+          <p className="mt-3 text-ui text-stone">You&apos;ll still get a Read and Playback for everything you said so far.</p>
           <div className="mt-7 flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setConfirmEnd(false)}>Keep going</Button>
             <Button variant="danger" onClick={endNow}>End and see my Read</Button>
@@ -473,13 +473,13 @@ export function Room(props: RoomProps) {
 }
 
 function Kbd({ children, className }: { children: ReactNode; className?: string }) {
-  return <kbd className={cn("inline-grid h-5 min-w-5 place-items-center rounded-sm border border-line-strong px-1 font-mono text-[11px] leading-none text-mist-300", className)}>{children}</kbd>;
+  return <kbd className={cn("inline-grid h-5 min-w-5 place-items-center rounded-sm border border-control px-1 font-mono text-meta leading-none text-stone", className)}>{children}</kbd>;
 }
 
 function Ctl({ children, label, on, onClick, disabled, shortcut }: { children: ReactNode; label: string; on?: boolean; onClick: () => void; disabled?: boolean; shortcut?: string }) {
   return (
     <button type="button" aria-label={label} aria-pressed={on} aria-keyshortcuts={shortcut} onClick={onClick} disabled={disabled}
-      className={cn("flex h-9 items-center gap-2 rounded-md border px-3 text-[13px] font-medium transition-colors disabled:opacity-40", on ? "border-lume bg-bronze text-lume-soft" : "border-line-strong text-mist-200 hover:border-ink-500 hover:text-mist-100")}>
+      className={cn("flex h-9 items-center gap-2 rounded-control border px-3 text-meta font-medium transition-colors disabled:opacity-40", on ? "border-olive-light bg-olive-ground text-ivory" : "border-control text-ivory hover:border-stone-dim hover:text-ivory")}>
       {children}
       {shortcut && <Kbd className="hidden md:inline-grid">{shortcut}</Kbd>}
     </button>
@@ -488,9 +488,9 @@ function Ctl({ children, label, on, onClick, disabled, shortcut }: { children: R
 
 function Check({ ok, label, children }: { ok: boolean; label: string; children?: ReactNode }) {
   return (
-    <li className="flex gap-3 border-b border-line py-3">
-      <span className={cn("w-4 shrink-0 pt-px font-mono text-[13px]", ok ? "text-signal-good" : "text-mist-400")} aria-hidden>{ok ? "✓" : "–"}</span>
-      <div><p className={ok ? "text-mist-100" : "text-mist-300"}>{label}</p>{children}</div>
+    <li className="flex gap-3 border-b border-divider py-3">
+      <span className={cn("w-4 shrink-0 pt-px font-mono text-meta", ok ? "text-signal-good" : "text-stone-dim")} aria-hidden>{ok ? "✓" : "–"}</span>
+      <div><p className={ok ? "text-ivory" : "text-stone"}>{label}</p>{children}</div>
     </li>
   );
 }
@@ -511,7 +511,7 @@ function MicMeter({ controller, live }: { controller: RoomController | null; liv
   }, [controller, live]);
   return (
     <span ref={ref} className="flex h-3.5 items-center gap-[2px]" aria-hidden>
-      {[0, 1, 2, 3].map((i) => <span key={i} className={cn("h-full w-[2px] origin-center rounded-full", live ? "bg-lume" : "bg-mist-400")} />)}
+      {[0, 1, 2, 3].map((i) => <span key={i} className={cn("h-full w-[2px] origin-center rounded-full", live ? "bg-olive-light" : "bg-stone-dim")} />)}
     </span>
   );
 }
@@ -527,7 +527,7 @@ function MicRing({ controller }: { controller: RoomController | null }) {
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, [controller]);
-  return <div ref={ref} className="pointer-events-none absolute inset-0 rounded-lg" />;
+  return <div ref={ref} className="pointer-events-none absolute inset-0 rounded-control" />;
 }
 
 /** Voice-only interviewer: Oriel's own face, breathing with the same voice level. */
@@ -548,7 +548,7 @@ function VoiceFace({ provider, name }: { provider: LocalAvatarProvider; name: st
     <div className="absolute inset-0 grid place-items-center">
       <div className="text-center">
         <div ref={ref} className="mx-auto size-40"><LogoMark className="size-full" /></div>
-        <p className="mt-6 text-[13px] text-mist-400">{name}, voice only</p>
+        <p className="mt-6 text-meta text-stone-dim">{name}, voice only</p>
       </div>
     </div>
   );
