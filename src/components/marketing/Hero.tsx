@@ -9,7 +9,7 @@ import { InterviewPreview } from "./InterviewPreview";
 export function Hero({ cta, signedIn }: { cta: string; signedIn: boolean }) {
   return (
     <section aria-labelledby="hero-title" className="frame pb-section pt-[calc(var(--header-h)+var(--spacing-hero))]">
-      <h1 id="hero-title" className="-ml-[0.045em] max-w-[11.5em] text-display-xl text-ivory">
+      <h1 id="hero-title" className="-ml-[0.035em] max-w-[11.5em] text-display-xl text-ivory">
         Practice for <em>the&nbsp;room</em> before you’re in&nbsp;it.
       </h1>
       <div className="page-grid mt-6 sm:mt-8">

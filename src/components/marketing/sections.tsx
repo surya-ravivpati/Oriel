@@ -87,15 +87,15 @@ export function Interview() {
             <ol className="mt-4 space-y-7 border-t border-divider pt-7">
               <li>
                 <p className="text-ui text-stone-dim">Oriel</p>
-                <p className="mt-1 text-display-m text-ivory">“Walk me through the launch you led. What changed because of&nbsp;you?”</p>
+                <p className="hang mt-1 text-display-m text-ivory">“Walk me through the launch you led. What changed because of&nbsp;you?”</p>
               </li>
               <li>
                 <p className="text-ui text-stone-dim">You</p>
-                <p className="mt-1 text-body-l text-stone">“We improved onboarding, and people seemed to like it.”</p>
+                <p className="hang-sans mt-1 text-body-l text-stone">“We improved onboarding, and people seemed to like it.”</p>
               </li>
               <li>
                 <p className="text-ui text-stone-dim">Oriel</p>
-                <p className="mt-1 text-display-m text-ivory">“Earlier you said activation was the goal. How far did it move, and what did you do that the team&nbsp;didn’t?”</p>
+                <p className="hang mt-1 text-display-m text-ivory">“Earlier you said activation was the goal. How far did it move, and what did you do that the team&nbsp;didn’t?”</p>
                 <p className="mt-3 text-ui text-stone-dim">A thin answer gets a sharper question.</p>
               </li>
             </ol>
@@ -153,10 +153,12 @@ export function Feedback() {
           <div className="page-grid mt-4 gap-y-8 border-t border-divider pt-7">
             <blockquote className="col-span-4 text-body-l text-stone sm:col-span-8 lg:col-span-6">
               <p className="mb-3 text-ui text-stone-dim">You, at <span className="font-mono text-meta">12:10</span></p>
+              <p className="hang-sans">
               “Last spring we had two weeks to decide whether to retire our old onboarding flow. The usage data was incomplete, so{" "}
               <mark className={markCls}>I set a decision date and agreed up front on what result would change our minds<sup className={supCls}>1</sup></mark>.
               We ran the holdout for a week, and{" "}
               <mark className={markCls}>I think in the end we kept parts of both<sup className={supCls}>2</sup></mark>.”
+              </p>
             </blockquote>
             <ol className="col-span-4 space-y-6 sm:col-span-6 sm:col-start-3 lg:col-span-5 lg:col-start-7">
               <li className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-baseline gap-x-2">

@@ -109,7 +109,7 @@ export function InterviewPreview() {
         </div>
         <div className="col-span-4 sm:col-span-5 lg:col-span-6 lg:pr-12">
           <p className="text-ui text-stone-dim">Oriel</p>
-          <p key={question} className={cn("mt-1 min-h-[5em] text-display-m text-ivory sm:min-h-[3.75em]", running && "animate-[fade-in_var(--dur-panel)_var(--ease-enter)]")}>“{question}”</p>
+          <p key={question} className={cn("hang mt-1 min-h-[5em] text-display-m text-ivory sm:min-h-[3.75em]", running && "animate-[fade-in_var(--dur-panel)_var(--ease-enter)]")}>“{question}”</p>
           <p className="mt-6 text-ui text-stone-dim">You</p>
           <div className="mt-1 flex h-[4.8em] flex-col justify-end overflow-hidden text-body [mask-image:linear-gradient(to_bottom,transparent,black_45%)] sm:h-[4.8em]">
             <p className="text-stone">

@@ -191,6 +191,10 @@
   .hairline { border-color: var(--line); }
   .hairline-strong { border-color: var(--line-strong); }
   .text-balance { text-wrap: balance; }
+  /* Hanging punctuation: an opening quote sits in the margin so the words keep the column's edge.
+     The indent is the measured width of “ in Newsreader (.hang) and Schibsted Grotesk (.hang-sans). */
+  .hang { text-indent: -0.41em; }
+  .hang-sans { text-indent: -0.46em; }
   .tabular { font-variant-numeric: tabular-nums; }
   .shadow-sheet { box-shadow: var(--shadow-sheet); }
   /* An editor's mark under a word: the one place gold touches running text. */
