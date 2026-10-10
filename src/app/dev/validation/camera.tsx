@@ -96,7 +96,7 @@ export function CameraValidation() {
   }, []);
   return (
     <main className="p-8 text-ui">
-      <h1 className="font-display text-3xl">Camera signal validation</h1>
+      <h1 className="text-display-m text-ivory">Camera signal validation</h1>
       <p className="mt-2 text-stone-dim" data-testid="status">{status}</p>
       <table className="mt-6 w-full font-mono text-meta">
         <thead><tr className="text-left text-stone-dim"><th>file</th><th>tone</th><th>eyewear</th><th>cover</th><th>light</th><th>gaze</th><th>face</th><th>engagement</th><th>yaw</th><th>pitch</th><th>result</th></tr></thead>

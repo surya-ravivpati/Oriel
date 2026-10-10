@@ -84,7 +84,7 @@ export function AppNav({ isAdmin, name, mockProviders }: { isAdmin: boolean; nam
             <nav aria-label="Menu" className="frame flex flex-col pb-10 pt-2">
               {[...LINKS, ...account].map(([href, label]) => (
                 <Link key={href} href={href} onClick={() => setSheet(false)} aria-current={isOn(href) ? "page" : undefined}
-                  className={cn("flex min-h-14 items-center border-b border-divider font-display text-[1.625rem]", isOn(href) ? "text-olive-light" : "text-ivory")}>{label}</Link>
+                  className={cn("flex min-h-14 items-center border-b border-divider text-display-m", isOn(href) ? "text-olive-light" : "text-ivory")}>{label}</Link>
               ))}
               <div className="mt-8 flex items-center justify-between gap-4">
                 <span className="text-ui text-stone">{name ?? "Signed in"}</span>
@@ -123,7 +123,7 @@ function AccountMenu({ name, links, onSignOut, active }: { name: string | null; 
   return (
     <div ref={box} className="relative hidden lg:block">
       <button ref={button} type="button" onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open} aria-label="Account"
-        className={cn("grid size-8 place-items-center rounded-full bg-surface-2 font-display text-[1.0625rem] leading-none text-ivory transition-shadow duration-[var(--dur-press)]",
+        className={cn("grid size-8 place-items-center rounded-full bg-surface-2 font-display text-body leading-none text-ivory transition-shadow duration-[var(--dur-press)]",
           active || open ? "shadow-[0_0_0_1px_var(--color-olive-light)]" : "hover:shadow-[0_0_0_1px_var(--color-control)]")}>
         {initial}
       </button>

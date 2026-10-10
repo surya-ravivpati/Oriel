@@ -256,10 +256,10 @@ export function Pricing({ cta }: { cta: string }) {
             return (
               <div key={id} className={cn("border-t pt-6 sm:row-span-8 sm:grid sm:grid-rows-subgrid", i < 2 && "sm:pb-12 lg:pb-0", featured ? "border-olive-light" : "border-divider")}>
                 <div className="pb-6">
-                  <h3 className="font-display text-[1.75rem] leading-tight text-ivory">{p.name}</h3>
+                  <h3 className="text-display-m text-ivory">{p.name}</h3>
                   <p className="mt-1 text-ui text-stone-dim">{p.blurb}</p>
                   <p className="mt-5 flex items-baseline gap-2">
-                    <span className="font-display text-[2.75rem] leading-none text-ivory">{p.price}</span>
+                    <span className="text-display-l leading-none text-ivory">{p.price}</span>
                     {p.cadence && <span className="text-ui text-stone">{p.cadence}</span>}
                   </p>
                 </div>

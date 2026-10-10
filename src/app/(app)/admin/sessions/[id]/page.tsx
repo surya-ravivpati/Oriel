@@ -22,7 +22,7 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ i
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Eyebrow>Session {id}</Eyebrow>
-          <h1 className="mt-3 font-display text-4xl">{d.interview.role} · {d.interview.mode} · pressure {d.interview.pressure}</h1>
+          <h1 className="mt-3 text-display-m text-ivory">{d.interview.role} · {d.interview.mode} · pressure {d.interview.pressure}</h1>
           <div className="mt-3 flex flex-wrap gap-2"><Badge>{d.session.status}</Badge><Badge tone={d.session.analysisStatus === "complete" ? "good" : d.session.analysisStatus === "failed" ? "bad" : "neutral"}>analysis {d.session.analysisStatus}</Badge><Badge>llm {d.session.llmProvider}</Badge><Badge>tts {d.session.ttsProvider}</Badge><Badge>avatar {d.session.avatarProvider ?? "—"}</Badge>{d.signals.map((s) => <Badge key={s.kind}>{s.kind} batches {s.n}</Badge>)}</div>
           {d.session.analysisError && <p className="mt-2 font-mono text-meta text-signal-bad">{d.session.analysisError}</p>}
         </div>
@@ -30,7 +30,7 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ i
       </header>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <Card className="p-5"><Eyebrow>Cost record</Eyebrow><p className="mt-2 font-display text-4xl">${total.toFixed(4)}</p><ul className="mt-3 space-y-1 text-ui text-stone">{byCat.map(([k, v]) => <li key={k} className="flex justify-between"><span>{k}</span><span className="font-mono">${v.toFixed(4)}</span></li>)}</ul></Card>
+        <Card className="p-5"><Eyebrow>Cost record</Eyebrow><p className="mt-2 font-mono text-body-l text-ivory">${total.toFixed(4)}</p><ul className="mt-3 space-y-1 text-ui text-stone">{byCat.map(([k, v]) => <li key={k} className="flex justify-between"><span>{k}</span><span className="font-mono">${v.toFixed(4)}</span></li>)}</ul></Card>
         <Card className="p-5"><Eyebrow>Pipeline</Eyebrow>{d.jobs.map((j) => <div key={j.id} className="mt-2 text-ui"><p>{j.status} · attempts {j.attempts}</p>{j.error && <p className="font-mono text-meta text-signal-bad">{j.error}</p>}<ul className="mt-2 space-y-0.5 font-mono text-meta text-stone-dim">{Object.entries(j.stepTimings ?? {}).map(([k, v]) => <li key={k}>{k}: {v}ms</li>)}</ul></div>)}</Card>
         <Card className="p-5"><Eyebrow>Memory ledger (claims)</Eyebrow><ul className="mt-2 space-y-1 text-ui">{d.claims.map((c) => <li key={c.id}><Badge tone={c.status === "weak" ? "warn" : c.status === "probed" ? "lume" : c.status === "supported" ? "good" : "neutral"}>{c.status}</Badge> <span className="text-stone">#{c.answerSeq} {c.text}</span></li>)}</ul></Card>
       </section>

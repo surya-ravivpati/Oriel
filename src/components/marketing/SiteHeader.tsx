@@ -81,7 +81,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
         <div ref={menu} id="site-menu" className="fixed inset-x-0 bottom-0 top-16 z-50 overflow-y-auto overscroll-contain bg-ink transition-[opacity,translate] duration-[var(--dur-state)] ease-[var(--ease-enter)] starting:-translate-y-1 starting:opacity-0 lg:hidden">
           <nav aria-label="Menu" className="frame flex flex-col pb-10 pt-2">
             {LINKS.map(([href, label]) => (
-              <a key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-14 items-center border-b border-divider font-display text-[1.625rem] text-ivory">{label}</a>
+              <a key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-14 items-center border-b border-divider text-display-m text-ivory">{label}</a>
             ))}
             <div className="mt-8 flex flex-col gap-3">
               {signedIn ? (

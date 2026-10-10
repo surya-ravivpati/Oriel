@@ -20,14 +20,29 @@ const PROCESSORS: [string, string, string][] = [
   ["Google (MediaPipe model files)", "Download of the on-device face and pose models", "None: no user data is sent"],
 ];
 
+const CONTENTS: [string, string][] = [
+  ["short", "The short version"], ["collect", "What we collect"], ["biometric", "Biometric notice"], ["retention", "Retention"],
+  ["processors", "Processors"], ["security", "Security"], ["rights", "Your rights"], ["campus", "Campus programs"],
+];
+
 export default function PrivacyPage() {
   return (
-    <main id="content" tabIndex={-1} className="focus:outline-none mx-auto max-w-[760px] px-5 pb-28 pt-28 sm:px-8 sm:pt-36">
-      <p className="text-meta font-medium text-signal-warn">Draft, pending review by privacy counsel</p>
-      <h1 className="mt-4 text-display-l text-ivory">Privacy &amp; biometric policy</h1>
-      <p className="mt-6 text-body-l text-stone">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview. Consent version {CONSENT_VERSION}.</p>
+    <main id="content" tabIndex={-1} className="frame pb-section pt-[calc(var(--header-h)+var(--spacing-hero))] focus:outline-none">
+      <header className="max-w-[48rem]">
+        <p className="text-ui text-signal-warn">Draft, pending review by privacy counsel</p>
+        <h1 className="mt-4 text-display-l text-ivory">Privacy &amp; biometric policy</h1>
+        <p className="mt-5 text-body-l text-stone">Oriel is a practice tool. It is not used by employers to screen candidates, and it never feeds you answers during a real interview. Consent version {CONSENT_VERSION}.</p>
+      </header>
+      {/* A long document reads with its contents in the margin, as the profile does. */}
+      <div className="page-grid mt-[var(--spacing-group)] gap-y-10">
+        <nav aria-label="On this page" className="hidden lg:col-span-3 lg:block">
+          <ul className="sticky top-24 space-y-1 text-ui">
+            {CONTENTS.map(([id, label]) => <li key={id}><a href={`#${id}`} className="-mx-2 block rounded-control px-2 py-1.5 text-stone transition-colors duration-[var(--dur-press)] hover:bg-surface-1 hover:text-ivory">{label}</a></li>)}
+          </ul>
+        </nav>
+        <article className="col-span-4 sm:col-span-8 lg:col-span-7 lg:col-start-4">
 
-      <Section title="The short version">
+      <Section title="The short version" id="short">
         <ul className="list-disc space-y-2 pl-5">
           <li>Your interviewer is an AI. Every session says so at the start.</li>
           <li>Camera and microphone turn on only after a separate consent screen for each session.</li>
@@ -54,7 +69,7 @@ export default function PrivacyPage() {
           <li><b>Voice:</b> we analyse loudness, pitch movement and timing, and transcribe your words. We do not create or store voiceprints and do not identify speakers.</li>
           <li><b>Written release:</b> before any camera-derived signal is computed, we ask for your electronic signature on this release, and record the exact wording, its version and the time:</li>
         </ul>
-        <blockquote className="mt-3 font-display text-[19px] leading-snug text-ivory">{CONSENT_COPY.camera_metrics} {CONSENT_COPY.camera_metrics_release}</blockquote>
+        <blockquote className="mt-3 font-display text-body-l text-ivory">{CONSENT_COPY.camera_metrics} {CONSENT_COPY.camera_metrics_release}</blockquote>
         <ul className="mt-3 list-disc space-y-2 pl-5">
           <li><b>Purpose:</b> only to give you feedback on your own practice. Never to identify you, never for hiring decisions, never for advertising.</li>
           <li><b>No sale, no disclosure:</b> we never sell, lease, trade or otherwise profit from this data, and never disclose it except to you, or where legally required.</li>
@@ -81,11 +96,11 @@ export default function PrivacyPage() {
         </div>
       </Section>
 
-      <Section title="Security">
+      <Section title="Security" id="security">
         <p>Recordings are encrypted at rest with AES-256-GCM under per-user keys and are streamed only to their owner through short-lived signed links. Provider keys stay on our servers. Access is rate-limited and audit-logged.</p>
       </Section>
 
-      <Section title="Your choices and rights">
+      <Section title="Your choices and rights" id="rights">
         <ul className="list-disc space-y-2 pl-5">
           <li>Download everything we store about you (Profile → Your data → Download).</li>
           <li>Delete a session (Playback) or your account (Profile). Deletion is immediate and permanent.</li>
@@ -93,19 +108,21 @@ export default function PrivacyPage() {
         </ul>
       </Section>
 
-      <Section title="Campus and employer programs">
+      <Section title="Campus and employer programs" id="campus">
         <p>Where a school or organisation provides Oriel seats, they see aggregate reporting only. Individual results are never shared without your explicit, separate consent.</p>
       </Section>
 
       <p className="mt-16 text-ui text-stone-dim">Questions: privacy@oriel.example. This policy is a working draft prepared for review by privacy counsel and is not legal advice.</p>
+        </article>
+      </div>
     </main>
   );
 }
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="mt-14 scroll-mt-24 text-body text-stone">
-      <h2 className="mb-4 font-display text-[clamp(1.65rem,1.25rem+1.1vw,2.25rem)] leading-tight text-ivory">{title}</h2>
+    <section id={id} className="mt-16 text-body text-stone first:mt-0">
+      <h2 className="mb-4 text-display-m text-ivory">{title}</h2>
       {children}
     </section>
   );

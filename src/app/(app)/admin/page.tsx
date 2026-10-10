@@ -17,7 +17,7 @@ export default async function AdminPage() {
     <div className="space-y-12">
       <header>
         <Eyebrow>Admin · debug console</Eyebrow>
-        <h1 className="mt-3 font-display text-5xl">Under the hood.</h1>
+        <h1 className="mt-3 text-display-l text-ivory">Under the hood.</h1>
         <div className="mt-4 flex flex-wrap gap-2 text-meta">
           <Badge tone={ps.llmMock ? "warn" : "good"}>LLM: {ps.llm}</Badge><Badge tone={ps.ttsMock ? "warn" : "good"}>TTS: {ps.tts}</Badge><Badge tone={ps.sttMock ? "warn" : "good"}>STT: {ps.stt}</Badge><Badge>Avatar: local WebGL (managed vendor not configured)</Badge>
           {o.jobs.map((j) => <Badge key={j.status}>jobs {j.status}: {j.n}</Badge>)}

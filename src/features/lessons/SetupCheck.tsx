@@ -73,7 +73,7 @@ export function SetupCheck({ passes, needed, inPlan }: { passes: number; needed:
 
   return (
     <div>
-      <p className="mt-3 font-display text-2xl">Setup check</p>
+      <p className="mt-3 text-display-m text-ivory">Setup check</p>
       <p className="mt-1 text-ui text-stone-dim">Turn on your camera and adjust until every line turns green for three seconds. Nothing is recorded.</p>
       <div className={cn("mt-4 overflow-hidden rounded-control border border-divider bg-surface-1", stage === "idle" && "hidden")}>
         <video ref={video} muted playsInline className="aspect-video w-full -scale-x-100 object-cover" />

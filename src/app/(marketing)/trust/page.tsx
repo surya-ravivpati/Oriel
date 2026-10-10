@@ -32,14 +32,14 @@ export default function TrustPage() {
   const still = postureRun?.stillness ?? [];
   const portraits = [...new Set(p.map((r) => r.file))];
   return (
-    <main id="content" tabIndex={-1} className="focus:outline-none mx-auto max-w-[900px] px-5 pb-28 pt-28 sm:px-8 sm:pt-36">
-      <p className="text-body font-semibold tracking-[-0.012em] text-olive-light">Trust · validation</p>
+    <main id="content" tabIndex={-1} className="frame pb-section pt-[calc(var(--header-h)+var(--spacing-hero))] focus:outline-none">
+      <p className="text-ui text-stone">Trust · validation</p>
       <h1 className="mt-4 text-display-l text-ivory">How accurate is the Read?</h1>
       <p className="mt-6 max-w-2xl text-body-l text-stone">We test every measurement against known ground truth and across accents, skin tones, eyewear, head coverings and lighting, and publish the results, including what failed and what we changed. These are early, synthetic tests; testing with real people is still owed and will be published here.</p>
 
       <section className="mt-20">
-        <h2 className="font-display text-[clamp(1.65rem,1.25rem+1.1vw,2.25rem)] leading-tight">Speech measurements</h2>
-        <p className="mt-2 text-ui text-stone-dim">{s.length} labelled clips across {byAccent.size} accents (synthetic voices with known silences, pauses and scripts), run through the product&apos;s own code. {speech ? `Run ${speech.generatedAt.slice(0, 10)}.` : "Not run yet."}</p>
+        <h2 className="text-display-m text-ivory">Speech measurements</h2>
+        <p className="mt-2 max-w-[48rem] text-ui text-stone">{s.length} labelled clips across {byAccent.size} accents (synthetic voices with known silences, pauses and scripts), run through the product&apos;s own code. {speech ? `Run ${speech.generatedAt.slice(0, 10)}.` : "Not run yet."}</p>
         {s.length > 0 && (
           <>
             <div className="mt-6 grid gap-3 sm:grid-cols-4">
@@ -48,7 +48,7 @@ export default function TrustPage() {
                 ["Filler count error", mean(abs(s.map((r) => r.error.fillers))).toFixed(2)],
                 ["First-word timing error", `${Math.round(mean(abs(s.map((r) => r.error.recoveryMs))))} ms`],
                 ["Pause length error", `${Math.round(mean(abs(s.map((r) => r.error.pauseMs))))} ms`],
-              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-[28px] tabular text-ivory">{v}</p><p className="text-meta text-stone-dim">mean absolute</p></div>)}
+              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-body-l text-ivory">{v}</p><p className="text-meta text-stone-dim">mean absolute</p></div>)}
             </div>
             <div className="mt-6 overflow-x-auto">
               <table className="w-full min-w-[560px] text-ui">
@@ -69,8 +69,8 @@ export default function TrustPage() {
       </section>
 
       <section className="mt-20">
-        <h2 className="font-display text-[clamp(1.65rem,1.25rem+1.1vw,2.25rem)] leading-tight">Camera signals</h2>
-        <p className="mt-2 text-ui text-stone-dim">{c.length} synthetic webcam portraits, labelled &ldquo;looking at the lens&rdquo; or &ldquo;looking away&rdquo;, run through the Room&apos;s on-device face tracker without calibration. {camera ? `Run ${camera.generatedAt.slice(0, 10)}.` : "Not run yet."}</p>
+        <h2 className="text-display-m text-ivory">Camera signals</h2>
+        <p className="mt-2 max-w-[48rem] text-ui text-stone">{c.length} synthetic webcam portraits, labelled &ldquo;looking at the lens&rdquo; or &ldquo;looking away&rdquo;, run through the Room&apos;s on-device face tracker without calibration. {camera ? `Run ${camera.generatedAt.slice(0, 10)}.` : "Not run yet."}</p>
         {c.length > 0 && (
           <>
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -78,7 +78,7 @@ export default function TrustPage() {
                 ["Face detected", `${Math.round((c.filter((r) => r.faceDetected).length / c.length) * 100)}%`],
                 ["Lens gaze recognised", `${Math.round((c.filter((r) => r.gaze === "camera" && r.classifiedAs === "camera").length / Math.max(1, c.filter((r) => r.gaze === "camera").length)) * 100)}%`],
                 ["Looking away recognised", `${Math.round((c.filter((r) => r.gaze === "away" && r.classifiedAs === "away").length / Math.max(1, c.filter((r) => r.gaze === "away").length)) * 100)}%`],
-              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-[28px] tabular text-ivory">{v}</p></div>)}
+              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-body-l text-ivory">{v}</p></div>)}
             </div>
             <div className="mt-6 overflow-x-auto">
               <table className="w-full min-w-[560px] text-ui">
@@ -93,15 +93,15 @@ export default function TrustPage() {
         )}
         {p.length > 0 && (
           <>
-            <h3 className="mt-12 font-display text-[24px] text-ivory">Posture</h3>
-            <p className="mt-2 text-ui text-stone-dim">Each lens-facing portrait calibrated as its own baseline, then zoomed out and in to mimic sitting back and leaning in ({p.length} runs). Moving nearer or farther must never read as a slouch.</p>
+            <h3 className="mt-12 text-display-m text-ivory">Posture</h3>
+            <p className="mt-2 max-w-[48rem] text-ui text-stone">Each lens-facing portrait calibrated as its own baseline, then zoomed out and in to mimic sitting back and leaning in ({p.length} runs). Moving nearer or farther must never read as a slouch.</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 ["Shoulders found at calibration", `${portraits.filter((f) => p.find((r) => r.file === f)?.postureReady).length}/${portraits.length}`],
                 ["Sitting back / leaning in recognised", `${p.filter((r) => r.kind === r.expected).length}/${p.length}`],
                 ["Slouches from distance alone", `${p.filter((r) => r.kind === "slouch").length}`],
                 ["Still frames read as restless", `${still.reduce((a, r) => a + r.restless, 0)}/${still.reduce((a, r) => a + r.frames, 0)}`],
-              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-[28px] tabular text-ivory">{v}</p></div>)}
+              ].map(([k, v]) => <div key={k} className="border-t border-divider pt-3 pb-1"><p className="text-meta text-stone-dim">{k}</p><p className="mt-1 font-mono text-body-l text-ivory">{v}</p></div>)}
             </div>
             <p className="mt-4 text-ui text-stone"><span className="text-ivory">What we changed:</span> slouch used to be measured as a raw head-to-shoulder height, which shrinks as you sit back, so sitting back could read as slouching. It is now a proportion of your shoulder width, which distance doesn&apos;t change; frames where you&apos;re looking down at notes are ignored; and the Read says when posture wasn&apos;t measured instead of reporting zero. Restlessness used to include your wrists, which are usually off-screen and guessed; a perfectly still person flickered as &ldquo;moving&rdquo;. It now uses your head and shoulders only, so talking with your hands doesn&apos;t count. Real slouching hasn&apos;t been tested yet: that needs recordings of people.</p>
           </>
@@ -109,7 +109,7 @@ export default function TrustPage() {
       </section>
 
       <section className="mt-20 text-ui leading-relaxed text-stone">
-        <h2 className="font-display text-[clamp(1.65rem,1.25rem+1.1vw,2.25rem)] leading-tight text-ivory">Limits of these tests</h2>
+        <h2 className="text-display-m text-ivory">Limits of these tests</h2>
         <ul className="mt-4 list-disc space-y-2 pl-5">
           <li>Voices and faces are synthetic. Accents were directed to a speech model and not verified by native listeners.</li>
           <li>One or two images per condition: enough to catch gross failures, not to certify fairness.</li>

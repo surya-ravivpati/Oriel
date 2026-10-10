@@ -1,0 +1,28 @@
+import Link from "next/link";
+import { Logo } from "@/components/ui/Logo";
+import { InterviewerStage } from "@/components/avatar/InterviewerStage";
+
+export const metadata = { title: "Page not found" };
+
+/** A missing page, said by the interviewer: the same face, glancing around for it. */
+export default function NotFound() {
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <header className="frame flex h-16 items-center"><Link href="/" aria-label="Oriel home" className="-ml-1 inline-flex rounded-control p-1"><Logo /></Link></header>
+      <main id="content" className="frame flex flex-1 items-center pb-section">
+        <div className="page-grid w-full items-center gap-y-6">
+          <div className="col-span-4 sm:col-span-8 lg:col-span-6">
+            <p className="text-ui text-stone">404</p>
+            <h1 className="mt-3 text-display-l text-ivory">That page isn&apos;t in the room.</h1>
+            <p className="mt-5 max-w-[34rem] text-body-l text-stone">The link may be old, or the page may have moved. Everything else is where you left it.</p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link href="/" className="inline-flex h-12 items-center rounded-button border border-transparent bg-ivory px-6 text-ui font-medium text-ink transition-[background-color,transform] duration-[var(--dur-press)] hover:bg-ivory-press active:scale-[0.97]">Go to the home page</Link>
+              <Link href="/home" className="text-ui text-stone underline decoration-1 underline-offset-[0.2em] transition-colors duration-[var(--dur-press)] hover:text-ivory">Open Oriel</Link>
+            </div>
+          </div>
+          <InterviewerStage personaIds={["hiring_manager"]} className="col-span-4 h-[clamp(12rem,8rem+12vw,22rem)] sm:col-span-8 lg:col-span-6" />
+        </div>
+      </main>
+    </div>
+  );
+}
