@@ -94,39 +94,41 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
 
   return (
     <article>
-      <header className="border-b border-divider pb-10">
-        <p className="text-meta font-medium text-stone-dim">Playback · {d.subtitle}</p>
-        <h1 className="mt-3 max-w-[24ch] text-display-l text-ivory">{d.headline ?? "Now you know what happened."}</h1>
-        {d.summarySource === "heuristic" && <p className="mt-3 text-meta text-stone-dim">Coaching generated from measurements (no language model configured).</p>}
+      <header className="pb-[var(--spacing-group)]">
+        <p className="text-ui text-stone">{d.subtitle}</p>
+        <h1 className="mt-4 max-w-[28ch] text-display-l text-ivory">{d.headline ?? "Now you know what happened."}</h1>
+        {d.summarySource === "heuristic" && <p className="mt-4 text-meta text-stone-dim">Coaching generated from measurements (no language model configured).</p>}
       </header>
 
       {/* At a glance: where you stand, and what to do about it. */}
-      <section aria-label="At a glance" className="grid gap-12 border-b border-divider py-10 lg:grid-cols-12 lg:gap-x-10">
-        <div className="lg:col-span-7">
-          <h2 className="text-meta font-medium text-stone-dim">Where you stand</h2>
+      <section aria-label="At a glance" className="page-grid gap-y-12 border-t border-divider py-12">
+        <div className="col-span-4 sm:col-span-8 lg:col-span-7">
+          <h2 className="text-ui font-medium text-ivory">Where you stand</h2>
           <Breakdown metrics={metrics} />
           {baseline.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-meta font-medium text-stone-dim">Against your baseline</h3>
-              <dl className="mt-2 grid grid-cols-2 gap-x-6 sm:grid-cols-4">
+            <table className="mt-8 w-full text-left">
+              <caption className="pb-2 text-left text-ui font-medium text-ivory">Against your baseline</caption>
+              <thead><tr className="border-b border-divider text-meta text-stone-dim"><th scope="col" className="pb-2 font-normal">Measure</th><th scope="col" className="pb-2 font-normal">This session</th><th scope="col" className="pb-2 font-normal">Baseline</th><th scope="col" className="pb-2 text-right font-normal">Change</th></tr></thead>
+              <tbody>
                 {baseline.map((c) => (
-                  <div key={c.label} className="border-t border-divider py-3">
-                    <dt className="text-meta text-stone-dim">{c.label}</dt>
-                    <dd className={cn("mt-1 font-mono text-body-l tabular", c.improved ? "text-signal-good" : "text-ivory")}>{c.current}</dd>
-                    <dd className="font-mono text-meta text-stone-dim">was {c.baseline}{c.improved ? " · better" : ""}</dd>
-                  </div>
+                  <tr key={c.label} className="border-b border-divider">
+                    <th scope="row" className="py-2.5 pr-4 text-ui font-normal text-ivory">{c.label}</th>
+                    <td className="py-2.5 pr-4 font-mono text-ui text-ivory">{c.current}</td>
+                    <td className="py-2.5 pr-4 font-mono text-ui text-stone-dim">{c.baseline}</td>
+                    <td className={cn("py-2.5 text-right text-meta font-medium", c.improved ? "text-signal-good" : "text-stone-dim")}>{c.improved ? "Better" : c.improved === false ? "Not yet" : ""}</td>
+                  </tr>
                 ))}
-              </dl>
-            </div>
+              </tbody>
+            </table>
           )}
         </div>
-        <div className="lg:col-span-5">
-          <h2 className="text-meta font-medium text-stone-dim">Next steps</h2>
+        <div className="col-span-4 sm:col-span-8 lg:col-span-5 lg:col-start-8">
+          <h2 className="text-ui font-medium text-ivory">Next steps</h2>
           {d.focus.length > 0 ? (
             <ol className="mt-3 border-t border-divider">
               {d.focus.slice(0, 3).map((f, i) => (
-                <li key={f} className="grid grid-cols-[2rem_minmax(0,1fr)] border-b border-divider py-3.5">
-                  <span className="pt-0.5 font-mono text-meta text-olive-light">{String(i + 1).padStart(2, "0")}</span>
+                <li key={f} className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-baseline border-b border-divider py-3.5">
+                  <span className="font-display text-body-l text-olive-light">{i + 1}</span>
                   <span className="text-ui text-ivory">{f}</span>
                 </li>
               ))}
@@ -138,34 +140,32 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
           </div>
           {d.strengths.length > 0 && (
             <div className="mt-10">
-              <h3 className="text-meta font-medium text-stone-dim">What worked</h3>
-              <ul className="mt-2 space-y-1.5 text-ui text-ivory">{d.strengths.map((x) => <li key={x}>{x}</li>)}</ul>
+              <h3 className="text-ui font-medium text-ivory">What worked</h3>
+              <ul className="mt-3 space-y-2 border-t border-divider pt-3 text-ui text-stone">{d.strengths.map((x) => <li key={x} className="flex gap-2.5"><span className="mt-[0.6em] size-1 shrink-0 rounded-full bg-olive-light" aria-hidden />{x}</li>)}</ul>
             </div>
           )}
         </div>
       </section>
 
       {/* The recording, and the moments in it worth watching. */}
-      <section className="border-b border-divider py-10">
+      <section className="border-t border-divider py-12">
         <div className="mb-6 flex items-baseline justify-between gap-4">
-          <h2 className="text-title text-ivory">The moments that mattered</h2>
+          <h2 className="text-display-m text-ivory">The moments that mattered</h2>
           {d.playbackLevel === "basic" && <Badge>Basic Playback</Badge>}
         </div>
-        <div className="grid gap-8 lg:grid-cols-[1.45fr_1fr]">
-          <div>
-            <div className="relative overflow-hidden rounded-control border border-control bg-surface-1">
-              {d.media && !mediaError ? (
+        <div className="page-grid gap-y-8">
+          <div className="col-span-4 sm:col-span-8 lg:col-span-7">
+            {d.media && !mediaError ? (
+              <div className="relative overflow-hidden rounded-panel bg-surface-1">
                 <video ref={video} src={d.media.url} controls playsInline preload="metadata" onLoadedMetadata={onMeta} onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)} onError={() => setMediaError(true)}
                   className={cn("aspect-video w-full bg-ink", d.media.mimeType.startsWith("audio") && "h-24 aspect-auto")} />
-              ) : (
-                <div className="grid aspect-video place-items-center p-8 text-center">
-                  <div>
-                    <p className="text-ivory">{d.mediaDeleted ? "The recording was deleted." : mediaError ? "The recording couldn't be loaded." : "No recording for this session."}</p>
-                    <p className="mt-2 text-meta text-stone-dim">{d.mediaDeleted ? "Raw video is removed after your retention period. Your transcript and Read remain." : "Your transcript and Read are below."}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <p className="border-t border-divider pt-4 text-ui text-stone">
+                <span className="text-ivory">{d.mediaDeleted ? "The recording was deleted." : mediaError ? "The recording couldn't be loaded." : "No recording for this session."}</span>{" "}
+                {d.mediaDeleted ? "Raw video is removed after your retention period; your transcript and Read remain." : "The timeline still shows when each question and moment came; your transcript and Read are below."}
+              </p>
+            )}
             {/* Timeline: questions, moments and posture shifts on the session clock. */}
             <div className="relative mt-4 h-9 select-none" aria-label="Session timeline">
               <div className="absolute inset-x-0 top-1/2 h-px bg-divider-strong" />
@@ -192,7 +192,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
               </p>
             )}
           </div>
-          <div className="border-b border-divider">
+          <div className="col-span-4 border-b border-divider sm:col-span-8 lg:col-span-5 lg:col-start-8">
             {d.clips.length ? d.clips.map((c) => (
               <PlaybackClipCard key={c.id} clip={c} active={activeClip === c.id} onClick={() => { setActiveClip(c.id); seek(c.startMs); }} />
             )) : <p className="border-t border-divider py-5 text-ui text-stone-dim">No standout moments were detected: a steady session. Try a higher pressure level next time.</p>}
@@ -201,37 +201,37 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
       </section>
 
       {d.lessons.length > 0 && (
-        <section className="border-b border-divider py-10">
+        <section className="border-t border-divider py-12">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
-            <h2 className="text-title text-ivory">What to work on next</h2>
-            <Link href="/lessons" className="text-meta text-stone underline decoration-olive-light underline-offset-4 hover:text-ivory">All lessons</Link>
+            <h2 className="text-display-m text-ivory">What to work on next</h2>
+            <Link href="/lessons" className="text-meta text-stone underline decoration-1 underline-offset-[0.2em] hover:text-ivory">All lessons</Link>
           </div>
-          <p className="mt-2 max-w-2xl text-ui text-stone-dim">Built from this interview; each one uses your own answers as the example and ends with measured practice.</p>
+          <p className="mt-2 max-w-2xl text-ui text-stone">Built from this interview; each one uses your own answers as the example and ends with measured practice.</p>
           <div className="mt-5 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">{d.lessons.map((l) => <LessonCard key={l.key} l={l} />)}</div>
         </section>
       )}
 
       {/* The Read, part by part. */}
-      <section className="border-b border-divider py-10">
+      <section className="border-t border-divider py-12">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 className="text-title text-ivory">What we measured</h2>
-          <p className="max-w-md text-meta text-stone-dim">Each measure shows your range and how far to trust it. Camera-based signals are estimates. Nothing here judges appearance, accent or emotion.</p>
+          <h2 className="text-display-m text-ivory">What we measured</h2>
+          <p className="max-w-md text-meta text-stone">Each measure shows your range and how far to trust it. Camera-based signals are estimates. Nothing here judges appearance, accent or emotion.</p>
         </div>
         {groups.map((g) => (
           <div key={g.title} className="mt-8">
-            <h3 className="flex items-baseline gap-3 text-meta"><span className="font-medium text-ivory">{g.title}</span><span className="text-stone-dim">{g.blurb}</span></h3>
+            <h3 className="flex items-baseline gap-3"><span className="text-ui font-medium text-ivory">{g.title}</span><span className="text-meta text-stone-dim">{g.blurb}</span></h3>
             <div className="mt-2 border-t border-divider">{g.rows.map((m) => <MeasureRow key={m.key} m={m} />)}</div>
           </div>
         ))}
         {d.competencies.length > 0 && (
           <div className="mt-10">
-            <h3 className="text-meta font-medium text-ivory">By competency</h3>
+            <h3 className="text-ui font-medium text-ivory">By competency</h3>
             <ul className="mt-2 border-t border-divider">
               {d.competencies.map((c) => (
-                <li key={c.key} className="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_4rem] items-center gap-4 border-b border-divider py-3">
+                <li key={c.key} className="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_5rem] items-center gap-4 border-b border-divider py-3">
                   <span className="text-ui text-ivory">{c.label}</span>
                   <span className="h-1 bg-divider"><span className="block h-full origin-left bg-stone" style={{ transform: `scaleX(${Math.max(0, Math.min(1, c.avgQuality))})` }} /></span>
-                  <span className="text-right font-mono text-meta text-stone-dim">{c.answers} ans.</span>
+                  <span className="text-right text-meta text-stone-dim">{c.answers} answer{c.answers === 1 ? "" : "s"}</span>
                 </li>
               ))}
             </ul>
@@ -241,47 +241,47 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
       </section>
 
       {(d.rewrite || d.comparison) && (
-        <section className="border-b border-divider py-10">
+        <section className="border-t border-divider py-12">
           {d.rewrite && (
             <div>
-              <h2 className="text-title text-ivory">Your weakest answer, tightened</h2>
-              <p className="mt-3 font-display text-body italic text-stone-dim">{d.rewrite.question}</p>
-              <div className="mt-6 grid gap-x-10 gap-y-6 lg:grid-cols-2">
-                <figure className="border-t border-divider pt-4"><figcaption className="text-meta font-medium text-stone-dim">What you said</figcaption><blockquote className="mt-2 font-display text-body-l leading-snug text-stone">{d.rewrite.original}</blockquote></figure>
-                <figure className="border-t border-olive-light pt-4"><figcaption className="text-meta font-medium text-olive-light">Same facts, tighter</figcaption><blockquote className="mt-2 font-display text-body-l leading-snug text-ivory">{d.rewrite.rewritten}</blockquote><p className="mt-3 text-meta text-stone-dim">{d.rewrite.note} Only facts from your answer are used; [brackets] mark details only you can fill in.</p></figure>
+              <h2 className="text-display-m text-ivory">Your weakest answer, tightened</h2>
+              <p className="hang mt-3 max-w-[40rem] font-display text-body-l text-stone">“{d.rewrite.question}”</p>
+              <div className="page-grid mt-6 gap-y-6">
+                <figure className="col-span-4 border-t border-divider pt-4 sm:col-span-8 lg:col-span-6"><figcaption className="text-meta font-medium text-stone-dim">What you said</figcaption><blockquote className="mt-2 text-body-l text-stone">{d.rewrite.original}</blockquote></figure>
+                <figure className="col-span-4 border-t border-olive-light pt-4 sm:col-span-8 lg:col-span-6"><figcaption className="text-meta font-medium text-olive-light">Same facts, tighter</figcaption><blockquote className="mt-2 text-body-l text-ivory">{d.rewrite.rewritten}</blockquote><p className="mt-3 text-meta text-stone-dim">{d.rewrite.note} Only facts from your answer are used; [brackets] mark details only you can fill in.</p></figure>
               </div>
             </div>
           )}
           {d.comparison && (
-            <div className={cn(d.rewrite && "mt-12")}>
-              <h2 className="text-title text-ivory">First session vs. now</h2>
-              <p className="mt-3 text-ui text-stone-dim">A {d.comparison.question.toLowerCase().startsWith("tell") ? "similar question" : "question in the same competency"}, {d.comparison.firstDate} vs. today.</p>
-              <div className="mt-6 grid gap-x-10 gap-y-6 lg:grid-cols-2">
-                <figure className="border-t border-divider pt-4"><figcaption className="text-meta font-medium text-stone-dim">Then</figcaption><blockquote className="mt-2 font-display text-body-l leading-snug text-stone">{d.comparison.first}</blockquote></figure>
-                <figure className="border-t border-stone-dim pt-4"><figcaption className="text-meta font-medium text-ivory">Now</figcaption><blockquote className="mt-2 font-display text-body-l leading-snug text-ivory">{d.comparison.latest}</blockquote></figure>
+            <div className={cn(d.rewrite && "mt-16")}>
+              <h2 className="text-display-m text-ivory">First session vs. now</h2>
+              <p className="mt-3 text-ui text-stone">A {d.comparison.question.toLowerCase().startsWith("tell") ? "similar question" : "question in the same competency"}, {d.comparison.firstDate} vs. today.</p>
+              <div className="page-grid mt-6 gap-y-6">
+                <figure className="col-span-4 border-t border-divider pt-4 sm:col-span-8 lg:col-span-6"><figcaption className="text-meta font-medium text-stone-dim">Then</figcaption><blockquote className="mt-2 text-body-l text-stone">{d.comparison.first}</blockquote></figure>
+                <figure className="col-span-4 border-t border-stone-dim pt-4 sm:col-span-8 lg:col-span-6"><figcaption className="text-meta font-medium text-ivory">Now</figcaption><blockquote className="mt-2 text-body-l text-ivory">{d.comparison.latest}</blockquote></figure>
               </div>
             </div>
           )}
         </section>
       )}
 
-      <section className="py-10">
-        <h2 className="text-title text-ivory">Transcript</h2>
+      <section className="border-t border-divider py-12">
+        <h2 className="text-display-m text-ivory">Transcript</h2>
         <ol className="mt-5 divide-y divide-divider border-y border-divider">
           {d.transcript.map((x) => (
             <li key={x.id}>
-              <button type="button" onClick={() => seek(x.startMs)} disabled={!d.media} className={cn("grid w-full grid-cols-[3rem_minmax(0,1fr)] gap-x-4 px-1 py-4 text-left transition-colors enabled:hover:bg-surface-1 sm:grid-cols-[3rem_8rem_minmax(0,1fr)]", d.media && time > 0 && time * 1000 >= x.startMs && time * 1000 < x.endMs && "bg-olive-ground")}>
-                <span className="pt-1 font-mono text-meta text-stone-dim tabular">{mmss(x.startMs)}</span>
-                <span className={cn("pt-0.5 text-meta font-medium", x.speaker === "interviewer" ? "text-stone-dim" : "text-ivory")}>{x.who}</span>
-                <span className={cn("col-start-2 font-display text-body leading-snug sm:col-start-auto", x.speaker === "interviewer" ? "text-stone" : "text-ivory")}>{x.text}</span>
+              <button type="button" onClick={() => seek(x.startMs)} disabled={!d.media} className={cn("grid w-full grid-cols-[3rem_minmax(0,1fr)] items-baseline gap-x-4 px-1 py-4 text-left transition-colors duration-[var(--dur-press)] enabled:hover:bg-surface-1 sm:grid-cols-[3rem_8rem_minmax(0,1fr)]", d.media && time > 0 && time * 1000 >= x.startMs && time * 1000 < x.endMs && "bg-olive-ground")}>
+                <span className="font-mono text-meta text-stone-dim">{mmss(x.startMs)}</span>
+                <span className={cn("text-meta font-medium", x.speaker === "interviewer" ? "text-stone-dim" : "text-ivory")}>{x.who}</span>
+                <span className={cn("col-start-2 sm:col-start-auto", x.speaker === "interviewer" ? "font-display text-body-l leading-snug text-stone" : "text-body text-ivory")}>{x.text}</span>
               </button>
             </li>
           ))}
         </ol>
       </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-divider pt-8 text-meta text-stone-dim">
-        <p>{d.media?.expiresAt ? `Raw video is deleted automatically on ${new Date(d.media.expiresAt).toLocaleDateString()}.` : "Transcript and Read are kept until you delete them."}</p>
+      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-divider pt-8 text-meta text-stone">
+        <p>{d.media?.expiresAt ? `Raw video is deleted automatically on ${new Date(d.media.expiresAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}.` : "Transcript and Read are kept until you delete them."}</p>
         <div className="flex items-center gap-6">
           <Link href="/playback" className="hover:text-ivory">All sessions</Link>
           <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}>Delete this session</Button>
@@ -289,7 +289,7 @@ export function PlaybackView({ d }: { d: PlaybackData }) {
       </footer>
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete session">
         <div className="p-8">
-          <h2 className="text-title text-ivory">Delete this session?</h2>
+          <h2 className="text-display-m text-ivory">Delete this session?</h2>
           <p className="mt-3 text-ui text-stone">The recording, transcript, Read and Playback are permanently removed. This can&apos;t be undone.</p>
           <div className="mt-7 flex justify-end gap-2"><Button variant="ghost" onClick={() => setConfirmDelete(false)}>Cancel</Button><Button variant="danger" loading={deleting} onClick={del}>Delete permanently</Button></div>
         </div>
@@ -336,12 +336,12 @@ function Breakdown({ metrics }: { metrics: Row[] }) {
         const why = !g.rows.some((m) => m.value !== null) && g.title === "Presence" ? "Camera signals were off" : g.blurb;
         return (
           <li key={g.title} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-1 border-b border-divider py-3.5 sm:grid-cols-[8rem_minmax(0,1fr)_auto]">
-            <p className="font-medium text-ivory">{g.title}</p>
+            <p className="text-body font-medium text-ivory">{g.title}</p>
             <p className="col-span-2 row-start-2 text-meta text-stone-dim sm:col-span-1 sm:row-start-auto">{off.length ? `Off target: ${off.join(", ")}` : why}</p>
             <div className="col-start-2 row-start-1 flex items-center gap-3 sm:col-start-auto sm:row-start-auto">
               <span className={cn("text-meta", verdict === "On target" ? "text-olive-light" : "text-stone")}>{verdict}</span>
               <span className="flex gap-1" aria-hidden>
-                {marks.map((x, i) => <span key={i} className={cn("h-3 w-1.5 rounded-[1px]", x === "on" ? "bg-olive-light" : x === "off" ? "bg-signal-warn" : x === "open" ? "bg-stone-dim" : "border border-control")} />)}
+                {marks.map((x, i) => <span key={i} className={cn("h-3 w-1.5 rounded-sm", x === "on" ? "bg-olive-light" : x === "off" ? "bg-signal-warn" : x === "open" ? "bg-stone-dim" : "border border-control")} />)}
               </span>
             </div>
           </li>
@@ -365,7 +365,7 @@ function MeasureRow({ m }: { m: Row }) {
         <div className="mt-1"><ConfidenceMark confidence={m.confidence} /></div>
       </div>
       <p className="flex items-baseline gap-1.5 sm:block">
-        <span className={cn("font-mono text-[24px] leading-none tabular", mark === "off" ? "text-signal-warn" : "text-ivory")}>{m.value === null ? "n/a" : fmt(m.value)}</span>
+        <span className={cn("font-mono text-body-l leading-none", mark === "off" ? "text-signal-warn" : "text-ivory")}>{m.value === null ? "n/a" : fmt(m.value)}</span>
         <span className="text-meta text-stone-dim sm:ml-1">{unit}</span>
       </p>
       <div className="min-w-0">

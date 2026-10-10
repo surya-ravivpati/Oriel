@@ -8,7 +8,7 @@ import { getDrill } from "@/lib/practice/catalog";
 import { canUsePlayback } from "@/lib/billing/entitlements";
 import { loadEntitlementContext } from "@/lib/billing/entitlement-context";
 import { PANEL_ROLE_LABEL, type PanelRole } from "@/lib/interview/personas";
-import { TYPE_LABEL } from "@/lib/format";
+import { longDate, TYPE_LABEL } from "@/lib/format";
 import type { PostureEvent } from "@/lib/analysis/read";
 import { callName } from "@/lib/avatar/style";
 import { lessonsFor } from "@/server/lessons";
@@ -44,13 +44,13 @@ export default async function PlaybackPage({ params, searchParams }: { params: P
   const data: PlaybackData = {
     sessionId: id,
     title: d.interview.role,
-    subtitle: `${d.interview.role} · ${TYPE_LABEL[d.interview.type] ?? d.interview.type} · ${d.interview.mode === "panel" ? `panel (${names})` : names} · pressure ${d.interview.pressure}/5 · ${d.session.createdAt.toLocaleDateString()}`,
+    subtitle: `${d.interview.role} · ${TYPE_LABEL[d.interview.type] ?? d.interview.type} · ${d.interview.mode === "panel" ? `panel with ${names}` : `with ${names}`} · pressure ${d.interview.pressure} of 5 · ${longDate(d.session.createdAt)}`,
     headline: summary?.headline ?? null,
     summarySource: summary?.source ?? null,
     strengths: summary?.strengths ?? [],
     focus: summary?.focus ?? [],
     rewrite: summary?.rewrittenAnswer && rewriteQ ? { question: rewriteQ.text, original: summary.rewrittenAnswer.original, rewritten: summary.rewrittenAnswer.rewritten, note: summary.rewrittenAnswer.note } : null,
-    comparison: primary && first && firstIsEarlier ? { question: primary.q!.text, first: first.answer, latest: primary.a.text, firstDate: first.createdAt.toLocaleDateString() } : null,
+    comparison: primary && first && firstIsEarlier ? { question: primary.q!.text, first: first.answer, latest: primary.a.text, firstDate: longDate(first.createdAt) } : null,
     media: d.media ? { url: d.media.url, mimeType: d.media.mimeType, expiresAt: d.media.expiresAt?.toISOString() ?? null } : null,
     mediaDeleted: d.mediaDeleted,
     durationMs: d.session.startedAt && d.session.endedAt ? d.session.endedAt.getTime() - d.session.startedAt.getTime() : Math.max(0, ...d.segments.map((s) => s.endMs)),

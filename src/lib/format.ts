@@ -12,6 +12,11 @@ export function relDate(d: Date | null | undefined) {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+/** A full date as it reads in a sentence or a heading: "Sep 27, 2026". */
+export function longDate(d: Date | null | undefined) {
+  return d ? d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+}
+
 /** relDate for the middle of a sentence: "today", "3 days ago", "on Sep 30". */
 export function relPhrase(d: Date | null | undefined) {
   const r = relDate(d);
