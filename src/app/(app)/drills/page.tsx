@@ -1,14 +1,23 @@
 import { desc, eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth/session";
 import { getDb, schema } from "@/db/client";
-import { DRILLS } from "@/lib/practice/catalog";
+import { DRILLS, type DrillDef } from "@/lib/practice/catalog";
 import { recommendDrill } from "@/lib/practice/progress";
 import { progressSummary } from "@/server/queries";
 import { DrillCard } from "@/components/app/cards";
-import { Eyebrow } from "@/components/ui/Card";
+import { TRACKS } from "@/lib/lessons/library";
+import type { Track } from "@/lib/lessons/types";
 import { relDate } from "@/lib/format";
 
 export const metadata = { title: "Drills" };
+
+/** Drills sit in the same three tracks as lessons: what you say, how you sound, how you come across. */
+const TRACK_OF: Record<DrillDef["targetMetric"], Track> = {
+  opener_seconds: "responses", quantified_claims: "responses", structure_score: "responses", hedges_per_min: "responses", answer_seconds: "responses",
+  filler_per_min: "delivery", pace_wpm: "delivery", vocal_variety: "delivery", recovery_ms: "delivery",
+  camera_engagement: "presence", posture_upright: "presence",
+};
+const ORDER: Track[] = ["responses", "delivery", "presence"];
 
 export default async function DrillsPage() {
   const user = await requireUser();
@@ -19,32 +28,54 @@ export default async function DrillsPage() {
     const a = attempts.find((x) => x.drillId === id);
     if (!a) return null;
     const unit = (a.result as { unit?: string } | null)?.unit ?? "";
-    return `${a.value ?? "—"} ${unit}${a.passed ? " ✓" : ""}`.trim();
+    return `${a.value ?? "—"} ${unit}${a.passed ? ", target met" : ""}`.trim();
   };
+  const recommended = DRILLS.find((d) => d.id === rec.drillId);
   return (
     <div>
-      <Eyebrow>Drills</Eyebrow>
-      <h1 className="mt-3 font-display text-5xl">Five minutes on one thing.</h1>
-      <p className="mt-3 max-w-xl text-stone">Each drill has one objective, one measurement and your baseline to beat.</p>
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[...DRILLS].sort((a, b) => (a.id === rec.drillId ? -1 : b.id === rec.drillId ? 1 : 0)).map((d) => (
-          <DrillCard key={d.id} drill={d} recommended={d.id === rec.drillId ? rec.reason : null} lastValue={last(d.id)} />
+      <header className="max-w-[44rem]">
+        <h1 className="text-display-l text-ivory">Five minutes on one thing.</h1>
+        <p className="mt-5 text-body-l text-stone">Each drill has one objective, one measurement and your own baseline to beat.</p>
+      </header>
+
+      {recommended && (
+        <section className="page-grid mt-[var(--spacing-group)] gap-y-5 border-t border-divider pt-10">
+          <h2 className="col-span-4 text-ui font-medium text-ivory sm:col-span-8 lg:col-span-3">Recommended for you</h2>
+          <div className="col-span-4 max-w-[36rem] sm:col-span-8 lg:col-span-9"><DrillCard drill={recommended} recommended={rec.reason} lastValue={last(recommended.id)} /></div>
+        </section>
+      )}
+
+      <div className="mt-14 grid gap-x-6 gap-y-12 lg:grid-cols-3">
+        {ORDER.map((t) => (
+          <section key={t}>
+            <div className="flex items-baseline justify-between gap-4 border-b border-divider pb-3">
+              <h2 className="text-display-m text-ivory">{TRACKS[t].label}</h2>
+              <span className="text-meta text-stone-dim">{TRACKS[t].blurb}</span>
+            </div>
+            <div className="mt-2">
+              {DRILLS.filter((d) => TRACK_OF[d.targetMetric] === t && d.id !== recommended?.id).map((d) => <DrillCard key={d.id} drill={d} lastValue={last(d.id)} />)}
+            </div>
+          </section>
         ))}
       </div>
+
       {attempts.length > 0 && (
         <section className="mt-16">
-          <Eyebrow>Recent attempts</Eyebrow>
-          <ul className="mt-4 divide-y divide-divider rounded-control border border-divider">
-            {attempts.slice(0, 8).map((a) => (
-              <li key={a.id} className="flex flex-wrap items-center gap-4 px-5 py-4 text-ui">
-                <span className="w-40 text-ivory">{DRILLS.find((d) => d.id === a.drillId)?.title}</span>
-                <span className="font-mono text-stone">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</span>
-                <span className="text-stone-dim">{a.baselineValue !== null ? `baseline ${Math.round(a.baselineValue * 10) / 10}` : "first attempt"}</span>
-                <span className={a.passed ? "text-signal-good" : "text-stone-dim"}>{a.passed ? "Target met" : a.passed === false ? "Not yet" : ""}</span>
-                <span className="ml-auto text-stone-dim">{relDate(a.createdAt)}</span>
-              </li>
-            ))}
-          </ul>
+          <h2 className="text-ui font-medium text-ivory">Recent attempts</h2>
+          <table className="mt-3 w-full text-left text-ui">
+            <thead className="sr-only"><tr><th scope="col">Drill</th><th scope="col">Result</th><th scope="col">Baseline</th><th scope="col">Outcome</th><th scope="col">When</th></tr></thead>
+            <tbody className="border-t border-divider">
+              {attempts.slice(0, 8).map((a) => (
+                <tr key={a.id} className="border-b border-divider">
+                  <th scope="row" className="py-3 pr-4 font-normal text-ivory">{DRILLS.find((d) => d.id === a.drillId)?.title}</th>
+                  <td className="py-3 pr-4 font-mono text-stone">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</td>
+                  <td className="hidden py-3 pr-4 text-stone-dim sm:table-cell">{a.baselineValue !== null ? <>baseline <span className="font-mono">{Math.round(a.baselineValue * 10) / 10}</span></> : "First attempt"}</td>
+                  <td className={a.passed ? "py-3 pr-4 text-signal-good" : "py-3 pr-4 text-stone-dim"}>{a.passed ? "Target met" : a.passed === false ? "Not yet" : ""}</td>
+                  <td className="py-3 text-right text-stone-dim">{relDate(a.createdAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </section>
       )}
     </div>

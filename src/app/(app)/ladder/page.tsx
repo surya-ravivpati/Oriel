@@ -4,30 +4,32 @@ import { loadEntitlementContext } from "@/lib/billing/entitlement-context";
 import { canUseLadder } from "@/lib/billing/entitlements";
 import { LadderStep } from "@/components/app/cards";
 import { ButtonLink } from "@/components/ui/Button";
-import { Eyebrow } from "@/components/ui/Card";
+import { InterviewerStage } from "@/components/avatar/InterviewerStage";
+import { savedStyles } from "@/server/avatar-styles";
 
 export const metadata = { title: "Ladder" };
 
+/** The rungs on the right; on the left, the promise and the room you're in now, with who is waiting in it. */
 export default async function LadderPage() {
   const user = await requireUser();
   const { steps, current } = ladderState(user.id);
   const allowed = canUseLadder(loadEntitlementContext(user.id));
   return (
-    <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
-      <div className="lg:sticky lg:top-24 lg:self-start">
-        <Eyebrow>The Ladder</Eyebrow>
-        <h1 className="mt-3 font-display text-5xl leading-tight">From friendly recruiter to curveball panel.</h1>
-        <p className="mt-4 text-stone">Each rung is a harder room. You unlock the next after two sessions above your own baseline, measured against you, never against anyone else.</p>
-        <div className="mt-8 rounded-control border border-olive bg-olive-ground p-6">
-          <p className="text-meta text-olive-light font-medium">You&apos;re on</p>
-          <p className="mt-2 font-display text-3xl">{String(current.level).padStart(2, "0")} · {current.name}</p>
+    <div className="page-grid gap-y-12">
+      <div className="col-span-4 sm:col-span-8 lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
+        <h1 className="text-display-l text-ivory">From friendly recruiter to curveball panel.</h1>
+        <p className="mt-5 text-body-l text-stone">Each rung is a harder room. You unlock the next after two sessions above your own baseline, measured against you, never against anyone else.</p>
+        <div className="mt-10 rounded-panel bg-surface-1 px-6 pb-6 pt-4 sm:px-8 sm:pb-8">
+          <InterviewerStage personaIds={current.personaIds} styles={savedStyles(user.id)} className="mx-auto h-[clamp(10rem,7rem+8vw,14rem)] w-full" />
+          <p className="-mt-2 text-ui text-olive-light">You&apos;re on rung {current.level}</p>
+          <p className="mt-1 text-display-m text-ivory">{current.name}</p>
           <p className="mt-2 text-ui text-stone">{current.description}</p>
-          {allowed.allowed ? <ButtonLink href={`/practice?ladder=${current.level}`} variant="lume" className="mt-6">Practice this rung</ButtonLink> : (
-            <><p className="mt-4 text-ui text-stone-dim">{allowed.reason}</p><ButtonLink href="/profile#plan" variant="secondary" className="mt-4">See plans</ButtonLink></>
+          {allowed.allowed ? <ButtonLink href={`/practice?ladder=${current.level}`} size="lg" className="mt-6">Practice this rung</ButtonLink> : (
+            <><p className="mt-4 text-ui text-stone">{allowed.reason}</p><ButtonLink href="/profile#plan" variant="secondary" className="mt-4">See plans</ButtonLink></>
           )}
         </div>
       </div>
-      <ol className="space-y-3">
+      <ol className="col-span-4 sm:col-span-8 lg:col-span-6 lg:col-start-7">
         {steps.map((s) => <li key={s.level}><LadderStep step={s} current={s.level === current.level} /></li>)}
       </ol>
     </div>

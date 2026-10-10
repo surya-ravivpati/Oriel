@@ -6,7 +6,7 @@ import { LESSONS, PRACTICE_PASSES_NEEDED, TRACKS, formatMeasure } from "@/lib/le
 import type { LessonKey } from "@/lib/lessons/types";
 import { getDrill } from "@/lib/practice/catalog";
 import { ButtonLink } from "@/components/ui/Button";
-import { Badge, Card, Eyebrow } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Card";
 import { LessonSteps, summarize } from "@/components/app/lessons";
 import { SetupCheck } from "@/features/lessons/SetupCheck";
 import { relDate, relPhrase } from "@/lib/format";
@@ -28,35 +28,37 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
   const status = l?.status ?? null;
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <Link href="/lessons" className="text-ui text-stone-dim hover:text-ivory">← Lessons</Link>
-      <p className="mt-8 text-meta text-stone-dim font-medium">
-        {TRACKS[def.track].label} · {status === "active" ? <span className="text-olive-light">In your plan</span> : status === "queued" ? "Up next" : status === "mastered" ? <span className="text-signal-good">Mastered</span> : "Lesson"}
-      </p>
-      <h1 className="mt-3 font-display text-5xl leading-tight sm:text-6xl">{def.title}</h1>
-      <p className="mt-3 max-w-2xl text-body-l text-stone">{def.promise}</p>
-      {l && <LessonSteps l={{ ...summarize(l), viewed: true }} className="mt-8 max-w-xl" />}
+    <div>
+      <Link href="/lessons" className="-ml-1 inline-flex h-9 items-center rounded-control px-1 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">← Lessons</Link>
+      <header className="mt-6 max-w-[48rem]">
+        <p className="text-ui text-stone">
+          {TRACKS[def.track].label} · {status === "active" ? <span className="text-olive-light">In your plan</span> : status === "queued" ? "Up next" : status === "mastered" ? <span className="text-signal-good">Mastered</span> : "Lesson"}
+        </p>
+        <h1 className="mt-3 text-display-l text-ivory">{def.title}</h1>
+        <p className="mt-4 text-body-l text-stone">{def.promise}</p>
+        {l && <LessonSteps l={{ ...summarize(l), viewed: true }} className="mt-8 max-w-[34rem]" />}
+      </header>
 
-      <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-12">
+      <div className="page-grid mt-[var(--spacing-group)] gap-y-12">
+        <div className="col-span-4 space-y-14 sm:col-span-8 lg:col-span-7">
           {l ? (
-            <Card className="p-7">
-              <Eyebrow>What we saw in your interview</Eyebrow>
-              <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <p className="font-display text-5xl tabular text-ivory">{l.evidence.display}</p>
-                <p className="text-ui text-stone-dim">target {l.evidence.target}{l.evidence.confidence !== "high" ? ` · ${l.evidence.confidence} confidence` : ""}</p>
-              </div>
-              {l.startValue !== null && l.latestValue !== null && l.startValue !== l.latestValue && <p className="mt-2 text-ui text-stone-dim">{l.status === "mastered" ? `Was ${formatMeasure(l.metricKey, l.startValue)}, now ${formatMeasure(l.metricKey, l.latestValue)}.` : `When this lesson started: ${formatMeasure(l.metricKey, l.startValue)}.`}</p>}
-              <p className="mt-5 leading-relaxed text-ivory">{l.content.observation}</p>
+            <section className="border-t border-divider pt-6">
+              <h2 className="text-ui font-medium text-ivory">What we saw in your interview</h2>
+              <p className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="font-mono text-body-l text-ivory">{l.evidence.display}</span>
+                <span className="text-ui text-stone-dim">target {l.evidence.target}{l.evidence.confidence !== "high" ? ` · ${l.evidence.confidence} confidence` : ""}</span>
+              </p>
+              {l.startValue !== null && l.latestValue !== null && l.startValue !== l.latestValue && <p className="mt-1 text-ui text-stone-dim">{l.status === "mastered" ? `Was ${formatMeasure(l.metricKey, l.startValue)}, now ${formatMeasure(l.metricKey, l.latestValue)}.` : `When this lesson started: ${formatMeasure(l.metricKey, l.startValue)}.`}</p>}
+              <p className="mt-5 text-body text-ivory">{l.content.observation}</p>
               {l.evidence.quotes.length > 0 && (
-                <ul className="mt-6 space-y-4">
+                <ul className="mt-8 space-y-6">
                   {l.evidence.quotes.map((q, i) => (
-                    <li key={i} className="border-l-2 border-olive pl-4">
-                      {q.question && <p className="text-meta text-stone-dim">Answering “{q.question}”</p>}
-                      <p className="mt-1 text-ui leading-relaxed text-ivory">“{q.text}”</p>
+                    <li key={i}>
+                      {q.question && <p className="text-meta text-stone-dim">Answering <span className="font-display text-ui">“{q.question}”</span></p>}
+                      <blockquote className="hang-sans mt-1.5 text-body-l text-ivory">“{q.text}”</blockquote>
                       <p className="mt-1.5 flex flex-wrap gap-x-3 text-meta text-stone-dim">
                         {q.note && <span>{q.note}</span>}
-                        {q.startMs !== null && <Link href={`/playback/${q.sessionId}?t=${q.startMs}`} className="text-olive-light hover:underline hover:underline-offset-4">{found?.recorded && !q.typed ? "Hear it in Playback →" : "See it in Playback →"}</Link>}
+                        {q.startMs !== null && <Link href={`/playback/${q.sessionId}?t=${q.startMs}`} className="text-stone underline decoration-1 underline-offset-[0.2em] hover:text-ivory">{found?.recorded && !q.typed ? "Hear it in Playback" : "See it in Playback"}</Link>}
                       </p>
                     </li>
                   ))}
@@ -65,63 +67,64 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
               {l.evidence.moments.length > 0 && (
                 <ul className="mt-6 space-y-2">
                   {l.evidence.moments.map((m, i) => (
-                    <li key={i}><Link href={`/playback/${m.sessionId}?t=${m.startMs}`} className="text-ui text-ivory hover:text-ivory">{m.label} <span className="text-olive-light">→</span></Link></li>
+                    <li key={i}><Link href={`/playback/${m.sessionId}?t=${m.startMs}`} className="text-ui text-stone underline decoration-1 underline-offset-[0.2em] hover:text-ivory">{m.label}</Link></li>
                   ))}
                 </ul>
               )}
               <p className="mt-6 text-meta text-stone-dim">Measured {relPhrase(l.updatedAt)}. Your numbers only, never compared with other people.</p>
-            </Card>
+            </section>
           ) : (
-            <Card className="p-7">
-              <Eyebrow>Not in your plan</Eyebrow>
-              <p className="mt-3 leading-relaxed text-stone">We haven&apos;t measured a need for this one: it was on target, or your interviews haven&apos;t measured it yet (typed answers have no pace or voice; camera skills need the camera). The technique below still works.</p>
-            </Card>
+            <section className="border-t border-divider pt-6">
+              <h2 className="text-ui font-medium text-ivory">Not in your plan</h2>
+              <p className="mt-3 text-body text-stone">We haven&apos;t measured a need for this one: it was on target, or your interviews haven&apos;t measured it yet (typed answers have no pace or voice; camera skills need the camera). The technique below still works.</p>
+            </section>
           )}
 
           <section>
-            <h2 className="font-display text-3xl">Why it matters</h2>
-            <p className="mt-3 max-w-2xl leading-relaxed text-stone">{def.why}</p>
+            <h2 className="text-display-m text-ivory">Why it matters</h2>
+            <p className="mt-3 text-body text-stone">{def.why}</p>
           </section>
 
           <section>
-            <h2 className="font-display text-3xl">How to do it</h2>
-            <ol className="mt-5 space-y-5">
+            <h2 className="text-display-m text-ivory">How to do it</h2>
+            <ol className="mt-5 border-t border-divider">
               {def.steps.map((s, i) => (
-                <li key={s.title} className="flex gap-4">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full border border-divider-strong font-mono text-meta text-olive-light">{i + 1}</span>
-                  <div><p className="text-ivory">{s.title}</p><p className="mt-1 text-ui leading-relaxed text-stone-dim">{s.body}</p></div>
+                <li key={s.title} className="grid grid-cols-[2rem_minmax(0,1fr)] items-baseline gap-x-3 border-b border-divider py-4">
+                  <span className="font-display text-display-m leading-none text-olive-light">{i + 1}</span>
+                  <div><p className="text-body font-medium text-ivory">{s.title}</p><p className="mt-1 text-ui text-stone">{s.body}</p></div>
                 </li>
               ))}
             </ol>
-            {l?.content.tip && <p className="mt-6 rounded-control border border-olive bg-olive-ground p-4 text-ui leading-relaxed text-ivory"><span className="text-olive-light">For you: </span>{l.content.tip}</p>}
+            {l?.content.tip && <p className="mt-6 rounded-control bg-olive-ground px-5 py-4 text-ui text-ivory"><span className="font-medium text-olive-light">For you: </span>{l.content.tip}</p>}
           </section>
 
           {l?.content.rewrite && (
             <section>
-              <h2 className="font-display text-3xl">Your answer, rewritten</h2>
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <Card className="p-5"><p className="text-meta text-stone-dim font-medium">What you said</p><p className="mt-3 text-ui leading-relaxed text-stone">“{l.content.rewrite.before}”</p></Card>
-                <Card className="border-olive p-5"><p className="text-meta text-olive-light font-medium">Same story, with the lesson</p><p className="mt-3 text-ui leading-relaxed text-ivory">“{l.content.rewrite.after}”</p></Card>
+              <h2 className="text-display-m text-ivory">Your answer, rewritten</h2>
+              <div className="mt-5 grid gap-6 md:grid-cols-2">
+                <figure className="border-t border-divider pt-4"><figcaption className="text-meta font-medium text-stone-dim">What you said</figcaption><blockquote className="hang-sans mt-2 text-body text-stone">“{l.content.rewrite.before}”</blockquote></figure>
+                <figure className="border-t border-olive-light pt-4"><figcaption className="text-meta font-medium text-olive-light">Same story, with the lesson</figcaption><blockquote className="hang-sans mt-2 text-body text-ivory">“{l.content.rewrite.after}”</blockquote></figure>
               </div>
               <p className="mt-3 text-meta text-stone-dim">{l.content.rewrite.note}</p>
             </section>
           )}
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <Card className="p-6">
-            <Eyebrow>Practise it</Eyebrow>
+        {/* One panel beside the lesson: the practice that proves it, then the goal that confirms it. */}
+        <aside className="col-span-4 sm:col-span-8 lg:col-span-5 lg:col-start-8 lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-panel bg-surface-1 px-6 py-6 sm:px-8 sm:py-7">
+            <h2 className="text-ui font-medium text-ivory">Practise it</h2>
             {drill ? (
               <>
-                <p className="mt-3 font-display text-2xl">{drill.title}</p>
-                <p className="mt-1 text-ui text-stone-dim">{drill.objective}</p>
+                <p className="mt-3 text-display-m text-ivory">{drill.title}</p>
+                <p className="mt-1 text-ui text-stone">{drill.objective}</p>
                 <p className="mt-3 text-meta text-stone-dim">Pass: {drill.passRule}</p>
-                <ButtonLink href={`/drills/${drill.id}?lesson=${def.key}${l?.sourceSessionId ? `&from=${l.sourceSessionId}` : ""}`} variant="lume" className="mt-5 w-full">Start practice</ButtonLink>
+                <ButtonLink href={`/drills/${drill.id}?lesson=${def.key}${l?.sourceSessionId ? `&from=${l.sourceSessionId}` : ""}`} size="lg" className="mt-6 w-full">Start practice</ButtonLink>
                 {l && <p className="mt-3 text-center text-meta text-stone-dim">{passes >= PRACTICE_PASSES_NEEDED ? "Practised. Now use it in an interview." : `${passes} of ${PRACTICE_PASSES_NEEDED} passes`}</p>}
                 {found && found.attempts.length > 0 && (
-                  <ul className="mt-5 space-y-2 border-t border-divider pt-4 text-ui">
+                  <ul className="mt-5 divide-y divide-divider border-t border-divider text-ui">
                     {found.attempts.map((a) => (
-                      <li key={a.id} className="flex items-center justify-between gap-3">
+                      <li key={a.id} className="flex items-center justify-between gap-3 py-2.5">
                         <span className="font-mono text-ivory">{a.value ?? "—"} {(a.result as { unit?: string } | null)?.unit}</span>
                         <span className="text-meta text-stone-dim">{relDate(a.createdAt)}</span>
                         <Badge tone={a.passed ? "good" : "neutral"}>{a.passed ? "Pass" : a.passed === false ? "Not yet" : "—"}</Badge>
@@ -133,13 +136,13 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
             ) : (
               <SetupCheck passes={passes} needed={PRACTICE_PASSES_NEEDED} inPlan={!!l && l.status !== "mastered"} />
             )}
-          </Card>
-          <Card className="p-6">
-            <Eyebrow>The goal</Eyebrow>
-            <p className="mt-3 text-ivory">{def.goal}</p>
-            <p className="mt-2 text-ui text-stone-dim">{status === "mastered" && l?.masteredAt ? `Confirmed in your interview ${relPhrase(l.masteredAt)}.` : "Your next interview confirms it: lessons are only marked mastered when the skill shows up in a real interview."}</p>
-            {status !== "mastered" && <ButtonLink href="/practice" variant="secondary" size="sm" className="mt-4">Practice an interview</ButtonLink>}
-          </Card>
+            <div className="mt-8 border-t border-divider pt-6">
+              <h2 className="text-ui font-medium text-ivory">The goal</h2>
+              <p className="mt-2 text-body text-ivory">{def.goal}</p>
+              <p className="mt-2 text-ui text-stone">{status === "mastered" && l?.masteredAt ? `Confirmed in your interview ${relPhrase(l.masteredAt)}.` : "Your next interview confirms it: lessons are only marked mastered when the skill shows up in a real interview."}</p>
+              {status !== "mastered" && <ButtonLink href="/practice" variant="secondary" size="sm" className="mt-4">Practice an interview</ButtonLink>}
+            </div>
+          </div>
         </aside>
       </div>
     </div>

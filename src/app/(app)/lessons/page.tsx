@@ -6,7 +6,6 @@ import { lessonsFor } from "@/server/lessons";
 import { LESSONS, LESSON_ORDER, TRACKS } from "@/lib/lessons/library";
 import type { LessonKey, Track } from "@/lib/lessons/types";
 import { ButtonLink } from "@/components/ui/Button";
-import { Card, Eyebrow } from "@/components/ui/Card";
 import { LessonCard, LessonSteps, TrackLabel, summarize } from "@/components/app/lessons";
 import { relPhrase } from "@/lib/format";
 
@@ -40,10 +39,9 @@ export default async function LessonsPage() {
   if (!latest) {
     return (
       <div>
-        <Eyebrow>Lessons</Eyebrow>
-        <h1 className="mt-3 max-w-3xl font-display text-5xl leading-tight">Your lessons start with one interview.</h1>
-        <p className="mt-4 max-w-2xl text-stone">Lessons are built from what we measure while you practise: your pace and fillers, how your answers land, your posture and eye contact on camera. Do one interview and we&apos;ll pick the skills that will make the biggest difference for you, using your own answers as the examples.</p>
-        <ButtonLink href="/practice" variant="lume" size="lg" className="mt-8">Start an interview</ButtonLink>
+        <h1 className="max-w-[20ch] text-display-l text-ivory">Your lessons start with one interview.</h1>
+        <p className="mt-5 max-w-[44rem] text-body-l text-stone">Lessons are built from what we measure while you practise: your pace and fillers, how your answers land, your posture and eye contact on camera. Do one interview and we&apos;ll pick the skills that will make the biggest difference for you, using your own answers as the examples.</p>
+        <ButtonLink href="/practice" size="lg" className="mt-8">Start an interview</ButtonLink>
         <Library title="What you could learn" />
       </div>
     );
@@ -51,9 +49,8 @@ export default async function LessonsPage() {
 
   return (
     <div>
-      <Eyebrow>Lessons</Eyebrow>
-      <h1 className="mt-3 font-display text-5xl leading-tight">Built from how you interviewed.</h1>
-      <p className="mt-3 max-w-2xl text-stone">
+      <h1 className="text-display-l text-ivory">Built from how you interviewed.</h1>
+      <p className="mt-5 max-w-[44rem] text-body-l text-stone">
         {open.length
           ? <>From your interview {relPhrase(latest.endedAt ?? latest.createdAt)}: the skills furthest from target, taught with your own answers. Learn it, pass the practice twice, then use it in your next interview: that&apos;s where we confirm it.</>
           : <>Every skill we measured in your interview {relPhrase(latest.endedAt ?? latest.createdAt)} was on target. Raise the pressure next time; new lessons appear when something slips.</>}
@@ -62,19 +59,19 @@ export default async function LessonsPage() {
       {first && (() => {
         const def = LESSONS[first.lessonKey as LessonKey];
         return (
-          <Link href={`/lessons/${first.lessonKey}`} className="group relative mt-10 block overflow-hidden rounded-control border border-divider-strong p-8 transition-colors hover:bg-surface-1 sm:p-10">
-            <div className="relative grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-end">
+          <Link href={`/lessons/${first.lessonKey}`} className="group mt-[var(--spacing-group)] block rounded-panel bg-surface-1 px-6 py-7 transition-colors duration-[var(--dur-state)] hover:bg-surface-2 sm:px-10 sm:py-10">
+            <div className="grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-end">
               <div>
-                <p className="text-meta text-olive-light font-medium">Start here · <TrackLabel track={def.track} className="text-olive-light" /></p>
-                <p className="mt-3 font-display text-4xl leading-tight sm:text-5xl">{def.title}</p>
-                <p className="mt-3 max-w-xl text-stone">{def.promise}</p>
+                <p className="text-ui text-olive-light">Start here · <TrackLabel track={def.track} className="text-olive-light" /></p>
+                <p className="mt-3 text-display-l text-ivory">{def.title}</p>
+                <p className="mt-3 max-w-[36rem] text-body-l text-stone">{def.promise}</p>
               </div>
               <div>
-                <p className="text-ui text-stone-dim">In your interview</p>
-                <p className="mt-1 font-display text-3xl text-ivory">{first.evidence.display}</p>
+                <p className="text-ui text-stone">In your interview</p>
+                <p className="mt-1 font-mono text-body-l text-ivory">{first.evidence.display}</p>
                 <p className="text-ui text-stone-dim">target {first.evidence.target}</p>
                 <LessonSteps l={summarize(first)} className="mt-5" />
-                <span className="mt-5 inline-block text-ui font-medium text-ivory underline decoration-olive-light underline-offset-4 group-hover:decoration-2">Open the lesson</span>
+                <span className="mt-5 inline-block text-ui font-medium text-ivory underline decoration-olive-light decoration-1 underline-offset-[0.2em] group-hover:decoration-2">Open the lesson</span>
               </div>
             </div>
           </Link>
@@ -88,7 +85,7 @@ export default async function LessonsPage() {
           return (
             <section key={t}>
               <div className="flex items-baseline justify-between border-b border-divider pb-3">
-                <h2 className="font-display text-2xl">{TRACKS[t].label}</h2>
+                <h2 className="text-display-m text-ivory">{TRACKS[t].label}</h2>
                 <span className="text-meta text-stone-dim">{TRACKS[t].blurb}</span>
               </div>
               <div className="mt-2">
@@ -102,7 +99,7 @@ export default async function LessonsPage() {
 
       {mastered.length > 0 && (
         <section className="mt-14">
-          <Eyebrow>Mastered</Eyebrow>
+          <h2 className="text-ui font-medium text-ivory">Mastered</h2>
           <div className="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
             {mastered.map((r) => <LessonCard key={r.id} l={summarize(r)} />)}
           </div>
@@ -118,14 +115,14 @@ export default async function LessonsPage() {
 function Library({ title }: { title: string }) {
   return (
     <section className="mt-16">
-      <Eyebrow>{title}</Eyebrow>
+      <h2 className="text-ui font-medium text-ivory">{title}</h2>
       <div className="mt-4 grid gap-x-8 gap-y-10 md:grid-cols-3">
         {TRACK_ORDER.map((t) => (
           <div key={t} className="border-t border-divider pt-4">
             <TrackLabel track={t} />
             <ul className="mt-3 space-y-3">
               {LESSON_ORDER.filter((k) => LESSONS[k].track === t).map((k) => (
-                <li key={k}><Link href={`/lessons/${k}`} className="block text-ui text-ivory hover:text-ivory">{LESSONS[k].title}<span className="block text-meta text-stone-dim">{LESSONS[k].promise}</span></Link></li>
+                <li key={k}><Link href={`/lessons/${k}`} className="-mx-2 block rounded-control px-2 py-1 text-ui text-ivory transition-colors duration-[var(--dur-press)] hover:bg-surface-1">{LESSONS[k].title}<span className="block text-meta text-stone-dim">{LESSONS[k].promise}</span></Link></li>
               ))}
             </ul>
           </div>
