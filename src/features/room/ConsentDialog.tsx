@@ -26,8 +26,8 @@ export function ConsentDialog({ open, defaults, recordingAllowed, onConfirm, onC
   return (
     <Modal open={open} onClose={onCancel} title="Before you enter the room" dismissible={false} className="w-[min(620px,calc(100vw-32px))]">
       <div className="max-h-[calc(100dvh-48px)] overflow-y-auto p-7 sm:p-9">
-        <p className="text-meta text-olive-light font-medium">Before you enter</p>
-        <h2 className="mt-3 font-display text-4xl leading-tight">Your interviewer is an AI.</h2>
+        <p className="text-ui text-stone">Before you enter</p>
+        <h2 className="mt-2 text-display-l text-ivory">Your interviewer is an AI.</h2>
         <p className="mt-3 text-ui leading-relaxed text-stone">The face and voice are simulated for practice. It will remember what you say during this session and may push back. Nothing is scored on screen while you talk.</p>
         <div className="mt-6 divide-y divide-divider border-y border-divider">
           <Toggle checked={c.microphone} onChange={(v) => set("microphone", v)} label="Microphone" description={`${CONSENT_COPY.microphone} In Chrome, live captions are processed by the browser's speech service.`} />
@@ -36,13 +36,13 @@ export function ConsentDialog({ open, defaults, recordingAllowed, onConfirm, onC
           <Toggle checked={c.cameraMetrics} disabled={!c.camera} onChange={(v) => set("cameraMetrics", v)} label="Camera-based signals (on-device)" description={CONSENT_COPY.camera_metrics} />
         </div>
         {c.cameraMetrics && (
-          <div className="mt-5 rounded-control border border-olive bg-olive-ground p-4">
+          <div className="mt-5 rounded-control bg-olive-ground p-4">
             <p className="text-meta leading-relaxed text-ivory">{CONSENT_COPY.camera_metrics_release}</p>
             <label className="mt-3 block text-meta text-stone-dim" htmlFor="consent-signature">Type your full name to sign</label>
             <Input id="consent-signature" className="mt-1.5" value={signature} onChange={(e) => setSignature(e.target.value)} placeholder="Full name" autoComplete="name" />
           </div>
         )}
-        <p className="mt-5 text-meta leading-relaxed text-stone-dim">Never measured: attractiveness, age, race, emotion, personality or accent. You can delete this session and its recording at any time from Playback or your profile. <a href="/privacy#biometric" target="_blank" className="underline underline-offset-2 hover:text-ivory">Biometric &amp; retention policy</a>. Consent version {CONSENT_VERSION}.</p>
+        <p className="mt-5 text-meta leading-relaxed text-stone-dim">Never measured: attractiveness, age, race, emotion, personality or accent. You can delete this session and its recording at any time from Playback or your profile. <a href="/privacy#biometric" target="_blank" className="underline decoration-1 underline-offset-[0.2em] hover:text-ivory">Biometric &amp; retention policy</a>. Consent version {CONSENT_VERSION}.</p>
         <div className="mt-7 flex flex-wrap items-center justify-end gap-3">
           <Button variant="ghost" onClick={onCancel}>Not now</Button>
           <Button variant="lume" disabled={needsSignature} title={needsSignature ? "Sign to enable camera-based signals, or turn them off" : undefined}

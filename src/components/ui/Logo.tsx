@@ -3,7 +3,7 @@ import { cn } from "./cn";
 
 /** The mark is the Classic interviewer's face, reduced from the avatar renderer's own geometry. */
 export function LogoMark({ className, blink, size = 24 }: { className?: string; blink?: boolean; size?: number }) {
-  return <Interviewer size={size} waiting={blink} className={cn("w-6", className)} />;
+  return <Interviewer size={size} waiting={blink} className={className ?? "w-6"} />;
 }
 
 /** The wordmark is set in the serif: Oriel speaks in the same voice as its headlines. */
