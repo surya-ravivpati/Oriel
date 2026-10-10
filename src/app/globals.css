@@ -22,7 +22,7 @@
   --color-stone: #b7b0a4;      /* running text, secondary text */
   --color-stone-dim: #948e84;  /* third tier, used sparingly; 4.5:1 on every surface */
   --color-olive: #555c4a;      /* rare signal: fills and decoration only (2.6:1 on ink) */
-  --color-olive-light: #8c957a;/* olive as text, icon or thin indicator (6.3:1 on ink) */
+  --color-olive-light: #8c957a;/* olive as text, icon or thin indicator (5.8:1 on ink, 4.8:1 on surface-2) */
   --color-divider: rgb(245 242 235 / 0.12); /* hairlines: ~1.4:1 on every surface */
   --color-control: rgb(245 242 235 / 0.4);  /* the only visible edge of a control: ≥3:1 */
 
