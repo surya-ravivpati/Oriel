@@ -6,6 +6,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   const user = await getCurrentUser();
   return (
     <>
+      <a href="#content" className="skip-link">Skip to content</a>
       <SiteHeader signedIn={!!user} />
       {children}
       <SiteFooter signedIn={!!user} />

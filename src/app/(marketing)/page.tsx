@@ -7,7 +7,7 @@ export default async function Landing() {
   const user = await getCurrentUser();
   const cta = user ? "/practice" : "/signup";
   return (
-    <main className="overflow-x-clip">
+    <main id="content" className="overflow-x-clip">
       <Hero cta={cta} signedIn={!!user} />
       <Why />
       <Session />

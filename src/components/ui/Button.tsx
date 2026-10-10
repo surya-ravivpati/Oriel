@@ -10,12 +10,12 @@ type Size = "sm" | "md" | "lg";
  * thing to do next. Everything else is outlined or plain text. "lume" is kept as an alias
  * of primary for existing call sites.
  */
-const base = "relative inline-flex items-center justify-center gap-2 rounded-md font-medium tracking-[-0.005em] transition-[background-color,color,border-color,opacity] duration-200 ease-[var(--ease-out-quint)] disabled:opacity-40 disabled:pointer-events-none select-none whitespace-nowrap";
+const base = "relative inline-flex items-center justify-center gap-2 rounded-button font-medium transition-[background-color,color,border-color,opacity,transform] duration-[var(--dur-press)] ease-[var(--ease-state)] active:scale-[0.985] disabled:opacity-40 disabled:pointer-events-none select-none whitespace-nowrap";
 const ivory = "bg-mist-100 text-ink-950 hover:bg-mist-200";
 const variants: Record<Variant, string> = {
   primary: ivory,
   lume: ivory,
-  secondary: "border border-line-strong text-mist-100 hover:border-mist-400 hover:bg-ink-900",
+  secondary: "border border-control text-mist-100 hover:border-mist-300 hover:bg-ink-900",
   ghost: "text-mist-300 hover:bg-ink-900 hover:text-mist-100",
   danger: "border border-signal-bad/45 text-signal-bad hover:bg-signal-bad/10",
 };
@@ -36,8 +36,8 @@ export function ButtonLink({ href, variant = "primary", size = "md", className, 
   return <Link href={href} className={cn(base, variants[variant], sizes[size], className)} {...rest}>{children}</Link>;
 }
 
-/** An inline link: ivory, underlined in olive. */
+/** An inline link: stone, a 1px underline offset by 0.2em, ivory on hover. */
 export function TextLink({ href, children, className, external }: { href: string; children: React.ReactNode; className?: string; external?: boolean }) {
-  const cls = cn("text-mist-100 underline decoration-lume decoration-1 underline-offset-[0.28em] transition-[text-decoration-thickness,color] hover:text-lume-soft hover:decoration-2", className);
+  const cls = cn("text-stone underline decoration-1 underline-offset-[0.2em] transition-colors duration-[var(--dur-press)] hover:text-ivory", className);
   return external ? <a href={href} className={cls}>{children}</a> : <Link href={href} className={cls}>{children}</Link>;
 }
