@@ -123,10 +123,11 @@ export function InterviewPreview() {
         A sample interview for a product manager, behavioral round, with Daniel, an AI hiring manager. Daniel asks: “{QUESTION}” You answer: “{ANSWER.join(" ")}” Daniel follows up: “{FOLLOW_UP}”
       </p>
 
-      {/* The face fills ~0.74 of its square, its floor shadow below; a still of the same frame waits under the canvas. */}
+      {/* The face fills ~0.74 of its square, its floor shadow below; a still of the same frame waits under the canvas.
+          On a phone the still is the largest thing on the first screen, so it is fetched first. */}
       <div className="relative aspect-square w-[min(100%,15rem)] sm:w-[18rem] lg:w-[21rem]" aria-hidden>
         {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size still under the canvas, not content */}
-        <img src="/interviewer/daniel-still.webp" alt="" width={672} height={672} decoding="async" className="absolute inset-0 size-full" />
+        <img src="/interviewer/daniel-still.webp" alt="" width={672} height={672} fetchPriority="high" className="absolute inset-0 size-full" />
         <BotAvatar store={store} seats={seats} paused={!running} compact className="absolute inset-0" />
       </div>
 

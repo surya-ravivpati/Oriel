@@ -31,11 +31,11 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
     <div>
       <Link href="/lessons" className="-ml-1 inline-flex h-9 items-center rounded-control px-1 text-ui text-stone transition-colors duration-[var(--dur-press)] hover:text-ivory">← Lessons</Link>
       <header className="mt-6 max-w-[48rem]">
-        <p className="text-ui text-stone">
-          {TRACKS[def.track].label} · {status === "active" ? <span className="text-olive-light">In your plan</span> : status === "queued" ? "Up next" : status === "mastered" ? <span className="text-signal-good">Mastered</span> : "Lesson"}
-        </p>
-        <h1 className="mt-3 text-display-l text-ivory">{def.title}</h1>
+        <h1 className="text-display-l text-ivory">{def.title}</h1>
         <p className="mt-5 text-body-l text-stone">{def.promise}</p>
+        <p className="mt-3 text-ui text-stone-dim">
+          {TRACKS[def.track].label} lesson.{status === "active" ? <> <span className="text-olive-light">In your plan.</span></> : status === "queued" ? " Up next." : status === "mastered" ? <> <span className="text-signal-good">Mastered.</span></> : ""}
+        </p>
         {l && <LessonSteps l={{ ...summarize(l), viewed: true }} className="mt-8 max-w-[34rem]" />}
       </header>
 
@@ -90,12 +90,12 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
             <ol className="mt-5 border-t border-divider">
               {def.steps.map((s, i) => (
                 <li key={s.title} className="grid grid-cols-[2rem_minmax(0,1fr)] items-baseline gap-x-3 border-b border-divider py-4">
-                  <span className="font-display text-display-m leading-none text-olive-light">{i + 1}</span>
+                  <span className="font-display text-display-m leading-none text-stone-dim">{i + 1}</span>
                   <div><p className="text-body font-medium text-ivory">{s.title}</p><p className="mt-1 text-ui text-stone">{s.body}</p></div>
                 </li>
               ))}
             </ol>
-            {l?.content.tip && <p className="mt-6 rounded-control bg-olive-ground px-5 py-4 text-ui text-ivory"><span className="font-medium text-olive-light">For you: </span>{l.content.tip}</p>}
+            {l?.content.tip && <p className="mt-6 border-t border-divider pt-4 text-ui text-ivory"><span className="font-medium">For you. </span>{l.content.tip}</p>}
           </section>
 
           {l?.content.rewrite && (
