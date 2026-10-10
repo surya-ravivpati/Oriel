@@ -25,7 +25,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       profile={{ targetRole: profile.targetRole, domain: profile.domain, type: profile.preferredInterviewType, persona: profile.preferredPersona, experience: profile.experienceLevel, cameraMetrics: profile.cameraMetricsEnabled }}
       resume={resume ? { name: resume.fileName ?? "Pasted resume", roles: resume.parsed?.roles.length ?? 0 } : null}
       jd={jd ? { title: jd.parsed?.title ?? "Job description", competencies: jd.parsed?.competencies.map((c) => c.label) ?? [] } : null}
-      ladder={steps.map((s) => ({ level: s.level, name: s.name, unlocked: s.unlocked, mode: s.mode, pressure: s.pressure }))}
+      ladder={steps.map((s) => ({ level: s.level, name: s.name, unlocked: s.unlocked, mode: s.mode, pressure: s.pressure, personaIds: s.personaIds }))}
       currentLadder={current.level}
       initialLadder={sp.ladder ? Number(sp.ladder) : null}
       firstRun={sp.first === "1"}
