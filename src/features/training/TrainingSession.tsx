@@ -8,7 +8,9 @@ import { FieldError } from "@/components/ui/Field";
 import { Thinking } from "@/components/ui/Logo";
 import { cn } from "@/components/ui/cn";
 import { InterviewerStage } from "@/components/avatar/InterviewerStage";
-import { LiveTranscriber } from "@/features/room/engine/speech";
+import { TrainingVoice } from "./voice";
+import { CodeAnswer } from "./CodeAnswer";
+import { asResponse, type CodeSubmission } from "@/lib/training/code";
 import { api, ApiError } from "@/lib/client/api";
 import type { LoopView, AttemptView } from "@/server/training/service";
 import type { CriterionLevel, Evaluation, Outcome } from "@/lib/training/engine";
@@ -37,38 +39,69 @@ export function TrainingSession({ initial }: { initial: LoopView }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"text" | "voice">("text");
-  const [listening, setListening] = useState(false);
-  const [canDictate, setCanDictate] = useState(false);
+  // Voice: the interviewer reading the question, and answering out loud.
+  const [voiceOn, setVoiceOn] = useState(true);
+  const [speaking, setSpeaking] = useState(false);
+  const [recording, setRecording] = useState<"off" | "on" | "transcribing">("off");
+  const [canRecord, setCanRecord] = useState(false);
   const started = useRef<number | null>(null);
   const submission = useRef(key());
-  const rec = useRef<LiveTranscriber | null>(null);
   const box = useRef<HTMLTextAreaElement>(null);
+  /** What was typed before recording started; the transcript is added after it. */
+  const typedBefore = useRef("");
+  const [voice] = useState(() => new TrainingVoice(initial.id));
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => setCanDictate(LiveTranscriber.supported()));
-    return () => { cancelAnimationFrame(id); rec.current?.abort(); };
-  }, []);
+    const id = requestAnimationFrame(() => {
+      setCanRecord(TrainingVoice.canRecord());
+      try { setVoiceOn(localStorage.getItem("oriel.train.voice") !== "off"); } catch { /* private mode */ }
+    });
+    return () => { cancelAnimationFrame(id); voice.dispose(); };
+  }, [voice]);
 
-  function toggleDictation() {
-    if (listening) {
-      void rec.current?.stop().then((t) => { if (t) setAnswer((a) => (a ? `${a} ${t}` : t)); });
-      setListening(false);
+  async function hear(text = view.question.text) {
+    setSpeaking(true);
+    await voice.speakQuestion(text);
+    setSpeaking(false);
+  }
+
+  function setVoicePref(on: boolean) {
+    setVoiceOn(on);
+    try { localStorage.setItem("oriel.train.voice", on ? "on" : "off"); } catch { /* private mode */ }
+    if (!on) { voice.stopSpeaking(); setSpeaking(false); }
+  }
+
+  async function toggleRecording() {
+    if (recording === "on") {
+      setRecording("transcribing");
+      const r = await voice.finishAnswer();
+      setRecording("off");
+      if (r.text) {
+        setAnswer(typedBefore.current ? `${typedBefore.current} ${r.text}` : r.text);
+        setMode("voice");
+      } else {
+        setAnswer(typedBefore.current);
+        setError("We didn't catch that. Try again, or type your answer.");
+      }
+      requestAnimationFrame(() => box.current?.focus());
       return;
     }
-    const base = answer;
-    const r = new LiveTranscriber();
-    r.onUpdate = (t) => setAnswer(base ? `${base} ${t}` : t);
-    r.onFatal = () => { setListening(false); setError("Dictation stopped. You can keep typing."); };
-    rec.current = r;
-    r.start();
-    started.current ??= performance.now();
-    setMode("voice");
-    setListening(true);
+    setError(null);
+    setSpeaking(false);
+    const base = answer.trim();
+    typedBefore.current = base;
+    try {
+      await voice.startAnswer((t) => setAnswer(base ? `${base} ${t}` : t));
+      started.current ??= performance.now();
+      setRecording("on");
+    } catch {
+      setError("The microphone isn't available. Allow it in your browser's address bar, or type your answer.");
+    }
   }
 
   async function submit() {
-    if (!answer.trim() || busy) return;
-    if (listening) { rec.current?.abort(); setListening(false); }
+    if (!answer.trim() || busy || recording !== "off") return;
+    voice.stopSpeaking();
     setBusy(true);
     setError(null);
     try {
@@ -82,9 +115,31 @@ export function TrainingSession({ initial }: { initial: LoopView }) {
       started.current = null;
       submission.current = key();
       requestAnimationFrame(() => box.current?.focus());
+      // The submit was a click, so sound is allowed: a new question is read out.
+      if (voiceOn && next.stage !== "done" && next.question.text !== view.question.text) void hear(next.question.text);
     } catch (e) {
       // The same key is reused on a retry of this submission, so it can't be counted twice.
       setError(e instanceof ApiError ? e.message : "Something went wrong. Your answer is still here; try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitCode(code: CodeSubmission) {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const next = await api<LoopView>(`/api/training/${view.id}/attempts`, {
+        method: "POST",
+        json: { response: asResponse(code.source, code.explanation), inputMode: "text", durationMs: started.current ? performance.now() - started.current : 0, clientKey: submission.current, code },
+      });
+      setView(next);
+      started.current = null;
+      submission.current = key();
+      if (voiceOn && next.stage !== "done" && next.question.text !== view.question.text) void hear(next.question.text);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Something went wrong. Your code is still here; try again.");
     } finally {
       setBusy(false);
     }
@@ -107,33 +162,54 @@ export function TrainingSession({ initial }: { initial: LoopView }) {
           <section aria-labelledby="question" className="mt-10">
             <p className="text-meta text-stone-dim" aria-live="polite">{transitionLine(view, last)}</p>
             <div className="mt-3 flex items-start gap-4 sm:gap-6">
-              <InterviewerStage personaIds={["hiring_manager"]} className="aspect-square w-20 shrink-0 sm:w-28" />
-              <h1 id="question" key={view.question.text} className="pt-2 text-display-m text-ivory motion-safe:animate-[enter_var(--dur-panel)_var(--ease-enter)]">{view.question.text}</h1>
+              <InterviewerStage personaIds={["hiring_manager"]} store={voice.store} still="/interviewer/hiring_manager.webp" className="aspect-square w-20 shrink-0 sm:w-28" />
+              <div className="pt-2">
+                <h1 id="question" key={view.question.text} className="text-display-m text-ivory motion-safe:animate-[enter_var(--dur-panel)_var(--ease-enter)]">{view.question.text}</h1>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <button type="button" onClick={() => { if (speaking) { voice.stopSpeaking(); setSpeaking(false); } else void hear(); }} className="text-ui text-stone underline decoration-1 underline-offset-[0.2em] transition-colors duration-[var(--dur-press)] hover:text-ivory">
+                    {speaking ? "Stop" : "Hear the question"}
+                  </button>
+                  <label className="flex items-center gap-2 text-meta text-stone-dim">
+                    <input type="checkbox" checked={voiceOn} onChange={(e) => setVoicePref(e.target.checked)} className="size-4 accent-[var(--color-olive-light)]" />
+                    Read new questions aloud
+                  </label>
+                </div>
+              </div>
             </div>
             {view.scaffold && (
               <p className="mt-5 border-t border-divider pt-4 text-ui text-stone"><span className="font-medium text-ivory">To help: </span>{view.scaffold}</p>
             )}
           </section>
 
+          {view.question.code ? (
+            <>
+              <CodeAnswer key={view.question.text} spec={view.question.code} busy={busy} onSubmit={(c) => { started.current ??= performance.now(); void submitCode(c); }} />
+              {busy && <Thinking label="Running the tests and reading your approach" className="mt-5" />}
+              {error && <FieldError>{error}</FieldError>}
+            </>
+          ) : (
           <form className="mt-8" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
             <label htmlFor="answer" className="sr-only">Your answer</label>
             <textarea id="answer" ref={box} value={answer} disabled={busy} autoFocus
               onChange={(e) => { started.current ??= performance.now(); setAnswer(e.target.value); }}
               onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); void submit(); } }}
-              placeholder={listening ? "Listening…" : "Answer as you would in the room."}
+              readOnly={recording !== "off"}
+              placeholder={recording === "on" ? "Listening… your words appear here." : "Answer out loud, or type, as you would in the room."}
               className="min-h-44 w-full resize-y rounded-control border border-control bg-surface-1 px-4 py-3.5 text-body leading-relaxed text-ivory placeholder:text-stone-dim transition-colors duration-[var(--dur-press)] hover:border-stone-dim disabled:opacity-60" />
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <Button type="submit" size="lg" loading={busy} disabled={!answer.trim()}>Submit answer</Button>
-              {canDictate && (
-                <Button type="button" variant="secondary" size="lg" onClick={toggleDictation} disabled={busy} aria-pressed={listening}>
-                  {listening ? <><span className="size-1.5 rounded-full bg-signal-bad" aria-hidden />Stop speaking</> : "Speak instead"}
+              {canRecord && (
+                <Button type="button" variant={recording === "on" ? "primary" : "secondary"} size="lg" onClick={toggleRecording} disabled={busy || recording === "transcribing"} loading={recording === "transcribing"} aria-pressed={recording === "on"}>
+                  {recording === "on" ? <><span className="size-1.5 rounded-full bg-signal-bad" aria-hidden />I&rsquo;m done speaking</> : recording === "transcribing" ? "Transcribing" : "Answer out loud"}
                 </Button>
               )}
+              <Button type="submit" size="lg" variant={canRecord && !answer.trim() ? "secondary" : "primary"} loading={busy} disabled={!answer.trim() || recording !== "off"}>Submit answer</Button>
               <span className="hidden text-meta text-stone-dim pointer-fine:inline">⌘ Enter submits</span>
             </div>
+            {mode === "voice" && recording === "off" && answer && !busy && <p className="mt-3 text-meta text-stone-dim">Your spoken answer, transcribed. Check it reads as you meant, then submit.</p>}
             {busy && <Thinking label="Reading your answer" className="mt-5" />}
             {error && <FieldError>{error}</FieldError>}
           </form>
+          )}
         </>
       )}
 
@@ -221,7 +297,9 @@ function Note({ view, attempt }: { view: LoopView; attempt: AttemptView }) {
 function Assessor({ e }: { e: Evaluation }) {
   return (
     <p className="mt-4 text-meta text-stone-dim">
-      {e.evaluator === "model" ? `Assessed by the AI against a fixed rubric, ${e.confidence} confidence.` : "Assessed by pattern rules, not the AI; treat it as approximate."}
+      {e.competencyId === "implementation"
+        ? `Pass or fail comes only from running the tests. The explanation was ${e.evaluator === "model" ? `assessed by the AI, ${e.confidence} confidence` : "checked by pattern rules"}.`
+        : e.evaluator === "model" ? `Assessed by the AI against a fixed rubric, ${e.confidence} confidence.` : "Assessed by pattern rules, not the AI; treat it as approximate."}
       {e.limitations ? ` ${e.limitations}` : ""}
     </p>
   );

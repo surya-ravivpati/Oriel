@@ -8,7 +8,8 @@ import { recordTokenCost } from "@/lib/costs/record";
 import { getLanguageModel } from "@/lib/ai/providers/registry";
 import { CATEGORIES, COMPETENCY, competency, criterion, type Category } from "@/lib/training/competencies";
 import { advance, attemptStageOf, chooseCompetency, nextReviewAt, outcomeOf, pickExercise, type AttemptRecord, type CompetencyHistory, type Evaluation, type LoopState, type Outcome, type Step } from "@/lib/training/engine";
-import { evaluate } from "@/lib/training/evaluate";
+import { evaluate, evaluateCode } from "@/lib/training/evaluate";
+import { asResponse, validResults, type CodeSpec, type CodeSubmission } from "@/lib/training/code";
 import { generateExercise } from "@/lib/training/generate";
 import type { Exercise } from "@/lib/training/questions";
 
@@ -77,11 +78,12 @@ export function startReview(userId: string, reviewId: string): string {
 
 // ─── Answering ──────────────────────────────────────────────────────────────
 
-export interface AttemptInput { response: string; inputMode: "voice" | "text"; durationMs: number; clientKey: string }
+export interface AttemptInput { response: string; inputMode: "voice" | "text"; durationMs: number; clientKey: string; code?: CodeSubmission }
 
 const inFlight = new Set<string>();
 
-export async function submitAttempt(userId: string, loopId: string, input: AttemptInput): Promise<LoopView> {
+export async function submitAttempt(userId: string, loopId: string, attempt: AttemptInput): Promise<LoopView> {
+  let input = attempt;
   const db = getDb();
   // A resent request (double click, retry after a dropped connection) returns what it already made.
   const dupe = db.select().from(schema.trainingAttempts).where(and(eq(schema.trainingAttempts.userId, userId), eq(schema.trainingAttempts.clientKey, input.clientKey))).get();
@@ -101,7 +103,11 @@ export async function submitAttempt(userId: string, loopId: string, input: Attem
     const llm = getLanguageModel();
     // Evaluate before writing anything: a failed model call falls back inside `evaluate`, and an
     // exception here leaves the loop exactly as it was.
-    const { evaluation, usage, error } = await evaluate(llm, { competency: c, question: q.text, expected: q.expected, answer: input.response, inputMode: input.inputMode, target: loop.targetCriterion });
+    if (q.code && (!input.code || !validResults(q.code, input.code.results))) throw new HttpError(400, "Run the tests before submitting");
+    const { evaluation, usage, error } = q.code
+      ? await evaluateCode(llm, { competency: c, question: q.text, spec: q.code, submission: input.code!, target: loop.targetCriterion })
+      : await evaluate(llm, { competency: c, question: q.text, expected: q.expected, answer: input.response, inputMode: input.inputMode, target: loop.targetCriterion });
+    if (q.code) input = { ...input, response: asResponse(input.code!.source, input.code!.explanation), inputMode: "text" };
     if (usage) recordTokenCost({ userId }, llm.id, "llm", "training_evaluation", usage);
     if (error) logEvent("fallback", "training_pattern_evaluator", { userId, data: { loopId, error } });
 
@@ -196,7 +202,7 @@ export interface LoopView {
   stage: "attempt" | "retry" | "transfer" | "done";
   /** Shown only once the loop is done (or on the hub): never while answering. */
   competency: { id: string; label: string; summary: string };
-  question: { text: string; source: "curated" | "generated" };
+  question: { text: string; source: "curated" | "generated"; code: CodeSpec | null };
   target: { id: string; label: string; principle: string; why: string } | null;
   /** Scaffolding for the current retry: none, a focused question, or a partial outline. */
   scaffold: string | null;
@@ -220,12 +226,17 @@ export function loopView(userId: string, loopId: string, step: Step | null = nul
   return {
     id: loop.id, kind: loop.kind, category: loop.category as Category, stage: loop.stage,
     competency: { id: c.id, label: c.label, summary: c.summary },
-    question: { text: loop.question.text, source: loop.question.source },
+    question: { text: loop.question.text, source: loop.question.source, code: loop.question.code ?? null },
     target: t ? { id: t.id, label: t.label, principle: t.principle, why: t.why } : null,
     scaffold: loop.stage === "retry" && t && loop.scaffold > 0 ? t.scaffold[loop.scaffold - 1] : null,
     attempts, step, outcome: loop.outcome ?? null,
     nextReview: loop.stage === "done" && review ? review.dueAt.toISOString() : null,
   };
+}
+
+/** The question this person is answering now (for speaking it aloud). Only stored questions can be spoken. */
+export function currentQuestion(userId: string, loopId: string): string {
+  return ownLoop(userId, loopId).question.text;
 }
 
 export function deleteLoop(userId: string, loopId: string) {
@@ -292,4 +303,40 @@ export function dueReviews(userId: string, now = new Date()): DueReview[] {
 export function openLoops(userId: string) {
   return getDb().select({ id: schema.trainingLoops.id, kind: schema.trainingLoops.kind, category: schema.trainingLoops.category, createdAt: schema.trainingLoops.createdAt })
     .from(schema.trainingLoops).where(and(eq(schema.trainingLoops.userId, userId), isNull(schema.trainingLoops.completedAt))).orderBy(desc(schema.trainingLoops.createdAt)).all();
+}
+
+// ─── Is it working? (admin) ─────────────────────────────────────────────────
+
+export interface EvidenceCell { n: number; yes: number }
+export interface TrainingEvidence {
+  loops: number;
+  /** Transfer outcome, split by whether the retry improved. */
+  transferAfterImproved: EvidenceCell;
+  transferAfterNotImproved: EvidenceCell;
+  /** Review outcome, split by whether the practice it followed transferred. */
+  retainedAfterTransfer: EvidenceCell;
+  retainedAfterNoTransfer: EvidenceCell;
+  evaluators: { model: number; pattern: number; insufficient: number };
+}
+
+/**
+ * The numbers needed to test whether the loop helps, across everyone. Observational: people
+ * choose what to practise and when to return, so these are associations, never effects.
+ */
+export function trainingEvidence(): TrainingEvidence {
+  const db = getDb();
+  const loops = db.select().from(schema.trainingLoops).where(isNull(schema.trainingLoops.reviewOfLoopId)).all().filter((l) => l.outcome);
+  const reviews = db.select().from(schema.trainingLoops).all().filter((l) => l.kind === "review" && l.outcome);
+  const byId = new Map(loops.map((l) => [l.id, l]));
+  const cell = (rows: Outcome[]): EvidenceCell => ({ n: rows.filter((r) => r !== "not_assessed").length, yes: rows.filter((r) => r === "yes").length });
+  const practice = loops.filter((l) => l.kind === "practice");
+  const ev = db.select({ evaluator: schema.trainingEvaluations.evaluator, enough: schema.trainingEvaluations.enoughEvidence }).from(schema.trainingEvaluations).all();
+  return {
+    loops: practice.length,
+    transferAfterImproved: cell(practice.filter((l) => l.outcome!.improvedOnRetry === "yes").map((l) => l.outcome!.transferred)),
+    transferAfterNotImproved: cell(practice.filter((l) => l.outcome!.improvedOnRetry === "no").map((l) => l.outcome!.transferred)),
+    retainedAfterTransfer: cell(reviews.filter((r) => byId.get(r.reviewOfLoopId ?? "")?.outcome?.transferred === "yes").map((r) => r.outcome!.retained)),
+    retainedAfterNoTransfer: cell(reviews.filter((r) => byId.get(r.reviewOfLoopId ?? "")?.outcome?.transferred === "no").map((r) => r.outcome!.retained)),
+    evaluators: { model: ev.filter((e) => e.evaluator === "model" && e.enough).length, pattern: ev.filter((e) => e.evaluator === "pattern" && e.enough).length, insufficient: ev.filter((e) => !e.enough).length },
+  };
 }

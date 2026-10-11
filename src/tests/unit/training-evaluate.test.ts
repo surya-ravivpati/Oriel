@@ -101,6 +101,14 @@ describe("evaluate", () => {
     expect(precheck(ANSWER, "voice")).toBeNull();
   });
 
+  it("a question about what happened, answered only hypothetically, isn't judged; a real story is", () => {
+    const q = "Tell me about a time you had to choose between moving fast and getting it right.";
+    expect(precheck("I would look at the options first and I would weigh the risks, then I'd pick the safer path and I'd explain it to the team clearly.", "text", q)).toMatch(/actually happened/);
+    expect(precheck("Last year we had to choose. I would normally move fast, but I decided to slow down because the payment flow was at risk, and we shipped a week later.", "text", q)).toBeNull();
+    // A question that asks what you would do is answered hypothetically by design.
+    expect(precheck("I would look at the options first and I would weigh the risks, then I'd pick the safer path and I'd explain it to the team clearly.", "text", "How would you decide what to prioritize?")).toBeNull();
+  });
+
   it("the pattern evaluator quotes only real sentences from the answer", () => {
     const e = patternEvaluate(input, "No language model is configured.");
     for (const j of e.criteria) if (j.evidence) expect(quotedFrom(j.evidence, ANSWER)).toBe(true);

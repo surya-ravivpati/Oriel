@@ -13,21 +13,24 @@ import { cn } from "@/components/ui/cn";
  * breathes, blinks and glances around. It only animates while on screen in a visible tab, and
  * holds still under reduced motion. A panel shows every seat, the lead in front.
  */
-export function InterviewerStage({ personaIds, styles, still, className }: {
+export function InterviewerStage({ personaIds, styles, still, className, store: driven }: {
   personaIds: string[];
   styles?: Partial<Record<string, Partial<AvatarStyle> | null>>;
   /** A still of the same frame, drawn by the same engine, shown until the canvas paints (and without scripts). */
   still?: string;
   className?: string;
+  /** Drive the face from outside (speaking, listening); otherwise it idles on its own. */
+  store?: AvatarStore;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [live, setLive] = useState(false);
-  const store = useMemo(() => {
+  const own = useMemo(() => {
     const s = new AvatarStore();
     s.stillness = 0.4;
     s.pressure = 2;
     return s;
   }, []);
+  const store = driven ?? own;
   const key = personaIds.join(",");
   const seats = useMemo(() => key.split(",").map((id, seat) => {
     const p = PERSONAS[id as PersonaId] ?? PERSONAS.hiring_manager;
@@ -35,7 +38,7 @@ export function InterviewerStage({ personaIds, styles, still, className }: {
   }), [key, styles]);
 
   useEffect(() => {
-    store.setMode("idle", 0);
+    if (!driven) store.setMode("idle", 0);
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     let onScreen = false;
     const sync = () => setLive(onScreen && !mq.matches && document.visibilityState === "visible");
@@ -44,7 +47,7 @@ export function InterviewerStage({ personaIds, styles, still, className }: {
     mq.addEventListener("change", sync);
     document.addEventListener("visibilitychange", sync);
     return () => { io.disconnect(); mq.removeEventListener("change", sync); document.removeEventListener("visibilitychange", sync); };
-  }, [store]);
+  }, [store, driven]);
 
   return (
     <div ref={box} className={cn("relative", className)} aria-hidden>

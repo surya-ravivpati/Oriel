@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth/session";
 import { adminOverview } from "@/server/admin";
 import { providerStatus } from "@/lib/ai/providers/registry";
 import { Card, Badge } from "@/components/ui/Card";
+import { trainingEvidence, type EvidenceCell } from "@/server/training/service";
 
 export const metadata = { title: "Admin" };
 
@@ -66,6 +67,8 @@ export default async function AdminPage() {
         </div>
       </section>
 
+      <TrainEvidence />
+
       <section>
         <h2 className="text-ui font-medium text-ivory">Recent errors &amp; fallbacks</h2>
         <ul className="mt-4 divide-y divide-divider rounded-control border border-divider text-ui">
@@ -73,5 +76,32 @@ export default async function AdminPage() {
         </ul>
       </section>
     </div>
+  );
+}
+
+/** A rate only when there are enough cases to say anything; otherwise the count alone. */
+function rate(c: EvidenceCell) {
+  if (c.n === 0) return <span className="text-stone-dim">no cases yet</span>;
+  if (c.n < 5) return <span className="text-stone">{c.yes} of {c.n} <span className="text-stone-dim">(too few for a rate)</span></span>;
+  return <span className="text-ivory">{Math.round((c.yes / c.n) * 100)}% <span className="text-stone-dim">({c.yes} of {c.n})</span></span>;
+}
+
+/** Whether the practice loop is associated with transfer and retention. Observational, not causal. */
+function TrainEvidence() {
+  const t = trainingEvidence();
+  const rows: [string, EvidenceCell][] = [
+    ["Carried to a new question, when the retry improved", t.transferAfterImproved],
+    ["Carried to a new question, when the retry didn't improve", t.transferAfterNotImproved],
+    ["Held at review, after it carried over", t.retainedAfterTransfer],
+    ["Held at review, after it didn't carry over", t.retainedAfterNoTransfer],
+  ];
+  return (
+    <section>
+      <h2 className="text-ui font-medium text-ivory">Train: is it working?</h2>
+      <p className="mt-2 max-w-[48rem] text-meta text-stone">{t.loops} completed practice loops. People choose what to practise and when to come back, so these are associations, not effects; a real test needs a comparison group. Answers judged by the model: {t.evaluators.model}; by pattern rules: {t.evaluators.pattern}; not assessable: {t.evaluators.insufficient}.</p>
+      <table className="mt-4 w-full max-w-[48rem] text-left text-ui">
+        <tbody>{rows.map(([k, c]) => <tr key={k} className="border-t border-divider"><th scope="row" className="py-2.5 pr-4 font-normal text-stone">{k}</th><td className="py-2.5">{rate(c)}</td></tr>)}</tbody>
+      </table>
+    </section>
   );
 }

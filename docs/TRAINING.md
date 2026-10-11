@@ -43,10 +43,19 @@ Every query is scoped to the signed-in user; anyone else's loop is "not found". 
 - A competency: `lib/training/competencies.ts`. Criteria must be observable in the words of an answer, with a principle, two levels of scaffolding and a reason it matters.
 - Questions: `lib/training/questions.ts`. Each needs a `situation`. Every competency needs at least three curated questions in distinct situations for each interview type it is offered in; a unit test enforces this.
 
+## Voice and code
+
+- **Voice.** The interviewer reads each question aloud (server voice as styled in the studio, or the browser's voice), its face moving with the sound; "Hear the question" replays it and "Read new questions aloud" is remembered per browser. "Answer out loud" records the answer, captions it live, and transcribes it on the server when configured; the transcript is shown for checking before it is submitted. The audio is not stored.
+- **Code.** "Writing working code" (technical) gives a JavaScript function to write. The code runs only in the person's browser, in a Web Worker built from a blob (no eval, no network, a two-second limit). Main-case and edge-case correctness come only from the test results; the model is shown the explanation alone and judges only how well it states the approach and its cost. The server checks there is one result per test, by name, in order.
+- **Hypothetical answers.** A question about something that happened, answered only with "I would…", is not judged; the person is asked to answer from experience, or to say they haven't faced it.
+
+## Is it working?
+
+The admin console's "Train: is it working?" shows how often an improvement on the retry carries to a new question (against when it didn't improve), and how often a skill holds at review (against when it didn't transfer), with counts, and with rates hidden below five cases.
+
 ## Limits (honest)
 
-- The learning hypothesis (that retries, transfer and spaced reviews improve real interview performance) is not established by this code. The data model records what's needed to test it.
-- Assessment reads a transcript; reasoning that was sound but not said is under-credited, and hypothetical answers to past-tense questions are judged on what they say.
-- Technical answers are judged on reasoning about trade-offs only. No code is run, and nothing is declared correct.
-- Voice input is the browser's dictation (Chrome, Edge, Safari); the interviewer's question is shown, not spoken.
-- The curated bank is small (24 questions across 7 competencies). Generated transfer questions are unvalidated.
+- Those numbers are associations, not proof: people choose what to practise and when to return. Showing that the loop causes improvement needs a comparison group (for example, randomly skipping the retry for some loops), which isn't built.
+- Assessment reads what was said; reasoning that wasn't said can't be credited.
+- Code results come from the person's own browser, so they can be altered by someone determined to; this is self-practice, so they are trusted. A fixed set of tests can't prove code correct. Only JavaScript is supported.
+- The curated bank has 40 exercises across 8 skills (at least five situations for each skill in each interview type). Generated transfer questions are unvalidated.

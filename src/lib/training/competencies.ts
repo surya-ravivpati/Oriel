@@ -195,6 +195,33 @@ export const COMPETENCIES: Competency[] = [
     ],
   },
   {
+    id: "implementation", version: 1, label: "Writing working code", categories: ["technical"],
+    summary: "Make it pass every case, including the edges, and explain what it costs.",
+    evidenceRequired: "A function that was run against the tests, and a few sentences on the approach.",
+    anchors: { 0: "Fails the main cases.", 1: "Passes the main cases but misses edge cases, or the approach is unexplained.", 2: "Passes every test, and the approach and its cost are explained." },
+    limitations: "Correctness comes only from running the tests in your browser; the AI reads the explanation, never the code's correctness. The tests are a fixed set and can't prove code correct.",
+    criteria: [
+      {
+        id: "correct", label: "Passes the main cases", look: "Every non-edge test passes when the function is run.",
+        strong: "All the example cases return the expected values.", failure: "One or more of the main cases return the wrong value or throw.",
+        principle: "Trace one failing input through your code by hand, then fix the step where it goes wrong.", why: "Working code on the ordinary case is the floor in a coding interview.",
+        scaffold: ["For the first failing input, what does each line of your function produce?", "Write the steps in plain words first (one line each), then turn each line into code."],
+      },
+      {
+        id: "edge_cases", label: "Handles the edges", look: "The edge-case tests (empty input, boundaries, duplicates) pass.",
+        strong: "Empty and boundary inputs return sensible values without special-casing everything.", failure: "Works on the examples but breaks on empty input or a boundary.",
+        principle: "Before submitting, list the edge cases (empty, one item, duplicates, limits) and check each one.", why: "Interviewers probe edges on purpose; handling them unprompted is what separates a solid answer.",
+        scaffold: ["What happens with an empty input, or a single item?", "List: empty, one item, all the same, the boundary. Decide the right output for each before changing code."],
+      },
+      {
+        id: "explains", label: "Explains approach and cost", look: "The explanation says how the solution works and what it costs in time (and space).",
+        strong: "\"One pass with a Set: linear time, linear extra space.\"", failure: "No explanation, or one with no mention of cost.",
+        principle: "Say the idea in one sentence, then its time and space cost.", why: "Explaining the trade-off is how interviewers tell understanding from memorization.",
+        scaffold: ["How many times does your code look at each item?", "\"I ___. That's O(___) time because ___, and O(___) extra space.\""],
+      },
+    ],
+  },
+  {
     id: "structuring", version: 1, label: "Structuring an ambiguous problem", categories: ["case"],
     summary: "Lay out how you'll attack the problem before diving in, and say where you'd start.",
     evidenceRequired: "An answer to an open business problem.",

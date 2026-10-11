@@ -19,10 +19,10 @@ const start: LoopState = { kind: "practice", stage: "attempt", targetCriterion: 
 const at = (stage: AttemptRecord["stage"], e: Evaluation | null): AttemptRecord => ({ stage, createdAt: new Date(), evaluation: e });
 
 describe("the bank", () => {
-  it("has at least three curated questions in distinct situations for every skill in every type it covers", () => {
+  it("has at least five curated questions in distinct situations for every skill in every type it covers", () => {
     for (const cat of CATEGORIES) for (const comp of competenciesFor(cat.id)) {
       const pool = poolFor(comp.id, cat.id);
-      expect(new Set(pool.map((q) => q.situation)).size, `${comp.id} in ${cat.id}`).toBeGreaterThanOrEqual(3);
+      expect(new Set(pool.map((q) => q.situation)).size, `${comp.id} in ${cat.id}`).toBeGreaterThanOrEqual(5);
     }
   });
   it("only references real competencies, and every curated question is validated", () => {

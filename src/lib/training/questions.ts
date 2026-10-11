@@ -1,4 +1,5 @@
 import type { Category } from "./competencies";
+import { CODE_PROBLEMS, type CodeSpec } from "./code";
 
 /*
  * The curated question bank: validated exercises, each mapped to the competencies it can
@@ -20,6 +21,8 @@ export interface Exercise {
   followUps: string[];
   source: "curated" | "generated";
   validated: boolean;
+  /** For coding exercises: the function to write and the tests that decide correctness. */
+  code?: CodeSpec;
 }
 
 type Seed = Omit<Exercise, "source" | "validated">;
@@ -50,6 +53,13 @@ const SEEDS: Seed[] = [
   { id: "b-deadline-sacrifice", category: "behavioral", situation: "tradeoff-deadline", difficulty: 2, competencies: ["decision_reasoning", "answer_the_question"],
     text: "Describe a time you had to give up something important to meet a deadline.",
     expected: "What was given up, the alternatives considered, and why that sacrifice was chosen.", followUps: ["Did you ever go back to it?", "Who did you have to convince?"] },
+
+  { id: "b-tool-choice", category: "behavioral", situation: "vendor-choice", difficulty: 2, competencies: ["decision_reasoning", "answer_the_question"],
+    text: "Tell me about a time you had to choose between two tools, vendors or approaches.",
+    expected: "The options, what the choice turned on, what was uncertain, and why the chosen one won.", followUps: ["What would have made you choose the other?", "How did it work out?"] },
+  { id: "b-said-no", category: "behavioral", situation: "saying-no", difficulty: 3, competencies: ["decision_reasoning", "personal_contribution", "answer_the_question"],
+    text: "Tell me about a time you said no to a request from someone more senior than you.",
+    expected: "The request, the speaker's reasoning and alternatives offered, what they personally did, and the result.", followUps: ["How did they take it?", "Would you say no again?"] },
 
   // ─── Technical ────────────────────────────────────────────────────────────
   { id: "t-most-viewed", category: "technical", situation: "read-heavy", difficulty: 2, competencies: ["tradeoff_reasoning", "answer_the_question"],
@@ -88,6 +98,16 @@ const SEEDS: Seed[] = [
     text: "A hospital's emergency room wait times have doubled in a year. How would you structure the problem?",
     expected: "A stated structure (e.g. demand, capacity, process), distinct parts, and a reasoned starting point.", followUps: ["What data would you collect first?", "What would a quick win look like?"] },
 
+  { id: "c-build-buy", category: "case", situation: "build-vs-buy", difficulty: 2, competencies: ["recommendation", "decision_reasoning", "structuring", "answer_the_question"],
+    text: "A retailer is deciding whether to build its own delivery fleet or keep using a third party. What would you recommend?",
+    expected: "A recommendation first, the options compared on explicit criteria (cost, control, risk), and the main risk.", followUps: ["What would the break-even look like?", "How would you phase it?"] },
+  { id: "c-hotel-occupancy", category: "case", situation: "occupancy", difficulty: 2, competencies: ["structuring", "answer_the_question"],
+    text: "A hotel chain's occupancy fell at its city hotels but not at its resorts. How would you figure out why?",
+    expected: "A structure that separates demand from supply and city from resort factors, and where to start.", followUps: ["What data would settle it?", "What would you do about it?"] },
+  { id: "c-acquisition", category: "case", situation: "acquisition", difficulty: 3, competencies: ["recommendation", "decision_reasoning", "structuring", "answer_the_question"],
+    text: "A mid-sized food company is considering buying a plant-based snack brand. Should it?",
+    expected: "A recommendation first, a structure for the deal (market, fit, price), alternatives, and the main risk.", followUps: ["What price would change your answer?", "What would you check first?"] },
+
   // ─── Leadership ───────────────────────────────────────────────────────────
   { id: "l-unpopular", category: "leadership", situation: "unpopular", difficulty: 2, competencies: ["decision_reasoning", "personal_contribution", "outcome_evidence", "answer_the_question"],
     text: "Tell me about a time you made an unpopular decision for your team.",
@@ -107,9 +127,29 @@ const SEEDS: Seed[] = [
   { id: "l-budget-cut", category: "leadership", situation: "budget", difficulty: 3, competencies: ["recommendation", "decision_reasoning", "answer_the_question"],
     text: "Your company has to cut twenty percent of next year's budget. What would you recommend to the leadership team?",
     expected: "A clear recommendation first, how the options were weighed, the reasons, and the risk.", followUps: ["What would you protect at all costs?", "How would you tell the teams affected?"] },
+  { id: "l-people-decision", category: "leadership", situation: "people-decision", difficulty: 3, competencies: ["personal_contribution", "outcome_evidence", "decision_reasoning", "answer_the_question"],
+    text: "Tell me about a time you had to move someone off your team, or let them go.",
+    expected: "The situation, the options considered, what the speaker personally did and how, and the outcome for the person and the team.", followUps: ["What would you do earlier next time?", "How did the team react?"] },
+  { id: "l-no-authority", category: "leadership", situation: "influence-without-authority", difficulty: 2, competencies: ["personal_contribution", "outcome_evidence", "answer_the_question"],
+    text: "Tell me about a time you got a team that didn't report to you to change course.",
+    expected: "What the speaker specifically did to persuade them, and what changed as a result.", followUps: ["What did they push back on?", "What would you do if they had refused?"] },
+  { id: "l-missed-goal", category: "leadership", situation: "missed-goal", difficulty: 2, competencies: ["outcome_evidence", "personal_contribution", "answer_the_question"],
+    text: "Tell me about a quarter when your team missed its goal. What did you do?",
+    expected: "The goal and the actual result in concrete terms, the speaker's own actions, and what changed after.", followUps: ["How did you explain it upwards?", "What did you change in the next quarter?"] },
+  { id: "l-merge-teams", category: "leadership", situation: "reorg", difficulty: 3, competencies: ["recommendation", "decision_reasoning", "answer_the_question"],
+    text: "Leadership asks whether your two teams should be merged under one manager. What would you recommend?",
+    expected: "A recommendation first, the options weighed on explicit criteria, and the main risk with a next step.", followUps: ["Who would lose out?", "How would you know it worked?"] },
+  { id: "l-adoption", category: "leadership", situation: "adoption", difficulty: 2, competencies: ["recommendation", "answer_the_question"],
+    text: "Your company wants every team on a new internal platform within six months. What would you recommend to make that happen?",
+    expected: "A clear recommendation first, two or three reasons or steps, and the main risk.", followUps: ["What would you do about the teams that resist?", "How would you measure progress?"] },
 ];
 
-export const EXERCISES: Exercise[] = SEEDS.map((s) => ({ ...s, source: "curated", validated: true }));
+const CODING: Seed[] = CODE_PROBLEMS.map((k) => ({
+  id: k.id, category: "technical", situation: k.situation, difficulty: k.difficulty, competencies: ["implementation"], text: k.text,
+  expected: `Code that passes the tests, and an explanation of the approach and its cost (${k.spec.complexity})`, followUps: [], code: k.spec,
+}));
+
+export const EXERCISES: Exercise[] = [...SEEDS, ...CODING].map((s) => ({ ...s, source: "curated", validated: true }));
 export const EXERCISE = Object.fromEntries(EXERCISES.map((e) => [e.id, e])) as Record<string, Exercise>;
 
 /** Curated exercises that can assess a competency in a category. */

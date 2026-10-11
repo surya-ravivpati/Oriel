@@ -3,6 +3,7 @@ import type { LanguageModelProvider, LlmUsage } from "@/lib/ai/providers/types";
 import { detectStar, quantifiedStatements, sentences, words } from "@/lib/analysis/text";
 import { criterion, type Competency, type Level } from "./competencies";
 import type { CriterionJudgment, CriterionLevel, Evaluation, Weakness } from "./engine";
+import { summarize, type CodeResult, type CodeSpec, type CodeSubmission } from "./code";
 
 /*
  * The evaluator: a fallible component, held to the rubric and checked before it is believed.
@@ -44,10 +45,19 @@ export function quotedFrom(excerpt: string | null | undefined, answer: string): 
 
 // ─── Pre-checks ─────────────────────────────────────────────────────────────
 
-export function precheck(answer: string, inputMode: "voice" | "text"): string | null {
+/** Questions that ask for something that happened, rather than what you would do. */
+const ASKS_FOR_EXPERIENCE = /^(?:tell me about (?:a|an|one|something|the)\b|describe (?:a|an|the) (?:time|project|situation|moment)|give me an example|walk me through a time)/i;
+const CONDITIONAL = /\b(?:I|we)\s+would\b|\b(?:I|we)'d\s+(?:start|first|look|ask|set|go|choose|pick|do|try|make|probably|want|say|recommend|focus|begin|break)\b/gi;
+const PAST = /\b(?:I|we)\s+(?:\w+ed|was|were|had|did|led|ran|made|took|got|built|went|chose|set|told|wrote|saw|knew|thought|found|spent|kept|cut|put|sent|met|gave|began|brought|drove|held|left|lost|won|sold|taught|caught|felt|heard|hired|fired)\b/i;
+
+export function precheck(answer: string, inputMode: "voice" | "text", question = ""): string | null {
   const t = answer.trim();
   const n = words(t).length;
   if (!t || n < MIN_WORDS) return "The answer was too short to assess. Give a full answer, as you would in the room.";
+  // A question about what happened, answered only with what you would do, can't show the skill as asked.
+  if (ASKS_FOR_EXPERIENCE.test(question.trim()) && (t.match(CONDITIONAL) ?? []).length >= 2 && !PAST.test(t)) {
+    return "This question asks about something that actually happened, and the answer describes what you would do. Answer from your own experience; if you haven't faced it, say so and describe the closest thing you have done.";
+  }
   if (inputMode === "voice") {
     const broken = (t.match(/\((?:inaudible|unclear)\)|\[(?:inaudible|unclear)\]/gi) ?? []).length;
     if (broken >= 2 || /^\(?inaudible\)?$/i.test(t)) return "Parts of the recording couldn't be transcribed reliably, so it wasn't judged. Try again, or type the answer.";
@@ -237,7 +247,7 @@ export function patternEvaluate(i: EvaluateInput, why: string): Evaluation {
 // ─── Entry point ────────────────────────────────────────────────────────────
 
 export async function evaluate(llm: LanguageModelProvider, i: EvaluateInput, timeoutMs = 12000): Promise<EvaluateResult> {
-  const reason = precheck(i.answer, i.inputMode);
+  const reason = precheck(i.answer, i.inputMode, i.question);
   if (reason) {
     return {
       usage: null,
@@ -263,4 +273,77 @@ export async function evaluate(llm: LanguageModelProvider, i: EvaluateInput, tim
     }
   }
   return { evaluation: patternEvaluate(i, "The AI assessment wasn't available for this answer."), usage: null, error: lastErr };
+}
+
+// ─── Code ───────────────────────────────────────────────────────────────────
+
+export interface EvaluateCodeInput { competency: Competency; question: string; spec: CodeSpec; submission: CodeSubmission; target: string | null }
+
+/**
+ * A coding attempt. "correct" and "edge_cases" come only from the test results; the model (or
+ * the pattern rules) reads the explanation, and only for "explains". The model never sees the
+ * question of whether the code works.
+ */
+export async function evaluateCode(llm: LanguageModelProvider, i: EvaluateCodeInput): Promise<EvaluateResult> {
+  const c = i.competency;
+  const s = summarize(i.submission.results);
+  const failing = s.failing;
+  const lvl = (pass: number, of: number): Level => (of === 0 ? 2 : pass === of ? 2 : pass * 2 >= of ? 1 : 0);
+  const describe = (r: CodeResult) => {
+    const t = i.spec.tests.find((x) => x.name === r.name)!;
+    return `${i.spec.fn}(${t.args.map((a) => JSON.stringify(a)).join(", ")}) returned ${r.got}; expected ${JSON.stringify(t.expected)}`;
+  };
+  const coreFail = failing.filter((r) => !r.edge), edgeFail = failing.filter((r) => r.edge);
+  const label = (id: string) => criterion(c, id)!.label;
+  const correct: CriterionJudgment = { id: "correct", label: label("correct"), level: lvl(s.core.pass, s.core.of), evidence: null,
+    interpretation: `${s.core.pass} of ${s.core.of} main tests pass when run.${coreFail.length ? ` ${describe(coreFail[0])}.` : ""}` };
+  const edges: CriterionJudgment = { id: "edge_cases", label: label("edge_cases"), level: lvl(s.edge.pass, s.edge.of), evidence: null,
+    interpretation: `${s.edge.pass} of ${s.edge.of} edge-case tests pass when run.${edgeFail.length ? ` ${describe(edgeFail[0])}.` : ""}` };
+
+  // The explanation, judged on its own rubric of one criterion.
+  const only: Competency = { ...c, criteria: c.criteria.filter((x) => x.id === "explains") };
+  const ex = i.submission.explanation.trim();
+  let explains: CriterionJudgment = { id: "explains", label: label("explains"), level: null, evidence: null, interpretation: "No explanation to judge." };
+  let usage: LlmUsage | null = null, error: string | undefined, by: "model" | "pattern" = "pattern", conf: Evaluation["confidence"] = "high";
+  if (ex) {
+    const r = words(ex).length < MIN_WORDS
+      ? { evaluation: patternExplains(only, ex), usage: null }
+      : await evaluate(llm, { competency: only, question: i.question, expected: `How it works and what it costs (expected about ${i.spec.complexity})`, answer: ex, inputMode: "text", target: null });
+    explains = r.evaluation.criteria[0] ?? explains;
+    usage = r.usage; error = (r as EvaluateResult).error; by = r.evaluation.evaluator;
+    conf = r.evaluation.confidence;
+  }
+
+  const criteria = [correct, edges, explains];
+  const pick = coreFail.length ? "correct" : edgeFail.length ? "edge_cases" : explains.level === 2 ? null : "explains";
+  const target = i.target && criteria.some((x) => x.id === i.target && x.level !== 2) ? i.target : pick;
+  const tc = target ? criterion(c, target)! : null;
+  const primary: Weakness | null = tc ? {
+    criterionId: tc.id,
+    observation: tc.id === "correct" ? `When it ran, ${describe(coreFail[0])}.` : tc.id === "edge_cases" ? `The main cases pass, but on an edge case ${describe(edgeFail[0])}.`
+      // Say why the explanation fell short in the assessor's own words, not a stock line that may not fit.
+      : !ex ? "There was no explanation of the approach." : explains.interpretation && explains.interpretation !== "No explanation to judge." ? explains.interpretation : "The explanation doesn't clearly say how it works and what it costs.",
+    whyItMatters: tc.why, instruction: tc.principle,
+  } : null;
+  return {
+    usage, error,
+    evaluation: {
+      competencyId: c.id, rubricVersion: c.version, evaluator: by, criteria, enoughEvidence: true,
+      // Test results are certain; only the explanation's judgment carries the evaluator's confidence.
+      confidence: conf, primary, secondary: [],
+      limitations: `Tests ran in your browser; correctness comes only from them, and a fixed set of tests can't prove code correct.${by === "pattern" && ex ? " The explanation was judged by pattern rules." : ""}`,
+      insufficientReason: null,
+    },
+  };
+}
+
+/** Pattern rules for a short explanation: does it say how it works and what it costs? */
+function patternExplains(c: Competency, ex: string): Evaluation {
+  const cost = /\bO\([^)]+\)|\b(?:linear|constant|quadratic|logarithmic|n log n)\b|\b(?:time|space|memory)\b/i.test(ex);
+  const how = words(ex).length >= 6;
+  const x = c.criteria[0];
+  return {
+    competencyId: c.id, rubricVersion: c.version, evaluator: "pattern", enoughEvidence: true, confidence: "low", primary: null, secondary: [], limitations: null, insufficientReason: null,
+    criteria: [{ id: x.id, label: x.label, level: cost && how ? 2 : cost || how ? 1 : 0, evidence: null, interpretation: cost ? "Mentions the cost." : "Doesn't mention what it costs." }],
+  };
 }

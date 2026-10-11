@@ -173,3 +173,35 @@ describe("the practice loop", () => {
     expect(getDb().select().from(schema.trainingReviews).where(eq(schema.trainingReviews.sourceLoopId, loop)).all()).toHaveLength(0);
   });
 });
+
+describe("coding practice", () => {
+  it("rejects a coding attempt without a result for every test, and grades a full one from the tests", async () => {
+    setProvidersForTesting({ llm: scripted });
+    const u = makeUser();
+    const l = startPractice(u, { category: "technical", competencyId: "implementation" });
+    const v = loopView(u, l);
+    expect(v.question.code).not.toBeNull();
+    const spec = v.question.code!;
+    const base = { response: "x", inputMode: "text" as const, durationMs: 1000 };
+    await expect(submitAttempt(u, l, { ...base, clientKey: "code-missing-1" })).rejects.toThrow(/Run the tests/);
+    const results = spec.tests.map((t) => ({ name: t.name, edge: !!t.edge, pass: !t.edge, got: t.edge ? "null" : JSON.stringify(t.expected) }));
+    const after = await submitAttempt(u, l, { ...base, clientKey: "code-full-1", code: { source: "function f() {}", explanation: "", results, ranIn: "browser" } });
+    const e = after.attempts[0].evaluation!;
+    expect(e.criteria.find((x) => x.id === "correct")!.level).toBe(2);
+    expect(e.criteria.find((x) => x.id === "edge_cases")!.level).toBe(0);
+    expect(after.stage).toBe("retry");
+    expect(after.target?.id).toBe("edge_cases");
+    expect(after.attempts[0].response).toContain("```javascript");
+  });
+});
+
+describe("evidence for the method", () => {
+  it("counts transfer by whether the retry improved, without inventing rates", async () => {
+    const { trainingEvidence } = await import("@/server/training/service");
+    const t = trainingEvidence();
+    expect(t.loops).toBeGreaterThanOrEqual(0);
+    for (const c of [t.transferAfterImproved, t.transferAfterNotImproved, t.retainedAfterTransfer, t.retainedAfterNoTransfer]) expect(c.yes).toBeLessThanOrEqual(c.n);
+    expect(t.transferAfterImproved.n).toBeGreaterThanOrEqual(0);
+    expect(t.transferAfterImproved.yes).toBeLessThanOrEqual(t.transferAfterImproved.n);
+  });
+});
