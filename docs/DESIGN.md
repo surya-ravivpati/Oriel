@@ -37,13 +37,14 @@ The landing page uses no other hues. In the app, the signals (good, warn, bad) d
 | Newsreader (serif, with optical sizes) | Oriel's voice: headlines, page and section titles, names, and every line an interviewer speaks. `font-optical-sizing: auto` selects the display cut at headline sizes. Loaded in roman only. |
 | Schibsted Grotesk | Your words and the interface: answers, paragraphs, labels, buttons, navigation, and every number. |
 
-There is no third face. Measurements, counts and timecodes are set in the sans with its ordinary (proportional) figures, because Schibsted's tabular figures widen the point and the colon ("2 . 1", "00 : 10"). The one exception is the Room's running clock, whose digits are tabular so it doesn't jitter while its colon stays proportional (`Clock` in `Room.tsx`). Units read the same way everywhere: `151 wpm`, `2.1 s`, `0.0/min`.
+There is no third face. On the landing page the three sample measures are set as large serif figures, as headlines are. Elsewhere, measurements, counts and timecodes are set in the sans with its ordinary (proportional) figures, because Schibsted's tabular figures widen the point and the colon ("2 . 1", "00 : 10"). The one exception is the Room's running clock, whose digits are tabular so it doesn't jitter while its colon stays proportional (`Clock` in `Room.tsx`). Units read the same way everywhere: `151 wpm`, `2.1 s`, `0.0/min`.
 
 The scale is fluid and exposed as `text-*` utilities. Each step is at least 1.25× the next, so hierarchy comes from size and never from a second weight or an italic:
 
 | Token | Size | Use |
 |---|---|---|
-| `display-xl` | 40 → 68px | The landing H1, and its closing line |
+| `display-xl` | 44 → 92px | The landing H1, and its closing line |
+| `display-section` | 34 → 60px | A landing section's headline |
 | `display-l` | 30 → 44px | Page and section titles |
 | `display-m` | 20 → 26px | Spoken lines, names, the parts of a form |
 | `body-l` | 18 → 20px | Leads |
@@ -137,7 +138,7 @@ Motion explains time; it is never decoration.
 - **Allowed:**
   - the interviewers' blinks, glances and speaking light
   - captions arriving word by word
-  - the landing interviewer's loop
+  - the landing interviewer's loop, and its listening level
   - menus entering (`@starting-style`)
   - a playhead
   - a microphone meter
@@ -148,26 +149,25 @@ Motion explains time; it is never decoration.
 
 ## The landing page
 
-One idea per section, in the order a session happens:
+Bold and short: each section is one headline (`display-section`, 34 → 60px) and one thing shown, with a sentence of support at most. Every section starts one `section` space below the last, and its headline sits a fixed distance (48 → 64px) above what it shows.
 
-1. **Hero:** the promise beside the interviewer who keeps it. On desktop the headline, copy and action take seven columns on the left and Daniel stands in the five on the right, centered on each other; on narrower screens he follows the action. One filled action, one quiet link.
-2. **The interviewers:** "Choose who sits across from you." The six faces as a cast, each with a name, a role and how they interview, then one line on resumes, pressure and panels.
-3. **The Read:** "Evidence, not adjectives." A sample answer with Oriel's notes in its margin, then three measures with their targets and confidence.
-4. **Lessons:** a sentence of the sample answer, and the same story rewritten with the lesson, its blanks left for you.
-5. **Privacy:** four statements taken from the policy.
-6. **Pricing:** four plans, each with its price, who it's for, what's included and its action. The plan built for an interview on the calendar carries the page's filled button.
-7. **The close:** "Walk in ready."
+1. **Hero:** centred. The promise at 44 → 92px, one line of support, one filled action, and Daniel facing you beneath it, asking his questions as subtitles.
+2. **The interviewers:** "Pick who sits across from you." The six faces in a row, each with a name and a word or two on how they interview.
+3. **The Read:** the page's one band (`surface-1`). A sample answer with two marked phrases and Oriel's notes beside it, then three measures as large figures with their targets.
+4. **Lessons:** "Then see your answer, done right." The sample sentence, and the same story rewritten with its blanks left for you.
+5. **Privacy:** four promises from the policy, one line each.
+6. **Pricing:** four plans: name, price, three inclusions, an action. The plan built for an interview on the calendar carries the filled button.
+7. **The close:** the six faces small, then "Walk in ready."
 
 Every sample is labelled as one, and every claim comes from the product: the personas, the Read, the lesson writer, the privacy policy and the plan data.
 
-**The landing interviewer** (`components/marketing/InterviewPreview.tsx`) is a sample interview with Daniel, for a product manager's behavioral round.
+**The landing interviewer** (`components/marketing/InterviewPreview.tsx`) is a sample interview with Daniel.
 
-- It has no frame, no header bar and no fake controls in the tab order: the face, a nameplate with its play control, and the conversation beneath as subtitles.
-- It renders complete on the server, with a still of the same face under the canvas.
-- With motion allowed, it plays one loop: the question, an answer at about 150 words a minute, a follow-up, then a rest.
-- The loop pauses on hover, on focus, when off-screen, in a hidden tab, and with its pause button.
-- The question's line keeps the taller question's height, and the answer scrolls like captions, by transform and one whole line at a time, so the loop causes no layout shift.
-- Screen readers get the whole exchange as text.
+- No frame, no answer text: the face, his question as a subtitle, and a nameplate with its play control.
+- It loops through an opening question and two follow-ups; between them he listens (nods, eyes on you) while a small level moves under his face and the question settles back.
+- It renders complete on the server, with a still of the same face under the canvas, and the subtitle keeps the tallest question's height, so nothing shifts.
+- It pauses on hover, on focus, off-screen, in a hidden tab and with its button; under reduced motion it holds the first question.
+- Screen readers get the questions as text.
 
 ## Copy
 

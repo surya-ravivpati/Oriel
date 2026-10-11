@@ -46,10 +46,14 @@
 
   /* Type scale. Serif for Oriel's voice (display-*), sans for yours and the interface. Each step is
      at least 1.25x the next, so hierarchy comes from size, never from a second weight or an italic. */
-  --text-display-xl: clamp(2.5rem, 1.9rem + 2.6vw, 4.25rem);    /* 40 → 68px: the H1 of the landing page */
-  --text-display-xl--line-height: 1.02;
-  --text-display-xl--letter-spacing: -0.018em;
+  --text-display-xl: clamp(2.75rem, 1.5rem + 5vw, 5.75rem);     /* 44 → 92px: the H1 of the landing page */
+  --text-display-xl--line-height: 0.98;
+  --text-display-xl--letter-spacing: -0.022em;
   --text-display-xl--font-weight: 400;
+  --text-display-section: clamp(2.125rem, 1.4rem + 2.9vw, 3.75rem); /* 34 → 60px: a landing section's statement */
+  --text-display-section--line-height: 1.04;
+  --text-display-section--letter-spacing: -0.016em;
+  --text-display-section--font-weight: 400;
   --text-display-l: clamp(1.875rem, 1.5rem + 1.5vw, 2.75rem);   /* 30 → 44px: page and section titles */
   --text-display-l--line-height: 1.1;
   --text-display-l--letter-spacing: -0.012em;
@@ -124,7 +128,7 @@
   * { scrollbar-width: thin; scrollbar-color: var(--color-control) transparent; }
   /* A phone on its side: a smaller headline and less air above it, so the call to action stays in view. */
   @media (orientation: landscape) and (max-height: 30rem) {
-    :root { --text-display-xl: clamp(2.25rem, 1rem + 3vw, 3rem); --spacing-hero: 1.25rem; }
+    :root { --text-display-xl: clamp(2.25rem, 1rem + 3vw, 3.25rem); --spacing-hero: 1.25rem; }
   }
 }
 
@@ -141,7 +145,7 @@
 
 @layer utilities {
   /* Display steps are always set in the serif: Oriel's voice. */
-  .text-display-xl, .text-display-l, .text-display-m { font-family: var(--font-display); font-optical-sizing: auto; }
+  .text-display-xl, .text-display-section, .text-display-l, .text-display-m { font-family: var(--font-display); font-optical-sizing: auto; }
   .text-balance { text-wrap: balance; }
   /* Hanging punctuation: an opening quote sits in the margin so the words keep the column's edge.
      The indent is the measured width of “ in Newsreader (.hang) and Schibsted Grotesk (.hang-sans). */
@@ -153,6 +157,8 @@
 /* The interviewer blinks: a quick squint, then a long pause. Used by the mark when Oriel is working. */
 @keyframes blink { 0%, 88%, 100% { transform: scaleY(1); } 92% { transform: scaleY(0.12); } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+/* A voice level, for the landing interviewer's "your turn". */
+@keyframes meter { 0%, 100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
 /* Things that float in (menus, dialogs) arrive from just below where they settle. */
 @keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
