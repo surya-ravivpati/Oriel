@@ -4,18 +4,18 @@ import { requireUser } from "@/lib/auth/session";
 import { getDb, schema } from "@/db/client";
 import { ButtonLink, TextLink } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Card";
-import { DrillCard, PlaybackClipCard } from "@/components/app/cards";
-import { ladderState, listSessions, progressSummary, recentClips } from "@/server/queries";
-import { PROGRESS_METRICS, recommendDrill } from "@/lib/practice/progress";
+import { ladderState, listSessions, progressSummary } from "@/server/queries";
+import { recommendDrill } from "@/lib/practice/progress";
 import { getDrill } from "@/lib/practice/catalog";
 import { relDate, TYPE_LABEL } from "@/lib/format";
 import { nextLesson } from "@/server/lessons";
-import { LessonCard, summarize } from "@/components/app/lessons";
 import { InterviewerStage } from "@/components/avatar/InterviewerStage";
 import { savedStyles } from "@/server/avatar-styles";
 import { PERSONAS, type PersonaId } from "@/lib/interview/personas";
 import { callName } from "@/lib/avatar/style";
 import { dueReviews } from "@/server/training/service";
+import { LESSONS } from "@/lib/lessons/library";
+import type { LessonKey } from "@/lib/lessons/types";
 
 export const metadata = { title: "Home" };
 
@@ -23,16 +23,20 @@ export default async function Home() {
   const user = await requireUser();
   const profile = getDb().select().from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get();
   const sessions = listSessions(user.id, 5);
-  const { latest, baseline, vsBaseline, history } = progressSummary(user.id);
+  const { latest, history } = progressSummary(user.id);
   const { current } = ladderState(user.id);
-  const clips = recentClips(user.id, 3);
   const rec = recommendDrill(latest?.metrics ?? {});
   const drill = getDrill(rec.drillId)!;
-  const improved = vsBaseline.filter((c) => c.improved === true);
   const lesson = nextLesson(user.id);
   const next = current.personaIds[0];
   const styles = savedStyles(user.id);
   const reviews = dueReviews(user.id);
+  // One suggestion, in order of what matters most: a review that's due, the next lesson, a drill.
+  const upNext = reviews.length
+    ? { title: `Review: ${reviews[0].label}`, why: "A new question, answered cold, to see whether what you practiced has held.", href: "/train", action: "Start the review" }
+    : lesson
+      ? { title: LESSONS[lesson.lessonKey as LessonKey].title, why: LESSONS[lesson.lessonKey as LessonKey].promise, href: `/lessons/${lesson.lessonKey}`, action: "Open the lesson" }
+      : { title: drill.title, why: rec.reason, href: `/drills/${drill.id}`, action: "Start the drill" };
 
   return (
     <div>
@@ -59,58 +63,23 @@ export default async function Home() {
         </figure>
       </section>
 
-      <Band title="Since your baseline" link={["/progress", "All progress"]}>
-        {latest && history.length > 1 ? (
-          <table className="w-full max-w-[46rem] text-left">
-            <thead>
-              <tr className="border-b border-divider text-meta text-stone-dim"><th scope="col" className="pb-2 font-normal">Measure</th><th scope="col" className="pb-2 font-normal">Latest</th><th scope="col" className="pb-2 font-normal">Baseline</th><th scope="col" className="pb-2 text-right font-normal">Change</th></tr>
-            </thead>
-            <tbody>
-              {PROGRESS_METRICS.slice(0, 4).map((m) => {
-                const c = vsBaseline.find((x) => x.key === m.key);
-                const v = latest.metrics[m.key];
-                return (
-                  <tr key={m.key} className="border-b border-divider">
-                    <th scope="row" className="py-3 pr-4 text-ui font-medium text-ivory">{m.label}</th>
-                    <td className="py-3 pr-4 text-ui text-ivory">{v == null ? "n/a" : m.format(v)}</td>
-                    <td className="py-3 pr-4 text-ui text-stone-dim">{baseline[m.key] == null ? "not yet" : m.format(baseline[m.key]!)}</td>
-                    <td className={`py-3 text-right text-meta font-medium ${c?.improved ? "text-signal-good" : "text-stone-dim"}`}>{c?.improved ? "Better" : c?.improved === false ? "Not yet" : ""}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        ) : (
-          <p className="max-w-[40rem] text-body text-stone">{latest ? "One session in. Your baseline is set; the next session shows what has changed." : "Complete a session to see your baseline."}</p>
-        )}
-        {improved.length > 0 && <p className="mt-4 text-ui text-stone">Better than your baseline on {improved.map((c) => c.label.toLowerCase()).join(", ")}.</p>}
-      </Band>
-
-      {reviews.length > 0 && (
-        <Band title="Due for review" link={["/train", "Training"]}>
-          <p className="max-w-[40rem] text-body text-stone">
-            <span className="text-ivory">{reviews.map((r) => r.label).join(", ")}.</span> A new question, answered cold, to see whether what you practiced has held.
-          </p>
-          <TextLink href="/train" className="mt-3 inline-block text-ui">Start {reviews.length > 1 ? "your reviews" : "the review"}</TextLink>
-        </Band>
-      )}
-
-      <Band title={lesson ? "Your next lesson" : "A drill for today"} link={lesson ? ["/lessons", "All lessons"] : ["/drills", "All drills"]}>
-        <div className="max-w-[36rem]">{lesson ? <LessonCard l={summarize(lesson)} /> : <DrillCard drill={drill} recommended={rec.reason} />}</div>
-      </Band>
-
-      {/* The two lists close the page side by side, each under its own rule, aligned to the 12-column grid. */}
-      <section className="page-grid gap-y-12 pt-16">
-        <div className="col-span-4 sm:col-span-8 lg:col-span-7">
-          <div className="flex items-baseline justify-between gap-4"><h2 className="text-ui font-medium text-ivory">What you struggled with</h2><TextLink href="/playback" className="text-meta">All Playback</TextLink></div>
-          <div className="mt-3 border-b border-divider">
-            {clips.length ? clips.map((c) => <PlaybackClipCard key={c.id} clip={c} compact href={`/playback/${c.sessionId}?t=${c.startMs}&clip=${c.id}`} />) : <p className="border-t border-divider py-5 text-ui text-stone-dim">Your Playback moments will appear here after your first session.</p>}
+      {/* After the greeting, only two things: the one thing to do next, and where you've been. */}
+      <section className="page-grid gap-y-14 pt-16">
+        <div className="col-span-4 sm:col-span-8 lg:col-span-6">
+          <h2 className="text-ui font-medium text-ivory">Up next</h2>
+          <div className="mt-3 border-t border-divider pt-5">
+            <p className="text-display-m text-ivory">{upNext.title}</p>
+            <p className="mt-2 max-w-[34rem] text-ui text-stone">{upNext.why}</p>
+            <TextLink href={upNext.href} className="mt-4 inline-block text-ui">{upNext.action}</TextLink>
           </div>
         </div>
-        <div className="col-span-4 sm:col-span-8 lg:col-span-5">
-          <h2 className="text-ui font-medium text-ivory">Recent sessions</h2>
+        <div className="col-span-4 sm:col-span-8 lg:col-span-5 lg:col-start-8">
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="text-ui font-medium text-ivory">Recent sessions</h2>
+            {sessions.length > 0 && <TextLink href="/playback" className="text-meta">All results</TextLink>}
+          </div>
           <ul className="mt-3 border-t border-divider">
-            {sessions.length ? sessions.map((s) => (
+            {sessions.length ? sessions.slice(0, 3).map((s) => (
               <li key={s.id} className="border-b border-divider">
                 <Link href={s.status === "ended" ? `/playback/${s.id}` : `/room/${s.id}`} className="-mx-2 flex items-center gap-4 rounded-control px-2 py-3.5 transition-colors duration-[var(--dur-press)] hover:bg-surface-1">
                   <div className="min-w-0 flex-1">
@@ -125,18 +94,5 @@ export default async function Home() {
         </div>
       </section>
     </div>
-  );
-}
-
-/** A section of the page as a document reads: its title in the margin (columns 1–3), its content from column 4. Space, not a rule, sets it apart. */
-function Band({ title, link, children }: { title: string; link?: [string, string]; children: React.ReactNode }) {
-  return (
-    <section className="page-grid gap-y-5 pt-16">
-      <div className="col-span-4 flex items-baseline justify-between gap-4 sm:col-span-8 lg:col-span-3 lg:block">
-        <h2 className="text-ui font-medium text-ivory">{title}</h2>
-        {link && <TextLink href={link[0]} className="text-meta lg:mt-1.5 lg:inline-block">{link[1]}</TextLink>}
-      </div>
-      <div className="col-span-4 min-w-0 sm:col-span-8 lg:col-span-9">{children}</div>
-    </section>
   );
 }

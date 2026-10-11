@@ -6,10 +6,16 @@ import { AnimatePresence, motion } from "motion/react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/components/ui/cn";
 
-const LINKS = [
-  ["/home", "Home"], ["/practice", "Practice"], ["/train", "Train"], ["/lessons", "Lessons"], ["/playback", "Playback"], ["/drills", "Drills"],
-  ["/ladder", "Ladder"], ["/progress", "Progress"],
-] as const;
+/**
+ * Four sections, by what you came to do: start, interview, improve, look back. Each section's
+ * pages appear as tabs beneath the bar, so the bar itself stays four words long.
+ */
+const SECTIONS: { label: string; href: string; pages: [string, string][] }[] = [
+  { label: "Home", href: "/home", pages: [["/home", "Home"]] },
+  { label: "Interview", href: "/practice", pages: [["/practice", "Set up"], ["/ladder", "Ladder"]] },
+  { label: "Improve", href: "/train", pages: [["/train", "Train"], ["/lessons", "Lessons"], ["/drills", "Drills"]] },
+  { label: "Results", href: "/playback", pages: [["/playback", "Sessions"], ["/progress", "Progress"]] },
+];
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
@@ -24,6 +30,7 @@ export function AppNav({ isAdmin, name, mockProviders }: { isAdmin: boolean; nam
   const [scrolled, setScrolled] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
   const isOn = (href: string) => path === href || path.startsWith(`${href}/`);
+  const section = SECTIONS.find((x) => x.pages.some(([h]) => isOn(h))) ?? null;
   const account: [string, string][] = [["/profile", "Profile & settings"], ...(isAdmin ? [["/admin", "Admin"] as [string, string]] : [])];
 
   useEffect(() => {
@@ -56,10 +63,10 @@ export function AppNav({ isAdmin, name, mockProviders }: { isAdmin: boolean; nam
         <div className="frame flex h-14 items-center gap-10">
           <Link href="/home" aria-label="Oriel home" className="-ml-1 inline-flex shrink-0 items-center rounded-control p-1" onClick={() => setSheet(false)}><Logo /></Link>
           <nav aria-label="Main" className="hidden h-full items-stretch gap-7 lg:flex">
-            {LINKS.map(([href, label]) => {
-              const on = isOn(href);
+            {SECTIONS.map(({ href, label }) => {
+              const on = section?.href === href;
               return (
-                <Link key={href} href={href} aria-current={on ? "page" : undefined}
+                <Link key={href} href={href} aria-current={on ? "true" : undefined}
                   className={cn("relative flex items-center whitespace-nowrap text-ui transition-colors duration-[var(--dur-press)]", on ? "text-ivory" : "text-stone hover:text-ivory")}>
                   {label}
                   {on && <motion.span layoutId="nav-mark" className="absolute inset-x-0 -bottom-px h-0.5 bg-olive-light" transition={{ duration: 0.32, ease: EASE }} />}
@@ -76,15 +83,35 @@ export function AppNav({ isAdmin, name, mockProviders }: { isAdmin: boolean; nam
             </button>
           </div>
         </div>
+        {/* The section's pages, as tabs; only for sections with more than one page. */}
+        {section && section.pages.length > 1 && (
+          <nav aria-label={section.label} className="frame hidden h-11 items-stretch gap-6 border-t border-divider lg:flex">
+            {section.pages.map(([href, label]) => {
+              const on = isOn(href);
+              return (
+                <Link key={href} href={href} aria-current={on ? "page" : undefined}
+                  className={cn("relative flex items-center text-ui transition-colors duration-[var(--dur-press)]", on ? "text-ivory" : "text-stone hover:text-ivory")}>
+                  {label}
+                  {on && <span className="absolute inset-x-0 -bottom-px h-px bg-ivory" />}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
       </header>
       <AnimatePresence>
         {sheet && (
           <motion.div id="app-sheet" className="fixed inset-x-0 bottom-0 top-14 z-40 overflow-y-auto overscroll-contain bg-ink lg:hidden"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            <nav aria-label="Menu" className="frame flex flex-col pb-10 pt-2">
-              {[...LINKS, ...account].map(([href, label]) => (
-                <Link key={href} href={href} onClick={() => setSheet(false)} aria-current={isOn(href) ? "page" : undefined}
-                  className={cn("flex min-h-14 items-center border-b border-divider text-display-m", isOn(href) ? "text-olive-light" : "text-ivory")}>{label}</Link>
+            <nav aria-label="Menu" className="frame flex flex-col pb-10 pt-4">
+              {[...SECTIONS, { label: "Account", href: "/profile", pages: account }].map((sec) => (
+                <div key={sec.label} className="border-b border-divider py-3">
+                  {sec.pages.length > 1 && <p className="text-meta text-stone-dim">{sec.label}</p>}
+                  {sec.pages.map(([href, label]) => (
+                    <Link key={href} href={href} onClick={() => setSheet(false)} aria-current={isOn(href) ? "page" : undefined}
+                      className={cn("flex min-h-12 items-center text-display-m", isOn(href) ? "text-olive-light" : "text-ivory")}>{sec.pages.length > 1 || sec.label === "Account" ? label : sec.label}</Link>
+                  ))}
+                </div>
               ))}
               <div className="mt-8 flex items-center justify-between gap-4">
                 <span className="text-ui text-stone">{name ?? "Signed in"}</span>
