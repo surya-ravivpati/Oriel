@@ -29,6 +29,13 @@
       "when": 1790896191104,
       "tag": "0003_lessons",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791691796203,
+      "tag": "0004_training",
+      "breakpoints": true
     }
   ]
 }

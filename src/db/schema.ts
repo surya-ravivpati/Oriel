@@ -2,6 +2,8 @@ import { sqliteTable, text, integer, real, index, uniqueIndex } from "drizzle-or
 import { sql } from "drizzle-orm";
 import type { AvatarStyle } from "../lib/avatar/style";
 import type { LessonContent, LessonEvidence } from "../lib/lessons/types";
+import type { CriterionJudgment, LoopOutcome, Weakness } from "../lib/training/engine";
+import type { Exercise } from "../lib/training/questions";
 
 /**
  * Oriel relational model. SQLite in development (better-sqlite3), shaped so it maps
@@ -370,6 +372,78 @@ export const lessons = sqliteTable("lessons", {
   createdAt: createdAt(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(sql`(unixepoch() * 1000)`),
 }, (t) => [uniqueIndex("lessons_user_key_idx").on(t.userId, t.lessonKey)]);
+
+// ─── Deliberate practice (lib/training) ─────────────────────────────────────
+// A loop trains one competency: an attempt, a retry on the same question, a transfer to a new
+// one; a review loop revisits it later. Attempts keep the exact question they answered;
+// evaluations keep the rubric version and the criteria as judged, so history stays readable
+// when a rubric changes. Everything is owned by a user and goes when they do.
+
+export const trainingLoops = sqliteTable("training_loops", {
+  id: id(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  kind: text("kind", { enum: ["practice", "review"] }).notNull(),
+  category: text("category").notNull(),
+  competencyId: text("competency_id").notNull(),
+  rubricVersion: integer("rubric_version").notNull(),
+  stage: text("stage", { enum: ["attempt", "retry", "transfer", "done"] }).notNull(),
+  targetCriterion: text("target_criterion"),
+  scaffold: integer("scaffold").notNull().default(0),
+  retries: integer("retries").notNull().default(0),
+  insufficientStreak: integer("insufficient_streak").notNull().default(0),
+  /** The exercise being answered now (the retry reuses it; the transfer replaces it). */
+  question: json<Exercise>("question").notNull(),
+  reviewOfLoopId: text("review_of_loop_id"),
+  outcome: json<LoopOutcome>("outcome"),
+  createdAt: createdAt(),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+}, (t) => [index("training_loops_user_idx").on(t.userId)]);
+
+export const trainingAttempts = sqliteTable("training_attempts", {
+  id: id(),
+  loopId: text("loop_id").notNull().references(() => trainingLoops.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  stage: text("stage", { enum: ["initial", "retry", "transfer", "review"] }).notNull(),
+  questionId: text("question_id").notNull(),
+  questionText: text("question_text").notNull(),
+  questionSource: text("question_source", { enum: ["curated", "generated"] }).notNull(),
+  response: text("response").notNull(),
+  inputMode: text("input_mode", { enum: ["voice", "text"] }).notNull(),
+  durationMs: integer("duration_ms").notNull(),
+  /** Set by the client per submission, so a resent request never makes a second attempt. */
+  clientKey: text("client_key").notNull(),
+  createdAt: createdAt(),
+}, (t) => [index("training_attempts_loop_idx").on(t.loopId), uniqueIndex("training_attempts_key_idx").on(t.userId, t.clientKey)]);
+
+export const trainingEvaluations = sqliteTable("training_evaluations", {
+  id: id(),
+  attemptId: text("attempt_id").notNull().references(() => trainingAttempts.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  competencyId: text("competency_id").notNull(),
+  rubricVersion: integer("rubric_version").notNull(),
+  evaluator: text("evaluator", { enum: ["model", "pattern"] }).notNull(),
+  criteria: json<CriterionJudgment[]>("criteria").notNull(),
+  enoughEvidence: integer("enough_evidence", { mode: "boolean" }).notNull(),
+  confidence: text("confidence", { enum: ["high", "medium", "low"] }).notNull(),
+  primary: json<Weakness>("primary_weakness"),
+  secondary: json<string[]>("secondary").notNull(),
+  limitations: text("limitations"),
+  insufficientReason: text("insufficient_reason"),
+  createdAt: createdAt(),
+}, (t) => [uniqueIndex("training_evaluations_attempt_idx").on(t.attemptId)]);
+
+export const trainingReviews = sqliteTable("training_reviews", {
+  id: id(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  competencyId: text("competency_id").notNull(),
+  category: text("category").notNull(),
+  sourceLoopId: text("source_loop_id").notNull().references(() => trainingLoops.id, { onDelete: "cascade" }),
+  targetCriterion: text("target_criterion"),
+  dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(),
+  startedLoopId: text("started_loop_id"),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+  createdAt: createdAt(),
+}, (t) => [index("training_reviews_user_due_idx").on(t.userId, t.dueAt)]);
 
 export const ladderLevels = sqliteTable("ladder_levels", {
   level: integer("level").primaryKey(),

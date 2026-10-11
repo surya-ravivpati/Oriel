@@ -7,7 +7,7 @@ import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/components/ui/cn";
 
 const LINKS = [
-  ["/home", "Home"], ["/practice", "Practice"], ["/lessons", "Lessons"], ["/playback", "Playback"], ["/drills", "Drills"],
+  ["/home", "Home"], ["/practice", "Practice"], ["/train", "Train"], ["/lessons", "Lessons"], ["/playback", "Playback"], ["/drills", "Drills"],
   ["/ladder", "Ladder"], ["/progress", "Progress"],
 ] as const;
 const EASE = [0.22, 1, 0.36, 1] as const;

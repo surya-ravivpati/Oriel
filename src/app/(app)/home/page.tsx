@@ -15,6 +15,7 @@ import { InterviewerStage } from "@/components/avatar/InterviewerStage";
 import { savedStyles } from "@/server/avatar-styles";
 import { PERSONAS, type PersonaId } from "@/lib/interview/personas";
 import { callName } from "@/lib/avatar/style";
+import { dueReviews } from "@/server/training/service";
 
 export const metadata = { title: "Home" };
 
@@ -31,6 +32,7 @@ export default async function Home() {
   const lesson = nextLesson(user.id);
   const next = current.personaIds[0];
   const styles = savedStyles(user.id);
+  const reviews = dueReviews(user.id);
 
   return (
     <div>
@@ -83,6 +85,15 @@ export default async function Home() {
         )}
         {improved.length > 0 && <p className="mt-4 text-ui text-stone">Better than your baseline on {improved.map((c) => c.label.toLowerCase()).join(", ")}.</p>}
       </Band>
+
+      {reviews.length > 0 && (
+        <Band title="Due for review" link={["/train", "Training"]}>
+          <p className="max-w-[40rem] text-body text-stone">
+            <span className="text-ivory">{reviews.map((r) => r.label).join(", ")}.</span> A new question, answered cold, to see whether what you practiced has held.
+          </p>
+          <TextLink href="/train" className="mt-3 inline-block text-ui">Start {reviews.length > 1 ? "your reviews" : "the review"}</TextLink>
+        </Band>
+      )}
 
       <Band title={lesson ? "Your next lesson" : "A drill for today"} link={lesson ? ["/lessons", "All lessons"] : ["/drills", "All drills"]}>
         <div className="max-w-[36rem]">{lesson ? <LessonCard l={summarize(lesson)} /> : <DrillCard drill={drill} recommended={rec.reason} />}</div>
