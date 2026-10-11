@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { cn } from "@/components/ui/cn";
 import { LogoMark, Thinking } from "@/components/ui/Logo";
+import { Interviewer } from "@/components/brand/Interviewer";
 import { LocalAvatarProvider } from "@/lib/avatar/local-provider";
 import { ExternalAvatarProvider } from "@/lib/avatar/external-provider";
 import type { AvatarSeatConfig, AvatarSession } from "@/lib/avatar/types";
@@ -266,7 +267,7 @@ export function Room(props: RoomProps) {
           {/* Session bar: where you are, how long, whether it's recording. */}
           <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-divider px-4 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
-              <LogoMark className="size-5 shrink-0" />
+              <LogoMark className="w-6 text-ivory" />
               <p className="truncate text-meta text-stone"><span className="font-medium text-ivory">Mock interview</span><span className="hidden sm:inline"> · {props.role}</span></p>
             </div>
             <div className="flex shrink-0 items-center gap-4 text-meta">
@@ -307,8 +308,14 @@ export function Room(props: RoomProps) {
                     <span className="font-medium text-ivory">{active.name} · {active.title}</span>
                     <span className="text-stone-dim">AI</span>
                   </p>
+                  {/* The hand-off between questions: once you finish, your question settles back while the
+                      interviewer thinks; the next one rises in as it is said (or when it has been said,
+                      with captions off), and grows sentence by sentence with the voice. */}
                   <div className="mt-2 min-h-[4.25rem]">
-                    {showQuestion && <p className="text-display-m text-ivory">{question}</p>}
+                    {showQuestion && (
+                      <p key={ui?.questionKey ?? question} className={cn("text-display-m transition-[color,opacity] duration-[var(--dur-panel)] ease-[var(--ease-state)] motion-safe:animate-[enter_var(--dur-panel)_var(--ease-enter)]",
+                        phase === "processing" ? "text-stone opacity-60" : "text-ivory")}>{question}</p>
+                    )}
                   </div>
                   {stage === "live" && ui?.phase === "listening" && ui.inputMode === "text" && (
                     <form onSubmit={(e) => { e.preventDefault(); controller.current?.submitText(typed); setTyped(""); }} className="mt-3 flex items-end gap-2">
@@ -549,7 +556,7 @@ function VoiceFace({ provider, name }: { provider: LocalAvatarProvider; name: st
   return (
     <div className="absolute inset-0 grid place-items-center">
       <div className="text-center">
-        <div ref={ref} className="mx-auto w-40"><LogoMark size={160} className="w-full" /></div>
+        <div ref={ref} className="mx-auto w-40"><Interviewer size={160} className="w-full" /></div>
         <p className="mt-6 text-meta text-stone-dim">{name}, voice only</p>
       </div>
     </div>

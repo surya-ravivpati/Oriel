@@ -25,6 +25,8 @@ export interface RoomUiState {
   phase: RoomPhase;
   activeSeat: number;
   caption: string | null;
+  /** Changes once per interviewer utterance, so the caption can animate in once and then grow in place. */
+  questionKey: number;
   transcript: string;
   inputMode: "voice" | "text";
   sttMode: "browser" | "server" | "none";
@@ -76,7 +78,7 @@ export class RoomController {
 
   constructor(private o: RoomControllerOptions) {
     this.state = {
-      phase: "starting", activeSeat: 0, caption: null, transcript: "", inputMode: o.micStream ? "voice" : "text",
+      phase: "starting", activeSeat: 0, caption: null, questionKey: 0, transcript: "", inputMode: o.micStream ? "voice" : "text",
       sttMode: o.sttMode, voice: "server", error: null, complete: false, recording: false, hint: null,
     };
   }
@@ -202,6 +204,8 @@ export class RoomController {
           case "text":
             text = ev.text;
             this.questionId = ev.questionId;
+            // Once the interviewer is speaking, the caption grows with each sentence sent to the voice.
+            if (firstAudio && this.state.phase === "interviewer") this.set({ caption: text });
             break;
           case "audio": {
             if (!firstAudio) {
@@ -217,8 +221,14 @@ export class RoomController {
             this.audio.endUtterance();
             break;
           case "tts_fallback": {
-            const hold = answerEnd === null ? 0 : Math.max(0, preSilence - (this.clock - answerEnd));
             this.set({ voice: "browser" });
+            if (firstAudio) {
+              // The acknowledgement was voiced by the server; the rest follows in the local voice, after it.
+              const rest = ev.text ?? text;
+              browserVoice = this.audio.waitForEnd().then(() => speakWithBrowser(rest, { audio: this.audio, onStart: () => this.set({ caption: text }) }));
+              break;
+            }
+            const hold = answerEnd === null ? 0 : Math.max(0, preSilence - (this.clock - answerEnd));
             browserVoice = new Promise<void>((r) => setTimeout(r, hold)).then(() =>
               speakWithBrowser(text, { audio: this.audio, onStart: () => this.onInterviewerStarts(seat, text, answerEnd, preSilence, t0) }));
             break;
@@ -263,7 +273,7 @@ export class RoomController {
       this.lastClientTimings = { ...this.lastClientTimings, prevPerceivedMs: Math.round(perceived), prevRequestToAudioMs: Math.round(this.questionStart - t0) };
     }
     void this.o.provider.setState(this.o.avatarSession, "speaking", { seat });
-    this.set({ phase: "interviewer", caption: text, activeSeat: seat, transcript: "", hint: null });
+    this.set({ phase: "interviewer", caption: text, questionKey: this.state.questionKey + 1, activeSeat: seat, transcript: "", hint: null });
   }
 
   // ─── Listening ───────────────────────────────────────────────────────────
@@ -308,14 +318,15 @@ export class RoomController {
       this.lastVagueCheck = now;
       if (words(text).length > 40 && analyzeAnswer(text, dur / 1000).vagueness >= pol.vagueThreshold) return void this.interrupt();
     }
-    // Endpointing: silence after speech. Short when the recogniser has closed the
-    // sentence, longer while words are still arriving or the answer is very short.
+    // Endpointing: silence after speech, about as long as a person waits before taking the
+    // turn. Short when the recogniser has closed the sentence, longer while words are still
+    // arriving, and longest for a very short answer (which is often a pause to think).
     if (!mic.voiced) {
       const silence = now - mic.lastVoicedAt;
       const wc = words(text).length;
       const settled = this.state.sttMode === "browser" && this.transcriber.settled;
-      const need = wc < 6 ? 2400 : settled ? 850 : 1300;
-      const captionsSettling = this.state.sttMode === "browser" && !settled && performance.now() - this.transcriber.lastResultAt < 400;
+      const need = wc < 6 ? 1800 : settled ? 700 : 1050;
+      const captionsSettling = this.state.sttMode === "browser" && !settled && performance.now() - this.transcriber.lastResultAt < 300;
       if (silence >= need && !captionsSettling) void this.finishAnswer(false);
     }
   }
@@ -339,7 +350,13 @@ export class RoomController {
     const answerEnd = this.mic && this.answerStart !== null ? Math.max(this.answerStart + 500, this.mic.lastVoicedAt) : this.clock;
     this.set({ phase: "processing", hint: null });
     this.o.provider.store.candidateSpeaking = false;
-    if (!interrupted) void this.o.provider.setState(this.o.avatarSession, (this.listening?.pressure ?? 2) >= 4 ? "listening" : "thinking");
+    if (!interrupted) {
+      // The interviewer reacts the moment you stop, as a person would: a small nod (except
+      // under high pressure, where the gaze stays level), then a thinking beat while it replies.
+      const pressure = this.listening?.pressure ?? 2;
+      if (pressure < 4) this.o.provider.store.fireCue("nod", this.state.activeSeat);
+      void this.o.provider.setState(this.o.avatarSession, pressure >= 4 ? "listening" : "thinking");
+    }
     let text = this.state.sttMode === "browser" ? await this.transcriber.stop() : "";
     const blob = await this.answerRec.stop();
     if (!text && blob && this.state.sttMode !== "none") {

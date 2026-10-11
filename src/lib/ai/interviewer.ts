@@ -19,6 +19,8 @@ export interface RenderContext {
   lastQuestion: string | null;
   lastAnswer: string | null;
   recentTurns: { speaker: "interviewer" | "candidate"; text: string }[];
+  /** An acknowledgement already spoken from the speech cache while this utterance was being written. */
+  alreadySaid?: string;
 }
 
 export interface RenderedUtterance {
@@ -32,7 +34,7 @@ export interface RenderedUtterance {
   error?: string;
 }
 
-/** Fixed phrases the template renderer uses; prewarmed into the speech cache per voice. */
+/** Fixed phrases the template renderer uses, and the acknowledgement that bridges a turn; prewarmed into the speech cache per voice. */
 export const ACK_WARM = ["Thanks, that's helpful.", "Got it, thank you."];
 export const ACK_BRIEF = ["Okay.", "Right."];
 export const CLOSING_LINE = "We're coming up on time. What questions do you have for me?";
@@ -85,7 +87,8 @@ function systemPrompt(ctx: RenderContext): string {
     "- Never give feedback, scores, or coaching. You are an interviewer, not a coach.",
     "- Never invent facts about the candidate. Only reference what they actually said, and only the claim text you are given.",
     "- Do not repeat the candidate's answer back at length. Do not start with 'Great question'.",
-    decision.acknowledgement === "warm" ? "- Begin with a short, genuine acknowledgement." : decision.acknowledgement === "brief" ? "- You may begin with a two-or-three word acknowledgement." : "- Do not acknowledge or praise the previous answer.",
+    ctx.alreadySaid ? `- You have just said "${ctx.alreadySaid}" out loud. Carry straight on from it; do not acknowledge again.`
+      : decision.acknowledgement === "warm" ? "- Begin with a short, genuine acknowledgement." : decision.acknowledgement === "brief" ? "- You may begin with a two-or-three word acknowledgement." : "- Do not acknowledge or praise the previous answer.",
   ].join("\n");
 }
 

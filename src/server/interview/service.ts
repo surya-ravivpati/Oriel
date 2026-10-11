@@ -8,8 +8,8 @@ import { logEvent } from "@/lib/costs/events";
 import { recordTokenCost } from "@/lib/costs/record";
 import { analyzeAnswer } from "@/lib/analysis/text";
 import { analyzeAnswerWithModel } from "@/lib/ai/analyzers";
-import { cacheablePhrases, renderTemplate, streamUtterance, type RenderedUtterance } from "@/lib/ai/interviewer";
-import { prewarm, synth } from "./speech";
+import { ACK_BRIEF, ACK_WARM, TEMPLATE_INTENTS, cacheablePhrases, renderTemplate, streamUtterance, type RenderedUtterance } from "@/lib/ai/interviewer";
+import { isCached, prewarm, synth } from "./speech";
 import { getLanguageModel, getTextToSpeech } from "@/lib/ai/providers/registry";
 import {
   decide, initialState, listeningPolicy, openingDecision, recordAsked,
@@ -33,7 +33,8 @@ export type RoomEvent =
   | { type: "text"; questionId: string; text: string; source: RenderedUtterance["source"]; seat: number }
   | { type: "audio"; seq: number; sampleRate: number; pcm: string }
   | { type: "audio_end"; chunks: number }
-  | { type: "tts_fallback"; reason: string }
+  /** Server speech failed; the client speaks `text` (or the whole utterance) in its own voice. */
+  | { type: "tts_fallback"; reason: string; text?: string }
   | { type: "done"; phase: string; complete: boolean; listening: ReturnType<typeof listeningPolicy>; timings: Record<string, number> }
   | { type: "error"; message: string; recoverable: boolean };
 
@@ -277,9 +278,23 @@ async function* deliver(p: {
 
   const recent = db.select().from(schema.transcriptSegments).where(eq(schema.transcriptSegments.sessionId, p.sessionId)).orderBy(desc(schema.transcriptSegments.startMs)).limit(6).all().reverse();
   const llm = getLanguageModel();
+  const tts = getTextToSpeech();
+
+  // The bridge: when the model has to write the follow-up, a person would still react at once.
+  // If this turn calls for an acknowledgement and its voice is already cached, it is spoken
+  // immediately ("Okay." … "And what changed as a result?"), and the model is told it was said.
+  // Only cached phrases are used, so the bridge costs no extra speech request.
+  const writes = !llm.isMock && !!llm.streamText && !TEMPLATE_INTENTS.includes(p.decision.intent);
+  // A turn with no acknowledgement still gets a neutral backchannel ("Okay.") up to pressure 3; above
+  // that, and when cutting in or challenging, the silence is deliberate and stays.
+  const silentOnPurpose = p.decision.pressure >= 4 || ["redirect_after_interrupt", "cross_question", "challenge_claim"].includes(p.decision.intent);
+  const ackKind = p.decision.acknowledgement !== "none" ? p.decision.acknowledgement : silentOnPurpose ? "none" : "brief";
+  const ackPool = ackKind === "warm" ? ACK_WARM : ackKind === "brief" ? ACK_BRIEF : [];
+  const bridge = writes && !tts.isMock ? ackPool.slice((p.state.answerSeq + p.decision.seat) % Math.max(1, ackPool.length)).concat(ackPool).find((a) => isCached(voice, a)) ?? null : null;
+  const decision = bridge ? { ...p.decision, acknowledgement: "none" as const } : p.decision;
   const ctx = {
-    state: p.state, decision: p.decision, candidateName: p.candidateName, lastQuestion: p.lastQuestion, lastAnswer: p.lastAnswer,
-    recentTurns: recent.map((r) => ({ speaker: r.speaker, text: r.text })),
+    state: p.state, decision, candidateName: p.candidateName, lastQuestion: p.lastQuestion, lastAnswer: p.lastAnswer,
+    recentTurns: recent.map((r) => ({ speaker: r.speaker, text: r.text })), alreadySaid: bridge ?? undefined,
   };
 
   // The interviewer's words arrive sentence by sentence; speech starts on the first one.
@@ -307,24 +322,53 @@ async function* deliver(p: {
   };
 
   const questionId = newId("qst");
-  const first = await next();
-  const tFirstText = performance.now() - p.t0;
-  yield { type: "text", questionId, text: first ?? "", source: "llm", seat: iv.seat };
-
-  const tts = getTextToSpeech();
   let seq = 0;
   let firstAudioMs: number | null = null;
   let ttsFailed = tts.isMock;
   let ttsFirstChunkMs: number | null = null;
   let cacheHits = 0;
+  // What has been sent to the voice so far; the client's caption follows it sentence by sentence.
+  const said: string[] = [];
+  if (bridge) {
+    said.push(bridge);
+    yield { type: "text", questionId, text: bridge, source: "template", seat: iv.seat };
+    try {
+      const sg = synth(voice, bridge);
+      let r = await sg.next();
+      while (!r.done) {
+        if (firstAudioMs === null) firstAudioMs = performance.now() - p.t0;
+        yield { type: "audio", seq: seq++, sampleRate: r.value.sampleRate, pcm: r.value.pcm.toString("base64") };
+        r = await sg.next();
+      }
+      cacheHits++;
+    } catch {
+      // A cached phrase cannot fail to synthesise; if it somehow does, the follow-up still comes.
+    }
+  }
+  const bridgeChunks = seq;
+
+  const first = await next();
+  const tFirstText = performance.now() - p.t0;
+  if (first !== null) said.push(first);
+  yield { type: "text", questionId, text: said.join(" "), source: "llm", seat: iv.seat };
+
   // Fewer TTS requests: if the model finishes within a beat of the first sentence,
   // speak the whole utterance in one request instead of sentence by sentence.
+  // While the bridge is playing there is time to spare, so wait a little longer for the rest.
   let spoken = first;
-  if (spoken !== null && !finished) await Promise.race([pump, new Promise((r) => setTimeout(r, 250))]);
+  if (spoken !== null && !finished) await Promise.race([pump, new Promise((r) => setTimeout(r, bridge ? 400 : 150))]);
   if (spoken !== null && finished && sentences.length && (rendered as RenderedUtterance | null)?.source === "llm") {
-    spoken = [spoken, ...sentences.splice(0)].join(" ");
+    const rest = sentences.splice(0);
+    said.push(...rest);
+    spoken = [spoken, ...rest].join(" ");
   }
+  let firstSpoken = true;
   while (spoken !== null && !ttsFailed) {
+    if (!firstSpoken) {
+      said.push(spoken);
+      yield { type: "text", questionId, text: said.join(" "), source: "llm", seat: iv.seat };
+    }
+    firstSpoken = false;
     try {
       const sg = synth(voice, spoken);
       let r = await sg.next();
@@ -345,7 +389,7 @@ async function* deliver(p: {
   }
   await pump;
   const r = rendered as RenderedUtterance | null;
-  const fullText = r?.text ?? first ?? "";
+  const fullText = [bridge, r?.text ?? first ?? ""].filter(Boolean).join(" ");
   if (r?.usage) recordTokenCost({ userId: p.userId, sessionId: p.sessionId }, llm.id, "llm", "interviewer_turn", r.usage);
   logEvent("llm_output", "interviewer", { sessionId: p.sessionId, userId: p.userId, durationMs: r?.latencyMs, data: { text: fullText, source: r?.source, intent: p.decision.intent, firstTokenMs: r?.firstTokenMs ?? null, error: r?.error ?? null } });
   if (r?.error) logEvent("fallback", "interviewer_template", { sessionId: p.sessionId, userId: p.userId, data: { error: r.error } });
@@ -365,15 +409,18 @@ async function* deliver(p: {
   const finalState = recordAsked(p.state, p.decision, questionId);
   saveState(p.sessionId, finalState);
 
-  if (fullText !== first) yield { type: "text", questionId, text: fullText, source: r?.source ?? "template", seat: iv.seat };
-  if (ttsFailed && seq === 0) yield { type: "tts_fallback", reason: tts.isMock ? "server TTS not configured" : "speech synthesis failed" };
-  else yield { type: "audio_end", chunks: seq };
+  if (fullText !== said.join(" ")) yield { type: "text", questionId, text: fullText, source: r?.source ?? "template", seat: iv.seat };
+  if (ttsFailed && seq === bridgeChunks) {
+    // Nothing past the bridge was voiced: close the bridge's audio, and let the client speak the rest.
+    if (seq > 0) yield { type: "audio_end", chunks: seq };
+    yield { type: "tts_fallback", reason: tts.isMock ? "server TTS not configured" : "speech synthesis failed", text: bridge ? (r?.text ?? first ?? "") : undefined };
+  } else yield { type: "audio_end", chunks: seq };
 
   // Get the next planned question's voice ready while the candidate answers.
   prewarmNext(p.sessionId, p.userId, finalState);
 
   const timings = {
-    ...(p.extraTimings ?? {}), firstSentenceMs: Math.round(tFirstText), llmFirstTokenMs: Math.round(r?.firstTokenMs ?? -1),
+    ...(p.extraTimings ?? {}), bridged: bridge ? 1 : 0, firstSentenceMs: Math.round(tFirstText), llmFirstTokenMs: Math.round(r?.firstTokenMs ?? -1),
     llmMs: Math.round(r?.latencyMs ?? -1), ttsFirstChunkMs: Math.round(ttsFirstChunkMs ?? -1), ttsCacheHits: cacheHits,
     serverToFirstAudioMs: firstAudioMs === null ? -1 : Math.round(firstAudioMs), serverTotalMs: Math.round(performance.now() - p.t0),
   };

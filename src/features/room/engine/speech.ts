@@ -102,7 +102,8 @@ export class LiveTranscriber {
       const done = () => resolve(this.text);
       this.endResolve = done;
       try { this.rec!.stop(); } catch { done(); }
-      setTimeout(done, 700);
+      // Trailing results usually land within a few hundred ms; the turn is waiting on this.
+      setTimeout(done, 450);
     });
   }
 

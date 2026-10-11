@@ -1,16 +1,17 @@
 import { Interviewer } from "@/components/brand/Interviewer";
+import { OrielMark } from "@/components/brand/OrielMark";
 import { cn } from "./cn";
 
-/** The mark is the Classic interviewer's face, reduced from the avatar renderer's own geometry. */
+/** The mark: Oriel's supplied logo. Waiting states use the interviewer's own face instead, because it can blink. */
 export function LogoMark({ className, blink, size = 24 }: { className?: string; blink?: boolean; size?: number }) {
-  return <Interviewer size={size} waiting={blink} className={className ?? "w-6"} />;
+  return blink ? <Interviewer size={size} waiting className={className ?? "w-6"} /> : <OrielMark className={className} />;
 }
 
 /** The wordmark is set in the serif: Oriel speaks in the same voice as its headlines. */
 export function Logo({ className }: { className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-2 text-ivory", className)}>
-      <LogoMark />
+    <span className={cn("inline-flex items-center gap-2.5 text-ivory", className)}>
+      <OrielMark className="w-7" />
       <span className="font-display text-[1.4375rem] font-medium leading-none tracking-[-0.01em]">Oriel</span>
     </span>
   );
