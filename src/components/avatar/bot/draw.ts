@@ -26,8 +26,6 @@ export interface BotPose {
 
 /** Eye proportions in units of S: shared with the vector reduction of the face (components/brand/Interviewer). */
 export const EYE = { width: 0.082, ratio: 2.05 } as const;
-/** The warm highlight in each eye, relative to the eye's own size. */
-export const EYE_HIGHLIGHT = { dx: 0.16, dy: -0.16, width: 0.17, height: 0.36, maxHeightToWidth: 0.52, color: "#F3D3A1", alpha: 0.85 } as const;
 
 function capsule(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
   const r = Math.min(w, h) / 2;
@@ -66,14 +64,11 @@ export function drawBot(ctx: CanvasRenderingContext2D, W: number, H: number, loo
     ctx.closePath();
   };
 
-  // Floor shadow.
-  const floorY = Y(ext.bottom) + S * 0.08;
-  const sh = ctx.createRadialGradient(cx, floorY, 0, cx, floorY, a * 0.95);
-  sh.addColorStop(0, "rgba(0,0,0,0.55)");
-  sh.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = sh;
+  // Floor shadow: one flat, faint ellipse that grounds the face.
+  const floorY = Y(ext.bottom) + S * 0.075;
+  ctx.fillStyle = "rgba(0,0,0,0.32)";
   ctx.beginPath();
-  ctx.ellipse(cx, floorY, a * 0.95, S * 0.035, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, floorY, a * 0.78, S * 0.026, 0, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.save();
@@ -84,62 +79,52 @@ export function drawBot(ctx: CanvasRenderingContext2D, W: number, H: number, loo
   // Accessories behind the face.
   if (look.accessory === "antenna") drawAntenna(ctx, cx, Y(ext.top), S, look, p, accent);
   if (look.accessory === "headset") drawHeadsetCups(ctx, geom, X, Y, S, look);
+  if (look.accessory === "halo") drawHalo(ctx, cx, Y(ext.top), a, S, look);
 
-  // Face body with soft studio shading.
+  // Face: one flat colour. The family is drawn like a mark, not a render: no gradients, no lights.
   ctx.beginPath();
   trace();
-  const body = ctx.createRadialGradient(cx - a * 0.18, cy - b * 0.45, a * 0.1, cx, cy, a * 1.15);
-  body.addColorStop(0, look.face);
-  body.addColorStop(0.55, look.face);
-  body.addColorStop(1, look.faceShade);
-  ctx.fillStyle = body;
-  ctx.shadowColor = "rgba(0,0,0,0.45)";
-  ctx.shadowBlur = S * 0.08;
-  ctx.shadowOffsetY = S * 0.02;
+  ctx.fillStyle = look.face;
   ctx.fill();
-  ctx.shadowColor = "transparent";
 
   ctx.save();
-  ctx.clip();
-  // Key light: warm highlight from upper left; moves slightly with the head turn.
-  const hl = ctx.createRadialGradient(cx - a * (0.35 + p.yaw * 0.15), cy - b * 0.55, 0, cx - a * 0.35, cy - b * 0.55, a * 1.25);
-  hl.addColorStop(0, "rgba(255,250,242,0.35)");
-  hl.addColorStop(0.45, "rgba(255,250,242,0.05)");
-  hl.addColorStop(1, "rgba(255,248,236,0)");
-  ctx.fillStyle = hl;
-  ctx.fillRect(cx - a * 1.2, cy - b * 1.2, a * 2.4, b * 2.4);
-  // Rim light: a faint ivory edge along the top.
-  ctx.lineWidth = S * 0.012;
-  const rim = ctx.createLinearGradient(cx, Y(ext.top), cx, cy);
-  rim.addColorStop(0, "rgba(245,242,235,0.42)");
-  rim.addColorStop(1, "rgba(245,242,235,0)");
-  ctx.strokeStyle = rim;
   ctx.beginPath();
   trace();
-  ctx.stroke();
-
-  // Blush (inside the face whatever its shape).
+  ctx.clip();
+  // Blush: two flat soft dots, inside the face whatever its shape.
   const blush = Math.min(1, look.blush + p.blush);
   if (blush > 0.01) {
+    ctx.fillStyle = `rgba(226,128,108,${0.22 * blush})`;
     for (const side of [-1, 1]) {
-      const bx = X(side * geom.spacing * 1.24) + p.yaw * a * 0.2, by = Y(geom.eyeY + 0.1);
-      const g = ctx.createRadialGradient(bx, by, 0, bx, by, S * 0.07);
-      g.addColorStop(0, `rgba(236,140,120,${0.28 * blush})`);
-      g.addColorStop(1, "rgba(236,140,120,0)");
-      ctx.fillStyle = g;
-      ctx.fillRect(bx - S * 0.08, by - S * 0.08, S * 0.16, S * 0.16);
+      ctx.beginPath();
+      ctx.ellipse(X(side * geom.spacing * 1.24) + p.yaw * a * 0.2, Y(geom.eyeY + 0.1), S * 0.04, S * 0.024, 0, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
+  // A cap sits inside the outline, so it follows any shape.
+  if (look.accessory === "beanie") {
+    const capY = Y(ext.top) + S * 0.105;
+    ctx.fillStyle = look.accessoryColor;
+    ctx.fillRect(cx - a * 1.3, Y(ext.top) - S * 0.05, a * 2.6, capY - Y(ext.top) + S * 0.05);
+    ctx.fillStyle = look.faceShade;
+    ctx.globalAlpha = 0.55;
+    ctx.fillRect(cx - a * 1.3, capY - S * 0.022, a * 2.6, S * 0.022);
+    ctx.globalAlpha = 1;
+  }
   ctx.restore();
+  if (look.accessory === "beanie") {
+    ctx.beginPath();
+    ctx.arc(cx, Y(ext.top) - S * 0.008, S * 0.03, 0, Math.PI * 2);
+    ctx.fillStyle = look.accessoryColor;
+    ctx.fill();
+  }
 
   if (look.accessory === "rim") {
     ctx.beginPath();
     trace();
-    ctx.lineWidth = S * 0.011;
+    ctx.lineWidth = S * 0.012;
     ctx.strokeStyle = look.accessoryColor;
-    ctx.globalAlpha = 0.95;
     ctx.stroke();
-    ctx.globalAlpha = 1;
   }
 
   // Eyes.
@@ -154,7 +139,9 @@ export function drawBot(ctx: CanvasRenderingContext2D, W: number, H: number, loo
     const ex = cx + side * spacing * (1 - 0.18 * turn) + p.yaw * a * 0.28 + p.gazeX * ew0 * 0.9;
     const lidTop = side < 0 ? p.lidTopL : p.lidTopR;
     const tilt = side < 0 ? p.tiltL : p.tiltR;
-    drawEye(ctx, ex, eyeY, ew, eh, lidTop, tilt * side, p.happy, look, p.glow);
+    drawEye(ctx, ex, eyeY, ew, eh, lidTop, tilt * side, p.happy, look);
+    if (look.accessory === "brows") drawBrow(ctx, ex, eyeY - eh0 * 0.5 - S * 0.045 + lidTop * eh0 * 0.25, ew0, tilt * side, side, S, look);
+    if (look.accessory === "freckles") drawFreckles(ctx, ex + side * ew0 * 0.4, eyeY + eh0 * 0.62, S, look);
   }
 
   // Voice light: the bot has no mouth; a small light breathes with its voice.
@@ -165,19 +152,18 @@ export function drawBot(ctx: CanvasRenderingContext2D, W: number, H: number, loo
     capsule(ctx, cx + p.yaw * a * 0.25, Y(geom.eyeY + geom.voiceDy), vw, vh);
     ctx.fillStyle = look.eye;
     ctx.globalAlpha = Math.min(0.9, 0.2 + p.voice * 1.1);
-    if (look.glowEyes) { ctx.shadowColor = look.eye; ctx.shadowBlur = S * 0.03; }
     ctx.fill();
     ctx.globalAlpha = 1;
-    ctx.shadowColor = "transparent";
   }
 
   if (look.accessory === "glasses") drawGlasses(ctx, cx + p.yaw * a * 0.28, eyeY, spacing * (1 - 0.18 * turn), ew0, eh0, S, look);
   if (look.accessory === "headset") drawHeadsetMic(ctx, geom, X, Y, S, p);
   if (look.accessory === "tuft") drawTuft(ctx, cx, Y(ext.top), S, look);
+  if (look.accessory === "bow") drawBow(ctx, cx + a * 0.42, Y(ext.top) + S * 0.035, S, look);
   ctx.restore();
 }
 
-function drawEye(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, lidTop: number, tilt: number, happy: number, look: BotLook, glow: number) {
+function drawEye(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, lidTop: number, tilt: number, happy: number, look: BotLook) {
   ctx.save();
   // Lid mask: region between an angled top lid and a (possibly arched) bottom lid.
   const pad = w;
@@ -192,23 +178,64 @@ function drawEye(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
   ctx.quadraticCurveTo(x, bottom - arch * 2, x - w / 2 - pad, bottom);
   ctx.closePath();
   ctx.clip();
-
+  // A solid capsule: no glint, no glow.
   ctx.beginPath();
   capsule(ctx, x, y, w, h);
   ctx.fillStyle = look.eye;
-  if (look.glowEyes) { ctx.shadowColor = look.eye; ctx.shadowBlur = w * 0.9; }
   ctx.fill();
-  ctx.shadowColor = "transparent";
-  // Warm vertical highlight, like a reflection of the window light (hidden as the eye closes).
-  if (h > w * 1.1) {
+  ctx.restore();
+}
+
+/** A short flat brow that tilts with the lid, so expressions still read. */
+function drawBrow(ctx: CanvasRenderingContext2D, x: number, y: number, ew: number, tilt: number, side: number, S: number, look: BotLook) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(tilt * 0.35 * side);
+  ctx.beginPath();
+  capsule(ctx, 0, 0, ew * 1.7, S * 0.016);
+  ctx.fillStyle = look.eye;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawFreckles(ctx: CanvasRenderingContext2D, x: number, y: number, S: number, look: BotLook) {
+  ctx.save();
+  ctx.fillStyle = look.eye;
+  ctx.globalAlpha = 0.4;
+  for (const [dx, dy] of [[-0.022, 0], [0, 0.014], [0.022, 0]] as const) {
     ctx.beginPath();
-    const H = EYE_HIGHLIGHT;
-    capsule(ctx, x + w * H.dx, y + h * H.dy, w * H.width, Math.min(h * H.height, w * H.maxHeightToWidth));
-    ctx.fillStyle = look.highlight;
-    ctx.globalAlpha = H.alpha * (0.6 + glow * 0.4);
+    ctx.arc(x + dx * S, y + dy * S, S * 0.008, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
   }
+  ctx.restore();
+}
+
+function drawHalo(ctx: CanvasRenderingContext2D, cx: number, topY: number, a: number, S: number, look: BotLook) {
+  ctx.save();
+  ctx.lineWidth = S * 0.013;
+  ctx.strokeStyle = look.accessoryColor;
+  ctx.beginPath();
+  ctx.ellipse(cx, topY - S * 0.06, a * 0.5, S * 0.03, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawBow(ctx: CanvasRenderingContext2D, x: number, y: number, S: number, look: BotLook) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(0.35);
+  ctx.fillStyle = look.accessoryColor;
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(side * S * 0.075, -S * 0.048);
+    ctx.quadraticCurveTo(side * S * 0.095, 0, side * S * 0.075, S * 0.048);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.beginPath();
+  ctx.arc(0, 0, S * 0.02, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
@@ -223,13 +250,6 @@ function drawGlasses(ctx: CanvasRenderingContext2D, cx: number, y: number, spaci
     const r = S * 0.045;
     ctx.roundRect(x - fw / 2, y - fh / 2, fw, fh, r);
     ctx.stroke();
-    // lens glint
-    ctx.beginPath();
-    ctx.moveTo(x - fw * 0.28, y - fh * 0.3);
-    ctx.lineTo(x - fw * 0.05, y - fh * 0.42);
-    ctx.strokeStyle = "rgba(255,255,255,0.18)";
-    ctx.stroke();
-    ctx.strokeStyle = look.accessoryColor;
   }
   ctx.beginPath();
   ctx.moveTo(cx - spacing + fw / 2, y - fh * 0.1);
@@ -249,10 +269,7 @@ function drawHeadsetCups(ctx: CanvasRenderingContext2D, g: ShapeGeom, X: (u: num
     ctx.save();
     ctx.translate(x, Y(y));
     ctx.rotate(-side * lean);
-    const grad = ctx.createLinearGradient(-S * 0.04, 0, S * 0.04, 0);
-    grad.addColorStop(0, side < 0 ? "#AEB2BA" : look.accessoryColor);
-    grad.addColorStop(1, side < 0 ? look.accessoryColor : "#AEB2BA");
-    ctx.fillStyle = grad;
+    ctx.fillStyle = look.accessoryColor;
     ctx.beginPath();
     capsule(ctx, 0, 0, S * 0.07, S * 0.15);
     ctx.fill();
@@ -271,7 +288,7 @@ function drawHeadsetMic(ctx: CanvasRenderingContext2D, g: ShapeGeom, X: (u: numb
   ctx.moveTo(X(hw * 0.98), Y(g.eyeY + 0.053));
   ctx.quadraticCurveTo(X(hw * 0.93), Y(g.eyeY + 0.23), X(g.spacing * 0.67), Y(g.eyeY + 0.2));
   ctx.stroke();
-  ctx.fillStyle = p.voice > 0.05 ? "#A3AB8B" : "#2A2C31";
+  ctx.fillStyle = p.voice > 0.05 ? "#8C957A" : "#2A2C31";
   ctx.beginPath();
   capsule(ctx, X(g.spacing * 0.57), Y(g.eyeY + 0.2), S * 0.06, S * 0.03);
   ctx.fill();
@@ -289,9 +306,8 @@ function drawAntenna(ctx: CanvasRenderingContext2D, cx: number, topY: number, S:
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(cx + S * 0.01, topY - S * 0.085, S * 0.022, 0, Math.PI * 2);
-  ctx.fillStyle = accent;
-  ctx.shadowColor = accent;
-  ctx.shadowBlur = S * (0.02 + p.voice * 0.05 + p.glow * 0.03);
+  // The ball brightens while it speaks: a change of colour, not a glow.
+  ctx.fillStyle = p.voice > 0.05 || p.glow > 0.5 ? accent : look.accessoryColor;
   ctx.fill();
   ctx.restore();
 }

@@ -14,22 +14,33 @@ export const BOT_SHAPES = [
   { id: "diamond", label: "Gem" },
   { id: "arch", label: "Window" },
   { id: "blob", label: "Pebble" },
+  { id: "square", label: "Block" },
+  { id: "octagon", label: "Octa" },
+  { id: "bar", label: "Bar" },
+  { id: "egg", label: "Egg" },
 ] as const;
 export type BotShape = (typeof BOT_SHAPES)[number]["id"];
 
 export interface BotColor { label: string; face: string; shade: string; eye: string; highlight: string; dark?: boolean; glowEyes?: boolean }
 
 export const BOT_COLORS = {
-  pearl: { label: "Pearl", face: "#EEEFF2", shade: "#C9CCD4", eye: "#1B1C21", highlight: "#F3D3A1" },
-  ivory: { label: "Ivory", face: "#F4EFE3", shade: "#D9D0BD", eye: "#1C1C20", highlight: "#F3D3A1" },
-  cream: { label: "Cream", face: "#F6E3C3", shade: "#DEC39A", eye: "#1C1A18", highlight: "#F3D3A1" },
-  sand: { label: "Sand", face: "#DCC7A5", shade: "#BFA67E", eye: "#1D1B18", highlight: "#F6DDB0" },
-  sage: { label: "Sage", face: "#A3BBA0", shade: "#7F9A7C", eye: "#1B201B", highlight: "#F3D3A1" },
-  sky: { label: "Sky", face: "#C2D5E8", shade: "#94B0CB", eye: "#1A1D24", highlight: "#F3D3A1" },
-  lilac: { label: "Lilac", face: "#D2C9EC", shade: "#ABA0D0", eye: "#1D1A26", highlight: "#F3D3A1" },
-  rose: { label: "Rose", face: "#F1C9C1", shade: "#D3A096", eye: "#221A1A", highlight: "#F6DDB0" },
-  graphite: { label: "Graphite", face: "#76787D", shade: "#55575C", eye: "#18191D", highlight: "#A3AB8B", dark: true },
-  midnight: { label: "Midnight", face: "#343947", shade: "#1F232D", eye: "#EDE7DA", highlight: "#FFF6E0", dark: true, glowEyes: true },
+  // Flat, muted colours that sit on ink beside ivory, stone and olive. "shade" is the darker
+  // partner used for accessories and details, not for lighting.
+  pearl: { label: "Pearl", face: "#E7E6E2", shade: "#B9B8B3", eye: "#17171A", highlight: "#F3D3A1" },
+  ivory: { label: "Ivory", face: "#F2EDE2", shade: "#C9C1B1", eye: "#151515", highlight: "#F3D3A1" },
+  cream: { label: "Cream", face: "#EADBC2", shade: "#C2AF8E", eye: "#1A1816", highlight: "#F3D3A1" },
+  sand: { label: "Sand", face: "#CDB894", shade: "#A3906D", eye: "#1B1916", highlight: "#F6DDB0" },
+  ochre: { label: "Ochre", face: "#C9A35A", shade: "#9C7C3E", eye: "#1B1812", highlight: "#F6DDB0" },
+  clay: { label: "Clay", face: "#B8846B", shade: "#8E624D", eye: "#1C1512", highlight: "#F6DDB0" },
+  rose: { label: "Rose", face: "#DDB3A8", shade: "#B48A7F", eye: "#201818", highlight: "#F6DDB0" },
+  sage: { label: "Sage", face: "#9DAE95", shade: "#77886F", eye: "#18201A", highlight: "#F3D3A1" },
+  olive: { label: "Olive", face: "#7F8A6C", shade: "#5C654D", eye: "#151711", highlight: "#F3D3A1" },
+  mist: { label: "Mist", face: "#C6CBCB", shade: "#9BA1A1", eye: "#17191A", highlight: "#F3D3A1" },
+  sky: { label: "Sky", face: "#A9BCCB", shade: "#8195A5", eye: "#171B21", highlight: "#F3D3A1" },
+  lilac: { label: "Lilac", face: "#BDB4D1", shade: "#958CAB", eye: "#1B1822", highlight: "#F3D3A1" },
+  graphite: { label: "Graphite", face: "#6E7075", shade: "#4E5055", eye: "#141518", highlight: "#A3AB8B", dark: true },
+  slate: { label: "Slate", face: "#4A5361", shade: "#353C47", eye: "#EDE7DA", highlight: "#FFF6E0", dark: true },
+  midnight: { label: "Midnight", face: "#2E323C", shade: "#20232A", eye: "#EDE7DA", highlight: "#FFF6E0", dark: true, glowEyes: true },
 } satisfies Record<string, BotColor>;
 export type BotColorId = keyof typeof BOT_COLORS;
 
@@ -39,7 +50,12 @@ export const BOT_ACCESSORIES = [
   { id: "headset", label: "Headset" },
   { id: "antenna", label: "Antenna" },
   { id: "tuft", label: "Sprout" },
-  { id: "rim", label: "Gold rim" },
+  { id: "rim", label: "Outline" },
+  { id: "brows", label: "Brows" },
+  { id: "freckles", label: "Freckles" },
+  { id: "beanie", label: "Beanie" },
+  { id: "bow", label: "Bow" },
+  { id: "halo", label: "Halo" },
 ] as const;
 export type BotAccessory = (typeof BOT_ACCESSORIES)[number]["id"];
 
@@ -74,7 +90,7 @@ export const DEFAULT_STYLES: Record<PersonaId, AvatarStyle> = {
   hiring_manager: { shape: "squircle", color: "ivory", accessory: "none", name: null },
   direct_manager: { shape: "hexagon", color: "graphite", accessory: "antenna", name: null },
   skeptic: { shape: "triangle", color: "cream", accessory: "glasses", name: null },
-  executive: { shape: "arch", color: "sand", accessory: "rim", name: null },
+  executive: { shape: "arch", color: "slate", accessory: "rim", name: null },
   peer: { shape: "blob", color: "sage", accessory: "tuft", name: null },
 };
 

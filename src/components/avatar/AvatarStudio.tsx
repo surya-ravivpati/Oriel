@@ -200,7 +200,7 @@ function Studio({ personaId, saved, onClose, onSaved }: { personaId: PersonaId; 
               return (
                 <button key={id} type="button" role="radio" aria-checked={on} aria-label={c.label} title={c.label} onClick={() => setDraft({ ...draft, color: id })}
                   className={cn("size-9 rounded-full border transition-[box-shadow,transform] duration-[var(--dur-state)] ease-[var(--ease-enter)] hover:scale-105", on ? "border-transparent shadow-[0_0_0_2px_var(--color-surface-1),0_0_0_4px_var(--color-olive-light)]" : "border-control")}
-                  style={{ background: `radial-gradient(circle at 35% 30%, ${c.face}, ${c.shade})` }} />
+                  style={{ background: c.face }} />
               );
             })}
           </div>

@@ -83,6 +83,11 @@ const DEFS: Record<BotShape, { points: () => Pt[]; eyeY: number; spacing: number
   diamond: { points: () => roundedPolygon([[0, -0.39], [0.42, 0], [0, 0.39], [-0.42, 0]], 0.1), eyeY: -0.01, spacing: 0.12, eyeK: 0.88, voiceDy: 0.13 },
   arch: { points: () => arch(0.3, -0.35, 0.31, 0.08), eyeY: -0.01, spacing: 0.13, eyeK: 0.95, voiceDy: 0.15 },
   blob: { points: () => superellipse(0.33, 0.31, 2.7), eyeY: -0.019, spacing: 0.139, eyeK: 1, voiceDy: 0.149 },
+  square: { points: () => roundedPolygon([[-0.32, -0.32], [0.32, -0.32], [0.32, 0.32], [-0.32, 0.32]], 0.07), eyeY: -0.02, spacing: 0.135, eyeK: 0.97, voiceDy: 0.15 },
+  octagon: { points: () => roundedPolygon(Array.from({ length: 8 }, (_, k) => [0.36 * Math.cos(Math.PI / 8 + (k * Math.PI) / 4), 0.36 * Math.sin(Math.PI / 8 + (k * Math.PI) / 4)] as Pt), 0.05), eyeY: -0.02, spacing: 0.135, eyeK: 0.97, voiceDy: 0.15 },
+  // A wide, short capsule: a visor of a face.
+  bar: { points: () => roundedPolygon([[-0.4, -0.2], [0.4, -0.2], [0.4, 0.2], [-0.4, 0.2]], 0.2), eyeY: -0.01, spacing: 0.15, eyeK: 0.82, voiceDy: 0.11 },
+  egg: { points: () => superellipse(0.28, 0.36, 2.2), eyeY: -0.04, spacing: 0.11, eyeK: 0.9, voiceDy: 0.15 },
 };
 
 /** Resample a closed outline at equal angles around the centre (every shape here is convex around it). */

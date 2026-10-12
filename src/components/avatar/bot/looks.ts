@@ -3,10 +3,9 @@ import { BOT_COLORS, styleFor, type AvatarStyle, type BotAccessory, type BotShap
 export type { BotAccessory, BotShape };
 
 /**
- * The Oriel bot family (design explored with Higgsfield / Nano Banana Pro, then drawn
- * procedurally): a soft face in one of several shapes, two dark capsule eyes with a warm
- * highlight, no mouth, and a single accessory — so each interviewer reads at a glance and
- * all belong together. People can restyle any interviewer (lib/avatar/style.ts).
+ * The Oriel bot family, drawn flat like a mark: one colour for the face, two solid capsule
+ * eyes, no mouth, and at most one accessory, so each interviewer reads at a glance and all
+ * belong together. People can restyle any interviewer (lib/avatar/style.ts).
  */
 export interface BotLook {
   shape: BotShape;
@@ -32,8 +31,13 @@ export function lookFor(personaId: string, saved?: Partial<AvatarStyle> | null):
     glasses: dark ? "#E6D9C3" : "#5B4A36",
     headset: "#D5D8DE",
     antenna: dark ? "#8A8F9C" : c.shade,
-    tuft: s.color === "sage" ? "#7C9F77" : "#93B68C",
-    rim: "#B8893F",
+    tuft: s.color === "sage" || s.color === "olive" ? "#5C654D" : "#8C957A",
+    rim: dark ? "#C9C1B1" : c.shade,
+    brows: c.eye,
+    freckles: c.shade,
+    beanie: dark ? "#8C957A" : "#555C4A",
+    bow: dark ? "#DDB3A8" : "#B8846B",
+    halo: "#C9A35A",
   }[s.accessory];
   return {
     shape: s.shape, face: c.face, faceShade: c.shade, eye: c.eye, highlight: c.highlight,
