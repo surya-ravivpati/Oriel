@@ -11,7 +11,7 @@ export default async function TrainLoopPage({ params }: { params: Promise<{ id: 
   const { id } = await params;
   let view;
   try {
-    view = loopView(user.id, id);
+    view = await loopView(user.id, id);
   } catch (e) {
     if (e instanceof HttpError && e.status === 404) notFound();
     throw e;

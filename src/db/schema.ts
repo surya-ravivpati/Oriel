@@ -6,7 +6,7 @@ import type { CriterionJudgment, LoopOutcome, Weakness } from "../lib/training/e
 import type { Exercise } from "../lib/training/questions";
 
 /**
- * Oriel relational model. SQLite in development (better-sqlite3), shaped so it maps
+ * Oriel relational model. SQLite in development (libsql), Turso when deployed, shaped so it maps
  * 1:1 onto Postgres for production. JSON columns are used only for genuinely
  * document-shaped payloads (e.g. a parsed resume), never for core relations.
  */

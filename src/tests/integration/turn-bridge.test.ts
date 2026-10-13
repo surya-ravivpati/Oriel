@@ -55,11 +55,11 @@ describe("turn bridge", () => {
     setProvidersForTesting({ llm: slowLlm, tts: fakeTts });
     const db = getDb();
     userId = newId("usr");
-    db.insert(schema.users).values({ id: userId, email: `${userId}@oriel.test`, passwordHash: "x", onboardedAt: new Date() }).run();
-    db.insert(schema.profiles).values({ userId, name: "Jordan Lee", targetRole: "Product Manager", domain: "product" }).run();
-    db.insert(schema.subscriptions).values({ id: newId("sub"), userId, plan: "pro", periodStart: new Date() }).run();
-    db.insert(schema.ladderProgress).values({ userId, level: 1, unlockedAt: new Date() }).run();
-    ({ sessionId } = createInterview(userId, { role: "Product Manager", domain: "product", level: "hiring_manager", type: "behavioral", pressure: 2, persona: "warm_recruiter", mode: "single", panelSize: 3, ladderLevel: null, targetMinutes: 15, cameraMetrics: false }));
+    await db.insert(schema.users).values({ id: userId, email: `${userId}@oriel.test`, passwordHash: "x", onboardedAt: new Date() }).run();
+    await db.insert(schema.profiles).values({ userId, name: "Jordan Lee", targetRole: "Product Manager", domain: "product" }).run();
+    await db.insert(schema.subscriptions).values({ id: newId("sub"), userId, plan: "pro", periodStart: new Date() }).run();
+    await db.insert(schema.ladderProgress).values({ userId, level: 1, unlockedAt: new Date() }).run();
+    ({ sessionId } = await createInterview(userId, { role: "Product Manager", domain: "product", level: "hiring_manager", type: "behavioral", pressure: 2, persona: "warm_recruiter", mode: "single", panelSize: 3, ladderLevel: null, targetMinutes: 15, cameraMetrics: false }));
     await drain(runOpening(sessionId, userId));
     await new Promise((r) => setTimeout(r, 50)); // let the acknowledgements prewarm into the speech cache
   });

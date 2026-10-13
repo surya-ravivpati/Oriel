@@ -39,31 +39,31 @@ export const POST = authed<IdParams>(async (req, { params, user }) => {
   const { id } = await params;
   const drill = getDrill(id);
   if (!drill) throw new HttpError(404, "Unknown drill");
-  const verdict = canStartDrill(loadEntitlementContext(user.id));
+  const verdict = canStartDrill(await loadEntitlementContext(user.id));
   if (!verdict.allowed) throw new HttpError(402, verdict.reason, "entitlement");
   const body = await parseBody(req, Body);
   const db = getDb();
 
   // Baseline: earlier attempts of this drill, else the user's recent session metric.
-  const prior = db.select().from(schema.drillAttempts).where(and(eq(schema.drillAttempts.userId, user.id), eq(schema.drillAttempts.drillId, id))).orderBy(desc(schema.drillAttempts.createdAt)).limit(5).all();
+  const prior = await db.select().from(schema.drillAttempts).where(and(eq(schema.drillAttempts.userId, user.id), eq(schema.drillAttempts.drillId, id))).orderBy(desc(schema.drillAttempts.createdAt)).limit(5).all();
   let baseline = medianOf(prior.map((p) => p.value).filter((v): v is number => v !== null));
   const key = SESSION_BASELINE_KEY[drill.targetMetric];
   if (baseline === null && key) {
-    const m = db.select().from(schema.metrics).where(and(eq(schema.metrics.userId, user.id), eq(schema.metrics.key, key))).orderBy(desc(schema.metrics.createdAt)).limit(5).all();
+    const m = await db.select().from(schema.metrics).where(and(eq(schema.metrics.userId, user.id), eq(schema.metrics.key, key))).orderBy(desc(schema.metrics.createdAt)).limit(5).all();
     baseline = medianOf(m.map((x) => x.value).filter((v): v is number => v !== null));
   }
   const m = measureDrill(drill, body, baseline);
   const llm = getLanguageModel();
   const measured = `${m.label}: ${m.value ?? "not measured"} ${m.unit}${baseline !== null ? ` (your baseline: ${Math.round(baseline * 10) / 10})` : ""}; target: ${drill.passRule}`;
   const fb = await generateDrillFeedback(llm, drill, body.transcript, measured);
-  if (fb.usage) recordTokenCost({ userId: user.id }, llm.id, "analysis", "drill_feedback", fb.usage);
+  if (fb.usage) await recordTokenCost({ userId: user.id }, llm.id, "analysis", "drill_feedback", fb.usage);
   const attemptId = newId("dra");
-  db.insert(schema.drillAttempts).values({
+  await db.insert(schema.drillAttempts).values({
     id: attemptId, userId: user.id, drillId: id, sourceSessionId: body.sourceSessionId, promptText: drill.prompt, transcript: body.transcript,
     durationMs: Math.round(body.durationMs), result: { ...m.details, label: m.label, unit: m.unit }, feedback: `${fb.data.feedback} ${fb.data.nextTry}`.trim(),
     baselineValue: baseline, value: m.value, passed: m.passed,
   }).run();
-  db.insert(schema.usageRecords).values({ id: newId("use"), userId: user.id, kind: "drills", quantity: 1 }).run();
+  await db.insert(schema.usageRecords).values({ id: newId("use"), userId: user.id, kind: "drills", quantity: 1 }).run();
   const lesson = recordLessonPractice(user.id, id, m.passed);
   return json({ attemptId, measurement: m, baseline, feedback: fb.data, source: fb.source, lesson });
 }, { limit: 20, name: "drill-attempt" });

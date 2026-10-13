@@ -2,8 +2,8 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   const { sweepExpiredMedia, finalizeAbandonedSessions, deleteInactiveAccounts } = await import("./server/privacy/retention");
-  const run = () => {
-    try { sweepExpiredMedia(); } catch (err) { console.error("[retention]", err); }
+  const run = async () => {
+    try { await sweepExpiredMedia(); } catch (err) { console.error("[retention]", err); }
     finalizeAbandonedSessions().catch((err) => console.error("[sessions]", err));
     deleteInactiveAccounts().catch((err) => console.error("[accounts]", err));
   };

@@ -20,14 +20,14 @@ const NOT_MEASURED: Record<Track, string> = {
 
 export default async function LessonsPage() {
   const user = await requireUser();
-  const rows = lessonsFor(user.id);
-  const latest = getDb().select({ id: schema.interviewSessions.id, endedAt: schema.interviewSessions.endedAt, createdAt: schema.interviewSessions.createdAt })
+  const rows = await lessonsFor(user.id);
+  const latest = await getDb().select({ id: schema.interviewSessions.id, endedAt: schema.interviewSessions.endedAt, createdAt: schema.interviewSessions.createdAt })
     .from(schema.interviewSessions).where(and(eq(schema.interviewSessions.userId, user.id), eq(schema.interviewSessions.analysisStatus, "complete")))
     .orderBy(desc(schema.interviewSessions.createdAt)).get();
   const open = rows.filter((r) => r.status !== "mastered");
   const mastered = rows.filter((r) => r.status === "mastered");
   const first = open.find((r) => r.status === "active");
-  const latestMetrics = latest ? getDb().select({ key: schema.metrics.key, value: schema.metrics.value }).from(schema.metrics).where(eq(schema.metrics.sessionId, latest.id)).all() : [];
+  const latestMetrics = latest ? await getDb().select({ key: schema.metrics.key, value: schema.metrics.value }).from(schema.metrics).where(eq(schema.metrics.sessionId, latest.id)).all() : [];
   const has = (k: string) => latestMetrics.some((m) => m.key === k && m.value !== null);
   // Say "not measured" rather than "on target" when an interview couldn't measure a track.
   const measured: Record<Track, boolean> = {

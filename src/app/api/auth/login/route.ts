@@ -14,13 +14,13 @@ export async function POST(req: Request) {
     const ip = await clientIp();
     const body = await parseBody(req, Body);
     if (!rateLimit(`login:${ip}:${body.email}`, 8, 15 * 60_000).ok) return json({ error: "Too many attempts. Try again in a few minutes." }, { status: 429 });
-    const user = getDb().select().from(schema.users).where(and(eq(schema.users.email, body.email), isNull(schema.users.deletedAt))).get();
+    const user = await getDb().select().from(schema.users).where(and(eq(schema.users.email, body.email), isNull(schema.users.deletedAt))).get();
     if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
-      audit("auth.login_failed", { ip, data: { email: body.email } });
+      await audit("auth.login_failed", { ip, data: { email: body.email } });
       return json({ error: "Email or password is incorrect" }, { status: 401 });
     }
     await createSession(user.id);
-    audit("auth.login", { userId: user.id, ip });
+    await audit("auth.login", { userId: user.id, ip });
     return json({ ok: true, onboarded: !!user.onboardedAt });
   } catch (err) {
     return errorResponse(err);

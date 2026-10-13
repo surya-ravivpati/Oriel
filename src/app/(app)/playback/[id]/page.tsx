@@ -20,7 +20,7 @@ export default async function PlaybackPage({ params, searchParams }: { params: P
   const user = await requireUser();
   const { id } = await params;
   const sp = await searchParams;
-  const d = sessionDetail(id, user.id);
+  const d = await sessionDetail(id, user.id);
   if (!d) notFound();
   if (d.session.analysisStatus !== "complete") return <Processing sessionId={id} initialStatus={d.session.analysisStatus} />;
 
@@ -33,7 +33,7 @@ export default async function PlaybackPage({ params, searchParams }: { params: P
   const rewriteQ = summary?.rewrittenAnswer ? questionById.get(summary.rewrittenAnswer.questionId) : null;
   // Side-by-side: this session's strongest-signal primary answer vs the first session's answer in the same competency.
   const primary = d.answers.map((a) => ({ a, q: questionById.get(a.questionId) })).find((x) => x.q?.kind === "primary" && x.a.text.split(" ").length > 30);
-  const first = primary ? firstComparableAnswer(user.id, primary.q!.competency, id) : null;
+  const first = primary ? await firstComparableAnswer(user.id, primary.q!.competency, id) : null;
   const firstIsEarlier = first && first.createdAt < d.session.createdAt;
   const movement = d.metrics.find((m) => m.key === "movement");
   const competencies = d.metrics.find((m) => m.key === "competencies")?.detail?.competencies as Record<string, { label: string; answers: number; avgQuality: number }> | undefined;
@@ -67,11 +67,11 @@ export default async function PlaybackPage({ params, searchParams }: { params: P
     }),
     questions: d.questions.map((q) => ({ id: q.id, startMs: q.askedAtMs, kind: q.kind })),
     recommendedDrill: { id: drill.id, title: drill.title, reason: rec.reason },
-    playbackLevel: canUsePlayback(loadEntitlementContext(user.id)).level,
+    playbackLevel: canUsePlayback(await loadEntitlementContext(user.id)).level,
     comparisonToBaseline: cmp.map((c) => ({ label: c.label, current: fmt(c.key, c.current), baseline: fmt(c.key, c.baseline), improved: c.improved })),
     initialT: sp.t ? Number(sp.t) : null,
     initialClip: sp.clip ?? null,
-    lessons: lessonsFor(user.id).filter((l) => l.sourceSessionId === id && l.status !== "mastered")
+    lessons: (await lessonsFor(user.id)).filter((l) => l.sourceSessionId === id && l.status !== "mastered")
       .map(summarize),
   };
   return <PlaybackView d={data} />;

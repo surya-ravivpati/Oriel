@@ -12,8 +12,8 @@ export const metadata = { title: "Progress" };
  */
 export default async function ProgressPage() {
   const user = await requireUser();
-  const { history, latest, first, baseline } = progressSummary(user.id);
-  const sessions = listSessions(user.id, 200);
+  const { history, latest, first, baseline } = await progressSummary(user.id);
+  const sessions = await listSessions(user.id, 200);
   if (history.length === 0) {
     return (
       <header className="max-w-[40rem]">

@@ -19,13 +19,13 @@ function said(o: { outcome: Outcome; at: string | null }, yes: string, no: strin
 
 export default async function TrainPage() {
   const user = await requireUser();
-  const profile = getDb().select({ type: schema.profiles.preferredInterviewType }).from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get();
+  const profile = await getDb().select({ type: schema.profiles.preferredInterviewType }).from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get();
   const preferred = (CATEGORIES.some((c) => c.id === profile?.type) ? profile!.type : "behavioral") as Category;
-  const due = dueReviews(user.id);
+  const due = await dueReviews(user.id);
   // A started review shows once, as its review.
   // Only the most recent unfinished practice is offered; older ones are left, not listed.
-  const open = openLoops(user.id).filter((l) => !due.some((d) => d.startedLoopId === l.id)).slice(0, 1);
-  const skills = learningState(user.id);
+  const open = (await openLoops(user.id)).filter((l) => !due.some((d) => d.startedLoopId === l.id)).slice(0, 1);
+  const skills = await learningState(user.id);
   const assessed = skills.filter((s) => s.assessed);
   const unassessed = skills.filter((s) => !s.assessed);
 

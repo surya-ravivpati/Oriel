@@ -7,5 +7,5 @@ const Body = z.object({ category: z.string().min(1).max(40), competencyId: z.str
 /** Start a practice loop: one competency in one interview type (chosen for you when not given). */
 export const POST = authed(async (req, { user }) => {
   const body = await parseBody(req, Body);
-  return json({ id: startPractice(user.id, body) });
+  return json({ id: await startPractice(user.id, body) });
 }, { limit: 20, name: "training-start" });

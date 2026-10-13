@@ -14,7 +14,7 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   let ctx;
   try {
-    ctx = loadSession(id, user.id);
+    ctx = await loadSession(id, user.id);
   } catch (err) {
     if (err instanceof HttpError && err.status === 404) notFound();
     throw err;

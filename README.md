@@ -24,7 +24,7 @@ Without any API key the app still runs end to end: the interviewer speaks with t
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Development server |
-| `npm test` | Unit + integration tests (Vitest, in-memory SQLite, mock providers) |
+| `npm test` | Unit + integration tests (Vitest, a throwaway SQLite file, mock providers) |
 | `npm run test:e2e` | Production build + Playwright journeys in Chrome with a fake camera and a microphone that plays a recorded spoken answer |
 | `npm run db:seed` | Demo account (`src/db/seed.ts` documents the local-only login) |
 | `npm run validate:speech` | Speech-metric accuracy + accent parity against labelled clips (needs `GEMINI_API_KEY`) → `docs/validation/speech-report.md` |
@@ -51,6 +51,22 @@ Without any API key the app still runs end to end: the interviewer speaks with t
 | Trust | `src/app/(marketing)/trust`, `docs/validation` | Published accuracy and bias results for the Read, with what changed because of them |
 | Billing | `src/lib/billing` | Plans + one entitlement module (`canUsePanelMode()`, `canUseAvatarMinutes()`, …) |
 | Admin console | `src/app/(app)/admin` | Sessions, interviewer decisions, AI outputs, latency, costs, errors, pipeline, metric confidence |
+
+## Deploying to Vercel
+
+Serverless functions have no lasting disk, so a deployment keeps its data elsewhere. The code picks this up from environment variables, with nothing to change:
+
+| Variable | What it does |
+|---|---|
+| `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | The database (Turso speaks the same SQLite dialect). Migrations and the catalog seed run on the first query. |
+| `BLOB_READ_WRITE_TOKEN` | Recordings go to a **private** Vercel Blob store (created from the Storage tab, which sets this for you). Segments are encrypted before upload. |
+| `GEMINI_API_KEY` | Interviewer voice, speech-to-text and the language model. |
+| `ORIEL_SECRET` | Long random string; signs sessions and derives the encryption keys. Keep it stable, or old recordings can't be read. |
+| `ORIEL_SITE_URL` | The deployment's public URL. |
+
+Analysis runs after the response with `after()`, and the routes that start it allow up to 300 seconds. Rate limits are kept in memory per instance, so they're looser on a serverless host than on a single server.
+
+Without the Turso and Blob variables the app falls back to `data/oriel.db` and `data/media/`, which is what local development uses.
 
 ## Architecture
 
@@ -102,7 +118,7 @@ Turn latency, server side (request → first interviewer audio): **planned quest
 
 - **Managed avatar vendor** (HeyGen LiveAvatar / Tavus / Anam): `ExternalAvatarProvider` + `/api/avatar/session` exist; without credentials the on-device bot interviewer is used. The business plan recommends measuring two vendors for latency, idle billing and concurrency first.
 - **Payments**: `ORIEL_PAYMENTS=dev` applies plan changes instantly with no charge (clearly labelled). Stripe Checkout + webhook plugs into `/api/billing/checkout`.
-- **Storage**: SQLite + local encrypted files for development. The schema maps directly to Postgres; `media-store.ts` has an S3-shaped interface.
+- **Storage**: a local SQLite file and encrypted files on disk in development; Turso and a private Vercel Blob store when deployed (see below).
 - **Quotas**: a free-tier Gemini key allows ~10 TTS requests/minute. Oriel budgets prewarming within `ORIEL_TTS_RPM` and falls back to a sibling model on 429, but sustained use needs a paid tier.
 
 ## Validation (from the plan)

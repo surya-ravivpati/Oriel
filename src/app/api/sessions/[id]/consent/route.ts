@@ -18,7 +18,7 @@ const Body = z.object({
 /** Logs the exact consent version and wording hash shown in the pre-Room consent dialog. */
 export const POST = authed<IdParams>(async (req, { params, user }) => {
   const { id } = await params;
-  loadSession(id, user.id);
+  await loadSession(id, user.id);
   const body = await parseBody(req, Body);
   if (body.version !== CONSENT_VERSION) throw new HttpError(409, "The consent wording has changed. Reload the page and review it again.", "consent_version");
   const metrics = body.consents.find((c) => c.kind === "camera_metrics");
@@ -28,15 +28,15 @@ export const POST = authed<IdParams>(async (req, { params, user }) => {
   const db = getDb();
   const ua = req.headers.get("user-agent")?.slice(0, 200) ?? null;
   for (const c of body.consents) {
-    db.insert(schema.consentRecords).values({
+    await db.insert(schema.consentRecords).values({
       id: newId("cns"), userId: user.id, sessionId: id, kind: c.kind, version: CONSENT_VERSION, granted: c.granted, userAgent: ua,
       textHash: consentTextHash(c.kind), signature: c.kind === "camera_metrics" && c.granted ? body.signature ?? null : null, source: "room_consent",
     }).run();
   }
   const camera = body.consents.find((c) => c.kind === "camera");
   if ((metrics && !metrics.granted) || (camera && !camera.granted)) {
-    db.update(schema.interviewSessions).set({ cameraMetricsEnabled: false }).where(eq(schema.interviewSessions.id, id)).run();
+    await db.update(schema.interviewSessions).set({ cameraMetricsEnabled: false }).where(eq(schema.interviewSessions.id, id)).run();
   }
-  audit("consent.session", { userId: user.id, target: id, data: { consents: body.consents, version: CONSENT_VERSION, signed: !!body.signature } });
+  await audit("consent.session", { userId: user.id, target: id, data: { consents: body.consents, version: CONSENT_VERSION, signed: !!body.signature } });
   return json({ ok: true });
 }, { limit: 20 });

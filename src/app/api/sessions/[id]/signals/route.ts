@@ -19,9 +19,9 @@ const Body = z.discriminatedUnion("kind", [
 
 export const POST = authed<IdParams>(async (req, { params, user }) => {
   const { id } = await params;
-  const { session } = loadSession(id, user.id);
+  const { session } = await loadSession(id, user.id);
   const body = await parseBody(req, Body);
   if (body.kind !== "audio" && !session.cameraMetricsEnabled) return json({ ok: true, ignored: "camera metrics disabled" });
-  getDb().insert(schema.signalTimelines).values({ id: newId("sig"), sessionId: id, kind: body.kind, startMs: Math.round(body.startMs), samples: body.samples }).run();
+  await getDb().insert(schema.signalTimelines).values({ id: newId("sig"), sessionId: id, kind: body.kind, startMs: Math.round(body.startMs), samples: body.samples }).run();
   return json({ ok: true });
 }, { limit: 240, name: "session-signals" });

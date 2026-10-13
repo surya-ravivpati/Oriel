@@ -11,8 +11,8 @@ export const metadata = { title: "Playback" };
 /** Every session as a ruled list: Oriel's one-line verdict (in its serif voice), then the facts. */
 export default async function PlaybackIndex() {
   const user = await requireUser();
-  const sessions = listSessions(user.id);
-  const ivs = sessionInterviewers(sessions.map((s) => s.id));
+  const sessions = await listSessions(user.id);
+  const ivs = await sessionInterviewers(sessions.map((s) => s.id));
   return (
     <div>
       <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">

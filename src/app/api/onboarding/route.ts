@@ -16,9 +16,9 @@ const Body = z.object({
 export const POST = authed(async (req, { user }) => {
   const body = await parseBody(req, Body);
   const db = getDb();
-  db.insert(schema.profiles).values({ userId: user.id, ...body }).onConflictDoUpdate({ target: schema.profiles.userId, set: { ...body, updatedAt: new Date() } }).run();
-  db.update(schema.users).set({ onboardedAt: new Date() }).where(eq(schema.users.id, user.id)).run();
-  db.insert(schema.ladderProgress).values({ userId: user.id, level: 1, unlockedAt: new Date() }).onConflictDoNothing().run();
-  audit("profile.onboarded", { userId: user.id });
+  await db.insert(schema.profiles).values({ userId: user.id, ...body }).onConflictDoUpdate({ target: schema.profiles.userId, set: { ...body, updatedAt: new Date() } }).run();
+  await db.update(schema.users).set({ onboardedAt: new Date() }).where(eq(schema.users.id, user.id)).run();
+  await db.insert(schema.ladderProgress).values({ userId: user.id, level: 1, unlockedAt: new Date() }).onConflictDoNothing().run();
+  await audit("profile.onboarded", { userId: user.id });
   return json({ ok: true });
 }, { limit: 20 });

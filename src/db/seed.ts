@@ -28,15 +28,15 @@ async function main() {
   const { deleteAccount } = await import("@/server/privacy/deletion");
 
   const db = getDb();
-  const existing = db.select().from(schema.users).where(eq(schema.users.email, DEMO_EMAIL)).get();
-  if (existing) deleteAccount(existing.id, "oriel.test");
+  const existing = await db.select().from(schema.users).where(eq(schema.users.email, DEMO_EMAIL)).get();
+  if (existing) await deleteAccount(existing.id, "oriel.test");
 
   const userId = newId("usr");
-  db.insert(schema.users).values({ id: userId, email: DEMO_EMAIL, passwordHash: await hashPassword(DEMO_PASSWORD), role: "admin", onboardedAt: new Date() }).run();
-  db.insert(schema.profiles).values({ userId, name: "Alex Morgan", targetRole: "Senior Software Engineer", domain: "software", experienceLevel: "senior", preferredPersona: "hiring_manager" }).run();
-  db.insert(schema.subscriptions).values({ id: newId("sub"), userId, plan: "pro", periodStart: new Date() }).run();
-  db.insert(schema.ladderProgress).values({ userId, level: 1, unlockedAt: new Date() }).run();
-  db.insert(schema.resumes).values({
+  await db.insert(schema.users).values({ id: userId, email: DEMO_EMAIL, passwordHash: await hashPassword(DEMO_PASSWORD), role: "admin", onboardedAt: new Date() }).run();
+  await db.insert(schema.profiles).values({ userId, name: "Alex Morgan", targetRole: "Senior Software Engineer", domain: "software", experienceLevel: "senior", preferredPersona: "hiring_manager" }).run();
+  await db.insert(schema.subscriptions).values({ id: newId("sub"), userId, plan: "pro", periodStart: new Date() }).run();
+  await db.insert(schema.ladderProgress).values({ userId, level: 1, unlockedAt: new Date() }).run();
+  await db.insert(schema.resumes).values({
     id: newId("res"), userId, rawText: "Alex Morgan — Senior Software Engineer, Northwind Payments (2021–present)", parsed: {
       headline: "Senior Software Engineer", summary: null, skills: ["Go", "TypeScript", "Postgres"], education: [], metrics: [], source: "heuristic",
       roles: [{ title: "Senior Software Engineer", organization: "Northwind Payments", start: "2021", end: "present", highlights: [] }],
@@ -67,7 +67,7 @@ async function main() {
 
   let dayOffset = 12;
   for (const [i, script] of scripts.entries()) {
-    const { sessionId } = createInterview(userId, {
+    const { sessionId } = await createInterview(userId, {
       role: "Senior Software Engineer", domain: "software", level: "hiring_manager", type: "behavioral",
       pressure: 2 + i, persona: "hiring_manager", mode: "single", panelSize: 3, ladderLevel: 1, targetMinutes: 15, cameraMetrics: false,
     });
@@ -85,11 +85,11 @@ async function main() {
       for await (const _ of runTurn(sessionId, userId, { answerText: a, startMs: start, endMs: start + dur, firstWordLatencyMs: script.latency, interrupted: false, inputMode: "voice", prevQuestion: null })) void _;
       t = start + dur + 6000;
     }
-    db.insert(schema.signalTimelines).values({ id: newId("sig"), sessionId, kind: "audio", startMs: 0, samples: audio }).run();
+    await db.insert(schema.signalTimelines).values({ id: newId("sig"), sessionId, kind: "audio", startMs: 0, samples: audio }).run();
     const when = new Date(Date.now() - dayOffset * 86400_000);
-    db.update(schema.interviewSessions).set({ status: "ended", startedAt: when, endedAt: new Date(when.getTime() + t), createdAt: when }).where(eq(schema.interviewSessions.id, sessionId)).run();
-    await runJob(enqueueAnalysis(sessionId));
-    db.update(schema.progressSnapshots).set({ createdAt: when }).where(eq(schema.progressSnapshots.sessionId, sessionId)).run();
+    await db.update(schema.interviewSessions).set({ status: "ended", startedAt: when, endedAt: new Date(when.getTime() + t), createdAt: when }).where(eq(schema.interviewSessions.id, sessionId)).run();
+    await runJob(await enqueueAnalysis(sessionId));
+    await db.update(schema.progressSnapshots).set({ createdAt: when }).where(eq(schema.progressSnapshots.sessionId, sessionId)).run();
     dayOffset -= 5;
     console.log(`[seed] session ${i + 1} analysed: ${sessionId}`);
   }

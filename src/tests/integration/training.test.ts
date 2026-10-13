@@ -37,11 +37,11 @@ const scripted: LanguageModelProvider = {
   },
 };
 
-function makeUser() {
+async function makeUser() {
   const db = getDb();
   const id = newId("usr");
-  db.insert(schema.users).values({ id, email: `${id}@oriel.test`, passwordHash: "x", onboardedAt: new Date() }).run();
-  db.insert(schema.profiles).values({ userId: id, name: "Sam Rivera", targetRole: "Product Manager", domain: "product" }).run();
+  await db.insert(schema.users).values({ id, email: `${id}@oriel.test`, passwordHash: "x", onboardedAt: new Date() }).run();
+  await db.insert(schema.profiles).values({ userId: id, name: "Sam Rivera", targetRole: "Product Manager", domain: "product" }).run();
   return id;
 }
 
@@ -54,15 +54,15 @@ describe("the practice loop", () => {
   let other: string;
   let loop: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     setProvidersForTesting({ llm: scripted });
-    user = makeUser();
-    other = makeUser();
+    user = await makeUser();
+    other = await makeUser();
   });
 
   it("runs attempt → diagnosis → retry → transfer → summary, and schedules a review", async () => {
-    loop = startPractice(user, { category: "behavioral", competencyId: "decision_reasoning" });
-    const first = loopView(user, loop);
+    loop = await startPractice(user, { category: "behavioral", competencyId: "decision_reasoning" });
+    const first = await loopView(user, loop);
     expect(first.stage).toBe("attempt");
     expect(first.attempts).toEqual([]);
     const original = first.question.text;
@@ -87,17 +87,17 @@ describe("the practice loop", () => {
     expect(v3.nextReview).not.toBeNull();
 
     // A transfer that didn't carry over is not counted as transfer in the learning state.
-    const s = learningState(user).find((x) => x.competencyId === "decision_reasoning")!;
+    const s = (await learningState(user)).find((x) => x.competencyId === "decision_reasoning")!;
     expect(s.assessed).toBe(true);
     expect(s.improvedOnRetry.outcome).toBe("yes");
     expect(s.transferred.outcome).toBe("no");
     expect(s.retained.outcome).toBe("not_assessed");
     // Other skills are "not assessed", not weak.
-    expect(learningState(user).find((x) => x.competencyId === "structuring")!.assessed).toBe(false);
+    expect((await learningState(user)).find((x) => x.competencyId === "structuring")!.assessed).toBe(false);
   });
 
-  it("keeps the rubric version and the criteria as judged on every evaluation", () => {
-    const rows = getDb().select().from(schema.trainingEvaluations).where(eq(schema.trainingEvaluations.userId, user)).all();
+  it("keeps the rubric version and the criteria as judged on every evaluation", async () => {
+    const rows = await getDb().select().from(schema.trainingEvaluations).where(eq(schema.trainingEvaluations.userId, user)).all();
     expect(rows.length).toBe(3);
     for (const r of rows) {
       expect(r.rubricVersion).toBe(c.version);
@@ -106,20 +106,20 @@ describe("the practice loop", () => {
   });
 
   it("surfaces the review when it falls due, with yet another question, as its own outcome", async () => {
-    expect(dueReviews(user)).toEqual([]);
+    expect(await dueReviews(user)).toEqual([]);
     const later = new Date(Date.now() + 2 * 86_400_000);
-    const due = dueReviews(user, later);
+    const due = await dueReviews(user, later);
     expect(due).toHaveLength(1);
-    const review = startReview(user, due[0].id);
-    expect(startReview(user, due[0].id)).toBe(review); // starting twice resumes
-    const used = getDb().select({ q: schema.trainingAttempts.questionText }).from(schema.trainingAttempts).where(eq(schema.trainingAttempts.userId, user)).all().map((r) => r.q);
-    const rv = loopView(user, review);
+    const review = await startReview(user, due[0].id);
+    expect(await startReview(user, due[0].id)).toBe(review); // starting twice resumes
+    const used = (await getDb().select({ q: schema.trainingAttempts.questionText }).from(schema.trainingAttempts).where(eq(schema.trainingAttempts.userId, user)).all()).map((r) => r.q);
+    const rv = await loopView(user, review);
     expect(rv.kind).toBe("review");
     expect(used).not.toContain(rv.question.text);
     script = ["fixed"];
     const done = await submit(user, review, "What mattered most was speed of recovery, so I picked the rollout.");
     expect(done.outcome).toEqual({ improvedOnRetry: "not_assessed", transferred: "not_assessed", retained: "yes" });
-    const s = learningState(user).find((x) => x.competencyId === "decision_reasoning")!;
+    const s = (await learningState(user)).find((x) => x.competencyId === "decision_reasoning")!;
     expect(s.retained.outcome).toBe("yes");
     expect(s.transferred.outcome).toBe("no"); // the earlier transfer result is not rewritten
   });
@@ -131,55 +131,55 @@ describe("the practice loop", () => {
       expect(e).toBeInstanceOf(HttpError);
       expect((e as HttpError).status).toBe(404);
     }
-    const r = dueReviews(user, new Date(Date.now() + 30 * 86_400_000))[0];
+    const r = (await dueReviews(user, new Date(Date.now() + 30 * 86_400_000)))[0];
     expect(await tryIt(() => startReview(other, r.id))).toBeInstanceOf(HttpError);
   });
 
   it("a resent submission does not create a second attempt or evaluation", async () => {
-    const l = startPractice(user, { category: "behavioral", competencyId: "decision_reasoning" });
+    const l = await startPractice(user, { category: "behavioral", competencyId: "decision_reasoning" });
     script = ["weak"];
     const a = await submit(user, l, "I went with the rollout.", "same-key-1234");
     const b = await submit(user, l, "I went with the rollout.", "same-key-1234");
     expect(b.attempts).toHaveLength(1);
     expect(a.attempts[0].id).toBe(b.attempts[0].id);
-    expect(getDb().select().from(schema.trainingEvaluations).where(eq(schema.trainingEvaluations.attemptId, a.attempts[0].id)).all()).toHaveLength(1);
+    expect(await getDb().select().from(schema.trainingEvaluations).where(eq(schema.trainingEvaluations.attemptId, a.attempts[0].id)).all()).toHaveLength(1);
   });
 
   it("a failing or malformed evaluator doesn't corrupt the loop: the pattern evaluator stands in, labelled", async () => {
-    const l = startPractice(user, { category: "case", competencyId: "structuring" });
+    const l = await startPractice(user, { category: "case", competencyId: "structuring" });
     script = ["throw"];
     const v = await submit(user, l, "I would look at three things: revenue, costs and competition. I'd start with costs because revenue has been flat.");
     expect(v.attempts).toHaveLength(1);
     expect(v.attempts[0].evaluation?.evaluator).toBe("pattern");
     expect(["retry", "transfer"]).toContain(v.stage);
     script = ["malformed", "malformed"];
-    const l2 = startPractice(user, { category: "case", competencyId: "structuring" });
+    const l2 = await startPractice(user, { category: "case", competencyId: "structuring" });
     const v2 = await submit(user, l2, "There are a few ways to think about this business problem and I would probably start somewhere sensible.");
     expect(v2.attempts[0].evaluation?.evaluator).toBe("pattern");
   });
 
   it("an answer too short to judge is asked for again and never counted against the skill", async () => {
-    const fresh = makeUser();
-    const l = startPractice(fresh, { category: "technical", competencyId: "tradeoff_reasoning" });
+    const fresh = await makeUser();
+    const l = await startPractice(fresh, { category: "technical", competencyId: "tradeoff_reasoning" });
     const v = await submitAttempt(fresh, l, { response: "Use a cache.", inputMode: "text", durationMs: 4000, clientKey: "short-answer-1" });
     expect(v.stage).toBe("attempt");
     expect(v.step?.kind).toBe("reassess");
-    expect(learningState(fresh).find((x) => x.competencyId === "tradeoff_reasoning")!.assessed).toBe(false);
+    expect((await learningState(fresh)).find((x) => x.competencyId === "tradeoff_reasoning")!.assessed).toBe(false);
   });
 
   it("deleting a practice removes its answers, evaluations and scheduled review", async () => {
-    deleteLoop(user, loop);
-    expect(getDb().select().from(schema.trainingAttempts).where(eq(schema.trainingAttempts.loopId, loop)).all()).toHaveLength(0);
-    expect(getDb().select().from(schema.trainingReviews).where(eq(schema.trainingReviews.sourceLoopId, loop)).all()).toHaveLength(0);
+    await deleteLoop(user, loop);
+    expect(await getDb().select().from(schema.trainingAttempts).where(eq(schema.trainingAttempts.loopId, loop)).all()).toHaveLength(0);
+    expect(await getDb().select().from(schema.trainingReviews).where(eq(schema.trainingReviews.sourceLoopId, loop)).all()).toHaveLength(0);
   });
 });
 
 describe("coding practice", () => {
   it("rejects a coding attempt without a result for every test, and grades a full one from the tests", async () => {
     setProvidersForTesting({ llm: scripted });
-    const u = makeUser();
-    const l = startPractice(u, { category: "technical", competencyId: "implementation" });
-    const v = loopView(u, l);
+    const u = await makeUser();
+    const l = await startPractice(u, { category: "technical", competencyId: "implementation" });
+    const v = await loopView(u, l);
     expect(v.question.code).not.toBeNull();
     const spec = v.question.code!;
     const base = { response: "x", inputMode: "text" as const, durationMs: 1000 };
@@ -198,7 +198,7 @@ describe("coding practice", () => {
 describe("evidence for the method", () => {
   it("counts transfer by whether the retry improved, without inventing rates", async () => {
     const { trainingEvidence } = await import("@/server/training/service");
-    const t = trainingEvidence();
+    const t = await trainingEvidence();
     expect(t.loops).toBeGreaterThanOrEqual(0);
     for (const c of [t.transferAfterImproved, t.transferAfterNotImproved, t.retainedAfterTransfer, t.retainedAfterNoTransfer]) expect(c.yes).toBeLessThanOrEqual(c.n);
     expect(t.transferAfterImproved.n).toBeGreaterThanOrEqual(0);

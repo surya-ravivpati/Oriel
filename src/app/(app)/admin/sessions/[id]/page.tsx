@@ -11,7 +11,7 @@ export const metadata = { title: "Admin · session" };
 export default async function AdminSessionPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  const d = adminSession(id);
+  const d = await adminSession(id);
   if (!d) notFound();
   const total = d.costs.reduce((a, c) => a + c.usd, 0);
   const byCat = Object.entries(d.costs.reduce<Record<string, number>>((acc, c) => ({ ...acc, [c.category]: (acc[c.category] ?? 0) + c.usd }), {}));

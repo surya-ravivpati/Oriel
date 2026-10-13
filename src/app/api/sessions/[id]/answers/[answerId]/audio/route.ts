@@ -13,9 +13,9 @@ import { loadSession } from "@/server/interview/service";
  */
 export const POST = authed<{ params: Promise<{ id: string; answerId: string }> }>(async (req, { params, user }) => {
   const { id, answerId } = await params;
-  loadSession(id, user.id);
+  await loadSession(id, user.id);
   const db = getDb();
-  const answer = db.select().from(schema.answers).where(and(eq(schema.answers.id, answerId), eq(schema.answers.sessionId, id))).get();
+  const answer = await db.select().from(schema.answers).where(and(eq(schema.answers.id, answerId), eq(schema.answers.sessionId, id))).get();
   if (!answer) throw new HttpError(404, "Answer not found");
   const mime = req.headers.get("content-type") ?? "audio/webm";
   if (!/^audio\/(webm|mp4|ogg|wav)/.test(mime)) throw new HttpError(415, "Unsupported audio type");
@@ -26,9 +26,9 @@ export const POST = authed<{ params: Promise<{ id: string; answerId: string }> }
   if (stt.isMock) return json({ ok: true, skipped: "server transcription not configured" });
   try {
     const r = await stt.transcribe({ audio: buf, mimeType: mime });
-    if (r.usage) recordTokenCost({ userId: user.id, sessionId: id }, stt.id, "stt", "answer_transcription", r.usage);
+    if (r.usage) await recordTokenCost({ userId: user.id, sessionId: id }, stt.id, "stt", "answer_transcription", r.usage);
     logEvent("latency", "stt_answer", { sessionId: id, userId: user.id, durationMs: r.latencyMs, data: { bytes: buf.length, words: r.text.split(/\s+/).length } });
-    if (r.text) db.update(schema.answers).set({ serverText: r.text }).where(eq(schema.answers.id, answerId)).run();
+    if (r.text) await db.update(schema.answers).set({ serverText: r.text }).where(eq(schema.answers.id, answerId)).run();
     return json({ ok: true, chars: r.text.length });
   } catch (err) {
     logEvent("error", "stt_failed", { sessionId: id, userId: user.id, data: { error: String(err) } });

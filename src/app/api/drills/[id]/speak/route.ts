@@ -11,6 +11,6 @@ export const POST = authed<IdParams>(async (_req, { params, user }) => {
   if (!drill) throw new HttpError(404, "Unknown drill");
   // The drill's interviewer sounds the way this person chose for that persona.
   const persona = drill.id === "hard_recovery" ? "skeptic" : "hiring_manager";
-  const voice = voiceFor(persona, savedStyles(user.id)[persona]);
+  const voice = voiceFor(persona, (await savedStyles(user.id))[persona]);
   return ndjson<RoomEvent>(speak(null, user.id, drill.prompt, voice, drill.id === "hard_recovery" ? 5 : 2));
 }, { limit: 30, name: "drill-speak" });

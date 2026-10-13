@@ -16,10 +16,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (!rateLimit(`media:${user.id}`, 600, 60_000).ok) return new Response("Too many requests", { status: 429 });
   const url = new URL(req.url);
   if (!verifyMediaSignature(id, user.id, url.searchParams.get("exp"), url.searchParams.get("sig"))) return new Response("Link expired", { status: 403 });
-  const media = getDb().select().from(schema.mediaObjects).where(eq(schema.mediaObjects.id, id)).get();
+  const media = await getDb().select().from(schema.mediaObjects).where(eq(schema.mediaObjects.id, id)).get();
   if (!media || media.userId !== user.id || media.status === "deleted") return new Response("Not found", { status: 404 });
   if (media.expiresAt && media.expiresAt.getTime() < Date.now()) return new Response("This recording passed its retention period and was deleted", { status: 410 });
-  const info = mediaInfo(user.id, id);
+  const info = await mediaInfo(user.id, id);
   if (!info || info.totalBytes === 0) return new Response("Not found", { status: 404 });
   const total = info.totalBytes;
   const range = req.headers.get("range");
@@ -31,9 +31,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if (!m?.[1] && m?.[2]) { start = Math.max(0, total - Number(m[2])); end = total - 1; }
     if (start >= total) return new Response(null, { status: 416, headers: { "content-range": `bytes */${total}` } });
     end = Math.min(end, total - 1);
-    const body = readRange(user.id, id, start, end);
+    const body = await readRange(user.id, id, start, end);
     return new Response(new Uint8Array(body), { status: 206, headers: { ...baseHeaders, "content-length": String(body.length), "content-range": `bytes ${start}-${end}/${total}` } });
   }
-  const body = readRange(user.id, id, 0, total - 1);
+  const body = await readRange(user.id, id, 0, total - 1);
   return new Response(new Uint8Array(body), { status: 200, headers: { ...baseHeaders, "content-length": String(body.length) } });
 }

@@ -14,11 +14,11 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   const user = await requireUser();
   const sp = await searchParams;
   const db = getDb();
-  const profile = db.select().from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get()!;
-  const resume = db.select({ id: schema.resumes.id, fileName: schema.resumes.fileName, parsed: schema.resumes.parsed }).from(schema.resumes).where(and(eq(schema.resumes.userId, user.id), eq(schema.resumes.isActive, true))).orderBy(desc(schema.resumes.createdAt)).get();
-  const jd = db.select({ id: schema.jobDescriptions.id, parsed: schema.jobDescriptions.parsed }).from(schema.jobDescriptions).where(and(eq(schema.jobDescriptions.userId, user.id), eq(schema.jobDescriptions.isActive, true))).orderBy(desc(schema.jobDescriptions.createdAt)).get();
-  const ent = loadEntitlementContext(user.id);
-  const { steps, current } = ladderState(user.id);
+  const profile = (await db.select().from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get())!;
+  const resume = await db.select({ id: schema.resumes.id, fileName: schema.resumes.fileName, parsed: schema.resumes.parsed }).from(schema.resumes).where(and(eq(schema.resumes.userId, user.id), eq(schema.resumes.isActive, true))).orderBy(desc(schema.resumes.createdAt)).get();
+  const jd = await db.select({ id: schema.jobDescriptions.id, parsed: schema.jobDescriptions.parsed }).from(schema.jobDescriptions).where(and(eq(schema.jobDescriptions.userId, user.id), eq(schema.jobDescriptions.isActive, true))).orderBy(desc(schema.jobDescriptions.createdAt)).get();
+  const ent = await loadEntitlementContext(user.id);
+  const { steps, current } = await ladderState(user.id);
   const start = canStartSession(ent);
   return (
     <SetupForm
@@ -29,7 +29,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       currentLadder={current.level}
       initialLadder={sp.ladder ? Number(sp.ladder) : null}
       firstRun={sp.first === "1"}
-      styles={savedStyles(user.id)}
+      styles={await savedStyles(user.id)}
       limits={{
         plan: PLANS[ent.plan].name, canStart: start.allowed ? null : start.reason, panel: canUsePanelMode(ent, 2).allowed,
         maxPanel: PLANS[ent.plan].limits.maxPanelSize, ladder: canUseLadder(ent).allowed, maxMinutes: maxSessionMinutes(ent),

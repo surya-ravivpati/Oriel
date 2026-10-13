@@ -1,5 +1,4 @@
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import { sql } from "drizzle-orm";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 import { PERSONAS } from "@/lib/interview/personas";
 import { LADDER, DRILLS } from "@/lib/practice/catalog";
@@ -8,7 +7,7 @@ import { LADDER, DRILLS } from "@/lib/practice/catalog";
  * Catalog content (personas, drills, ladder) lives in code and is upserted into the
  * database on boot so relational rows (interviewers, drill attempts) can reference it.
  */
-export function seedCatalog(db: BetterSQLite3Database<typeof schema>) {
+export async function seedCatalog(db: LibSQLDatabase<typeof schema>) {
   for (const p of Object.values(PERSONAS)) {
     const row = {
       id: p.id, name: p.name, title: p.title, description: p.description,
@@ -17,21 +16,20 @@ export function seedCatalog(db: BetterSQLite3Database<typeof schema>) {
       specificityDemand: p.specificityDemand, expressiveness: p.expressiveness,
       voice: p.voice, accent: p.accent,
     };
-    db.insert(schema.personas).values(row).onConflictDoUpdate({ target: schema.personas.id, set: row }).run();
+    await db.insert(schema.personas).values(row).onConflictDoUpdate({ target: schema.personas.id, set: row }).run();
   }
   for (const d of DRILLS) {
     const row = {
       id: d.id, title: d.title, objective: d.objective, instructions: d.instructions,
       prompt: d.prompt, targetMetric: d.targetMetric, durationSec: d.durationSec, requiresCamera: d.requiresCamera,
     };
-    db.insert(schema.drills).values(row).onConflictDoUpdate({ target: schema.drills.id, set: row }).run();
+    await db.insert(schema.drills).values(row).onConflictDoUpdate({ target: schema.drills.id, set: row }).run();
   }
   for (const l of LADDER) {
     const row = {
       level: l.level, name: l.name, description: l.description, personaIds: l.personaIds,
       mode: l.mode, pressure: l.pressure, curveballs: l.curveballs,
     };
-    db.insert(schema.ladderLevels).values(row).onConflictDoUpdate({ target: schema.ladderLevels.level, set: row }).run();
+    await db.insert(schema.ladderLevels).values(row).onConflictDoUpdate({ target: schema.ladderLevels.level, set: row }).run();
   }
-  db.run(sql`select 1`);
 }

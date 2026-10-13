@@ -11,17 +11,17 @@ import { computeRead, type AnswerInputRow } from "@/lib/analysis/read";
 import { createInterview } from "@/server/interview/service";
 import { lessonFor, lessonsFor, planFromSession, recordLessonPractice } from "@/server/lessons";
 
-function makeUser() {
+async function makeUser() {
   const db = getDb();
   const id = newId("usr");
-  db.insert(schema.users).values({ id, email: `${id}@oriel.test`, passwordHash: "x", onboardedAt: new Date() }).run();
-  db.insert(schema.profiles).values({ userId: id, name: "Sam Rivera", targetRole: "Product Manager", domain: "product" }).run();
-  db.insert(schema.subscriptions).values({ id: newId("sub"), userId: id, plan: "pro", periodStart: new Date() }).run();
-  db.insert(schema.ladderProgress).values({ userId: id, level: 1, unlockedAt: new Date() }).run();
+  await db.insert(schema.users).values({ id, email: `${id}@oriel.test`, passwordHash: "x", onboardedAt: new Date() }).run();
+  await db.insert(schema.profiles).values({ userId: id, name: "Sam Rivera", targetRole: "Product Manager", domain: "product" }).run();
+  await db.insert(schema.subscriptions).values({ id: newId("sub"), userId: id, plan: "pro", periodStart: new Date() }).run();
+  await db.insert(schema.ladderProgress).values({ userId: id, level: 1, unlockedAt: new Date() }).run();
   return id;
 }
 
-const session = (userId: string) => createInterview(userId, { role: "Product Manager", domain: "product", level: "hiring_manager", type: "behavioral", pressure: 3, persona: "hiring_manager", mode: "single", panelSize: 3, ladderLevel: null, targetMinutes: 15, cameraMetrics: false }).sessionId;
+const session = async (userId: string) => (await createInterview(userId, { role: "Product Manager", domain: "product", level: "hiring_manager", type: "behavioral", pressure: 3, persona: "hiring_manager", mode: "single", panelSize: 3, ladderLevel: null, targetMinutes: 15, cameraMetrics: false })).sessionId;
 const answer = (id: string, text: string): AnswerInputRow => ({ id, questionId: `q${id}`, questionText: "Tell me about a project.", questionKind: "primary", questionDifficulty: 2, questionEndMs: null, text, startMs: 0, endMs: 60000, firstWordLatencyMs: null, interrupted: false, inputMode: "text" });
 const read = (texts: string[]) => computeRead(texts.map((t, i) => answer(String(i), t)), [], [], null, { cameraMetrics: false, gaze: false, posture: false });
 
@@ -36,45 +36,45 @@ const STRONG = [
 
 describe("a lesson's life", () => {
   it("is planned from an interview, practised, confirmed in a later interview, and reopened if it slips", async () => {
-    const userId = makeUser();
-    const first = session(userId);
+    const userId = await makeUser();
+    const first = await session(userId);
     await planFromSession({ userId, sessionId: first, role: "Product Manager", ...read(VAGUE) });
-    let structure = lessonsFor(userId).find((l) => l.lessonKey === "structure")!;
+    let structure = (await lessonsFor(userId)).find((l) => l.lessonKey === "structure")!;
     expect(structure).toBeDefined();
     expect(structure.status).toBe("active");
     expect(VAGUE.some((v) => v.startsWith(structure.evidence.quotes[0].text.replace(/…$/, "")))).toBe(true); // their own words, verbatim
 
     // Reading the lesson counts as "learn"; two passing drills count as practised.
-    expect(lessonFor(userId, "structure")!.lesson.viewedAt).toBeNull();
-    expect(lessonFor(userId, "structure")!.lesson.viewedAt).not.toBeNull();
-    recordLessonPractice(userId, "star_structure", true);
-    expect(recordLessonPractice(userId, "star_structure", true)).toMatchObject({ passes: 2, needed: 2 });
+    expect((await lessonFor(userId, "structure"))!.lesson.viewedAt).toBeNull();
+    expect((await lessonFor(userId, "structure"))!.lesson.viewedAt).not.toBeNull();
+    await recordLessonPractice(userId, "star_structure", true);
+    expect(await recordLessonPractice(userId, "star_structure", true)).toMatchObject({ passes: 2, needed: 2 });
 
     // The next interview is on target → mastered (practice alone never masters a lesson).
-    await planFromSession({ userId, sessionId: session(userId), role: "Product Manager", ...read(STRONG) });
-    structure = lessonsFor(userId).find((l) => l.lessonKey === "structure")!;
+    await planFromSession({ userId, sessionId: await session(userId), role: "Product Manager", ...read(STRONG) });
+    structure = (await lessonsFor(userId)).find((l) => l.lessonKey === "structure")!;
     expect(structure.status).toBe("mastered");
     expect(structure.masteredAt).not.toBeNull();
-    expect(recordLessonPractice(userId, "star_structure", true)).toBeNull(); // nothing open to practise
+    expect(await recordLessonPractice(userId, "star_structure", true)).toBeNull(); // nothing open to practise
 
     // It slips again → reopened with a fresh round of practice.
-    const third = session(userId);
+    const third = await session(userId);
     await planFromSession({ userId, sessionId: third, role: "Product Manager", ...read(VAGUE) });
-    structure = lessonsFor(userId).find((l) => l.lessonKey === "structure")!;
+    structure = (await lessonsFor(userId)).find((l) => l.lessonKey === "structure")!;
     expect(structure.status).toBe("active");
     expect(structure.practicePasses).toBe(0);
     expect(structure.sourceSessionId).toBe(third);
   });
 
   it("leaves lessons alone that an interview couldn't measure", async () => {
-    const userId = makeUser();
-    const s = session(userId);
-    getDb().insert(schema.lessons).values({
+    const userId = await makeUser();
+    const s = await session(userId);
+    await getDb().insert(schema.lessons).values({
       id: newId("lsn"), userId, lessonKey: "pace", track: "delivery", status: "active", priority: 1, sourceSessionId: s, metricKey: "pace_wpm",
       startValue: 190, latestValue: 190, evidence: { value: 190, unit: "wpm", display: "190 words a minute", target: "120–160 words a minute", confidence: "high", facts: [], quotes: [], moments: [] },
       content: { observation: "Fast.", tip: "Slow down.", rewrite: null, source: "heuristic" },
     }).run();
-    await planFromSession({ userId, sessionId: session(userId), role: "Product Manager", ...read(STRONG) }); // typed: pace not measured
-    expect(lessonsFor(userId).find((l) => l.lessonKey === "pace")?.status).toBe("active");
+    await planFromSession({ userId, sessionId: await session(userId), role: "Product Manager", ...read(STRONG) }); // typed: pace not measured
+    expect((await lessonsFor(userId)).find((l) => l.lessonKey === "pace")?.status).toBe("active");
   });
 });

@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { del, get, list, put } from "@vercel/blob";
 import { deriveKey } from "@/lib/security/secrets";
 
 /**
@@ -12,7 +13,9 @@ import { deriveKey } from "@/lib/security/secrets";
  * number bound as associated data. Independent segments allow byte-range reads (video
  * seeking) without decrypting the whole file.
  *
- * Swap this module for an S3/GCS implementation with the same interface in production.
+ * Where the bytes live: a local folder by default, or a private Vercel Blob store when
+ * BLOB_READ_WRITE_TOKEN is set (serverless hosts have no lasting disk). Either way the
+ * store only ever sees ciphertext.
  */
 export interface SegmentIndexEntry { seq: number; offset: number; length: number }
 interface MediaIndex { mediaId: string; userId: string; mimeType: string; segments: SegmentIndexEntry[]; totalBytes: number }
@@ -25,46 +28,86 @@ export function mediaRoot() {
   return process.env.MEDIA_DIR ?? at(process.cwd(), "data", "media");
 }
 
-function dirFor(userId: string, mediaId: string) {
+/** Where objects live. Keys are "userId/mediaId/name". */
+interface Store {
+  read(key: string): Promise<Buffer | null>;
+  write(key: string, data: Buffer | string): Promise<void>;
+  removePrefix(prefix: string): Promise<void>;
+}
+
+const diskStore: Store = {
+  async read(key) {
+    try { return await fs.promises.readFile(at(mediaRoot(), key)); } catch { return null; }
+  },
+  async write(key, data) {
+    const file = at(mediaRoot(), key);
+    await fs.promises.mkdir(path.dirname(file), { recursive: true });
+    const tmp = `${file}.tmp`;
+    await fs.promises.writeFile(tmp, data);
+    await fs.promises.rename(tmp, file);
+  },
+  async removePrefix(prefix) {
+    await fs.promises.rm(at(mediaRoot(), prefix), { recursive: true, force: true });
+  },
+};
+
+const BLOB_PREFIX = "media/";
+const blobStore: Store = {
+  async read(key) {
+    const res = await get(BLOB_PREFIX + key, { access: "private", useCache: false }).catch(() => null);
+    if (!res || res.statusCode !== 200 || !res.stream) return null;
+    return Buffer.from(await new Response(res.stream).arrayBuffer());
+  },
+  async write(key, data) {
+    await put(BLOB_PREFIX + key, data, { access: "private", addRandomSuffix: false, allowOverwrite: true, contentType: "application/octet-stream" });
+  },
+  async removePrefix(prefix) {
+    let cursor: string | undefined;
+    do {
+      const page = await list({ prefix: BLOB_PREFIX + prefix + "/", cursor });
+      if (page.blobs.length) await del(page.blobs.map((b) => b.url));
+      cursor = page.hasMore ? page.cursor : undefined;
+    } while (cursor);
+  },
+};
+
+const store = (): Store => (process.env.BLOB_READ_WRITE_TOKEN ? blobStore : diskStore);
+
+function keyFor(userId: string, mediaId: string) {
   if (!/^[\w-]+$/.test(userId) || !/^[\w-]+$/.test(mediaId)) throw new Error("invalid media path");
-  return at(mediaRoot(), userId, mediaId);
-}
-
-function readIndex(dir: string): MediaIndex {
-  return JSON.parse(fs.readFileSync(at(dir, "index.json"), "utf8"));
-}
-
-function writeIndex(dir: string, idx: MediaIndex) {
-  const tmp = at(dir, "index.json.tmp");
-  fs.writeFileSync(tmp, JSON.stringify(idx));
-  fs.renameSync(tmp, at(dir, "index.json"));
-}
-
-export function createMedia(userId: string, mediaId: string, mimeType: string) {
-  const dir = dirFor(userId, mediaId);
-  fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(at(dir, "index.json"))) {
-    writeIndex(dir, { mediaId, userId, mimeType, segments: [], totalBytes: 0 });
-  }
   return `${userId}/${mediaId}`;
 }
 
+async function readIndex(key: string): Promise<MediaIndex | null> {
+  const buf = await store().read(`${key}/index.json`);
+  return buf ? JSON.parse(buf.toString("utf8")) : null;
+}
+
+async function writeIndex(key: string, idx: MediaIndex) {
+  await store().write(`${key}/index.json`, JSON.stringify(idx));
+}
+
+export async function createMedia(userId: string, mediaId: string, mimeType: string) {
+  const key = keyFor(userId, mediaId);
+  if (!(await readIndex(key))) await writeIndex(key, { mediaId, userId, mimeType, segments: [], totalBytes: 0 });
+  return key;
+}
+
 /** Append a chunk. Idempotent for retried uploads of an already-stored sequence. */
-export function appendSegment(userId: string, mediaId: string, seq: number, plaintext: Buffer): { stored: boolean; totalBytes: number; segments: number } {
-  const dir = dirFor(userId, mediaId);
-  const idx = readIndex(dir);
+export async function appendSegment(userId: string, mediaId: string, seq: number, plaintext: Buffer): Promise<{ stored: boolean; totalBytes: number; segments: number }> {
+  const key = keyFor(userId, mediaId);
+  const idx = await readIndex(key);
+  if (!idx) throw new Error("unknown media");
   if (seq < idx.segments.length) return { stored: false, totalBytes: idx.totalBytes, segments: idx.segments.length };
   if (seq !== idx.segments.length) throw new Error(`out-of-order segment ${seq}, expected ${idx.segments.length}`);
-  const key = deriveKey("media", userId);
   const iv = randomBytes(12);
-  const cipher = createCipheriv("aes-256-gcm", key, iv);
+  const cipher = createCipheriv("aes-256-gcm", deriveKey("media", userId), iv);
   cipher.setAAD(Buffer.from(`${mediaId}:${seq}`));
   const ct = Buffer.concat([cipher.update(plaintext), cipher.final()]);
-  const tag = cipher.getAuthTag();
-  fs.writeFileSync(at(dir, segName(seq)), Buffer.concat([iv, tag, ct]));
+  await store().write(`${key}/${segName(seq)}`, Buffer.concat([iv, cipher.getAuthTag(), ct]));
   idx.segments.push({ seq, offset: idx.totalBytes, length: plaintext.length });
   idx.totalBytes += plaintext.length;
-  writeIndex(dir, idx);
+  await writeIndex(key, idx);
   return { stored: true, totalBytes: idx.totalBytes, segments: idx.segments.length };
 }
 
@@ -72,32 +115,30 @@ function segName(seq: number) {
   return `seg-${String(seq).padStart(6, "0")}.bin`;
 }
 
-function decryptSegment(dir: string, userId: string, mediaId: string, seq: number): Buffer {
-  const buf = fs.readFileSync(at(dir, segName(seq)));
-  const iv = buf.subarray(0, 12);
-  const tag = buf.subarray(12, 28);
-  const decipher = createDecipheriv("aes-256-gcm", deriveKey("media", userId), iv);
+async function decryptSegment(key: string, userId: string, mediaId: string, seq: number): Promise<Buffer> {
+  const buf = await store().read(`${key}/${segName(seq)}`);
+  if (!buf) throw new Error("missing media segment");
+  const decipher = createDecipheriv("aes-256-gcm", deriveKey("media", userId), buf.subarray(0, 12));
   decipher.setAAD(Buffer.from(`${mediaId}:${seq}`));
-  decipher.setAuthTag(tag);
+  decipher.setAuthTag(buf.subarray(12, 28));
   return Buffer.concat([decipher.update(buf.subarray(28)), decipher.final()]);
 }
 
-export function mediaInfo(userId: string, mediaId: string): { totalBytes: number; mimeType: string } | null {
-  const dir = dirFor(userId, mediaId);
-  if (!fs.existsSync(at(dir, "index.json"))) return null;
-  const idx = readIndex(dir);
-  return { totalBytes: idx.totalBytes, mimeType: idx.mimeType };
+export async function mediaInfo(userId: string, mediaId: string): Promise<{ totalBytes: number; mimeType: string } | null> {
+  const idx = await readIndex(keyFor(userId, mediaId));
+  return idx ? { totalBytes: idx.totalBytes, mimeType: idx.mimeType } : null;
 }
 
 /** Read plaintext bytes [start, end] inclusive. */
-export function readRange(userId: string, mediaId: string, start: number, end: number): Buffer {
-  const dir = dirFor(userId, mediaId);
-  const idx = readIndex(dir);
+export async function readRange(userId: string, mediaId: string, start: number, end: number): Promise<Buffer> {
+  const key = keyFor(userId, mediaId);
+  const idx = await readIndex(key);
+  if (!idx) throw new Error("unknown media");
   const parts: Buffer[] = [];
   for (const s of idx.segments) {
     const sEnd = s.offset + s.length - 1;
     if (sEnd < start || s.offset > end) continue;
-    const plain = decryptSegment(dir, userId, mediaId, s.seq);
+    const plain = await decryptSegment(key, userId, mediaId, s.seq);
     const from = Math.max(0, start - s.offset);
     const to = Math.min(s.length, end - s.offset + 1);
     parts.push(plain.subarray(from, to));
@@ -105,11 +146,11 @@ export function readRange(userId: string, mediaId: string, start: number, end: n
   return Buffer.concat(parts);
 }
 
-export function deleteMedia(userId: string, mediaId: string) {
-  fs.rmSync(dirFor(userId, mediaId), { recursive: true, force: true });
+export async function deleteMedia(userId: string, mediaId: string) {
+  await store().removePrefix(keyFor(userId, mediaId));
 }
 
-export function deleteAllMediaForUser(userId: string) {
+export async function deleteAllMediaForUser(userId: string) {
   if (!/^[\w-]+$/.test(userId)) throw new Error("invalid user id");
-  fs.rmSync(at(mediaRoot(), userId), { recursive: true, force: true });
+  await store().removePrefix(userId);
 }

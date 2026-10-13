@@ -14,13 +14,13 @@ export const POST = authed(async (req, { user }) => {
   const { text } = await parseBody(req, Body);
   const llm = getLanguageModel();
   const parsed = await parseJobDescription(llm, text);
-  if (parsed.usage) recordTokenCost({ userId: user.id }, llm.id, "analysis", "jd_parser", parsed.usage);
+  if (parsed.usage) await recordTokenCost({ userId: user.id }, llm.id, "analysis", "jd_parser", parsed.usage);
   logEvent("llm_output", "jd_parser", { userId: user.id, durationMs: parsed.latencyMs, data: { source: parsed.source, competencies: parsed.data.competencies, error: parsed.error ?? null } });
   const db = getDb();
   const id = newId("jd");
-  db.transaction((tx) => {
-    tx.update(schema.jobDescriptions).set({ isActive: false }).where(and(eq(schema.jobDescriptions.userId, user.id), eq(schema.jobDescriptions.isActive, true))).run();
-    tx.insert(schema.jobDescriptions).values({ id, userId: user.id, rawText: text, parsed: parsed.data }).run();
+  await db.transaction(async (tx) => {
+    await tx.update(schema.jobDescriptions).set({ isActive: false }).where(and(eq(schema.jobDescriptions.userId, user.id), eq(schema.jobDescriptions.isActive, true))).run();
+    await tx.insert(schema.jobDescriptions).values({ id, userId: user.id, rawText: text, parsed: parsed.data }).run();
   });
   return json({ id, parsed: parsed.data });
 }, { limit: 10 });

@@ -30,11 +30,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // The floating dev-tools badge sits over the page in development; errors still open the overlay.
   devIndicators: false,
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["@libsql/client", "libsql"],
   // Runtime data (SQLite, encrypted media) and tests must never be traced into a deployment bundle.
   outputFileTracingExcludes: { "*": ["data/**", "tests/**", "playwright-report/**", "test-results/**"] },
-  // Published validation results are read at request time by /trust.
-  outputFileTracingIncludes: { "/trust": ["docs/validation/*.json"] },
+  // Published validation results are read at request time by /trust; migrations run on first query.
+  outputFileTracingIncludes: { "/trust": ["docs/validation/*.json"], "*": ["drizzle/**"] },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -18,21 +18,24 @@ const Body = z.object({
 });
 
 /** End the session (idempotent) and queue the Read. The interview data is already stored turn by turn. */
+// Analysis runs after the response; give it room to finish on serverless hosts.
+export const maxDuration = 300;
+
 export const POST = authed<IdParams>(async (req, { params, user }) => {
   const { id } = await params;
-  const { session } = loadSession(id, user.id);
+  const { session } = await loadSession(id, user.id);
   const body = await parseBody(req, Body);
   const db = getDb();
   if (session.status !== "ended") {
     const minutes = body.durationMs / 60000;
-    db.update(schema.interviewSessions).set({ status: "ended", endedAt: new Date(), avatarProvider: body.avatarProvider, degradedMode: body.degradedMode, phase: "COMPLETE" }).where(eq(schema.interviewSessions.id, id)).run();
+    await db.update(schema.interviewSessions).set({ status: "ended", endedAt: new Date(), avatarProvider: body.avatarProvider, degradedMode: body.degradedMode, phase: "COMPLETE" }).where(eq(schema.interviewSessions.id, id)).run();
     const avatarKey = body.avatarProvider === "local" ? "avatar-local" : "avatar-managed-premium";
-    recordUnitCost({ userId: user.id, sessionId: id }, body.avatarProvider, "avatar", "interviewer_minutes", minutes, "minutes", minutes * avatarMinuteRate(avatarKey));
-    if (body.avatarProvider !== "local") db.insert(schema.usageRecords).values({ id: newId("use"), userId: user.id, sessionId: id, kind: "managed_avatar_minutes", quantity: minutes }).run();
-    db.insert(schema.usageRecords).values({ id: newId("use"), userId: user.id, sessionId: id, kind: "avatar_minutes", quantity: minutes }).run();
+    await recordUnitCost({ userId: user.id, sessionId: id }, body.avatarProvider, "avatar", "interviewer_minutes", minutes, "minutes", minutes * avatarMinuteRate(avatarKey));
+    if (body.avatarProvider !== "local") await db.insert(schema.usageRecords).values({ id: newId("use"), userId: user.id, sessionId: id, kind: "managed_avatar_minutes", quantity: minutes }).run();
+    await db.insert(schema.usageRecords).values({ id: newId("use"), userId: user.id, sessionId: id, kind: "avatar_minutes", quantity: minutes }).run();
     if (body.clientLatency) logEvent("latency", "turn_perceived_summary", { sessionId: id, userId: user.id, durationMs: body.clientLatency.medianMs ?? undefined, data: body.clientLatency });
-    audit("interview.complete", { userId: user.id, target: id, data: { reason: body.reason, minutes: Math.round(minutes * 10) / 10 } });
+    await audit("interview.complete", { userId: user.id, target: id, data: { reason: body.reason, minutes: Math.round(minutes * 10) / 10 } });
   }
-  const jobId = enqueueAnalysis(id);
+  const jobId = await enqueueAnalysis(id);
   return json({ ok: true, jobId });
 }, { limit: 20 });

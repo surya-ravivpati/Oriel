@@ -54,9 +54,9 @@ export interface CreateInterviewInput {
 
 // ─── Creation ─────────────────────────────────────────────────────────────
 
-export function createInterview(userId: string, input: CreateInterviewInput): { sessionId: string; interviewId: string } {
+export async function createInterview(userId: string, input: CreateInterviewInput): Promise<{ sessionId: string; interviewId: string }> {
   const db = getDb();
-  const ent = loadEntitlementContext(userId);
+  const ent = await loadEntitlementContext(userId);
   const verdicts = [canStartSession(ent), canUseDomainPack(ent, input.domain)];
   const rung = input.ladderLevel ? LADDER.find((l) => l.level === input.ladderLevel) : undefined;
   if (input.ladderLevel && !rung) throw new HttpError(400, "Unknown ladder level");
@@ -67,18 +67,18 @@ export function createInterview(userId: string, input: CreateInterviewInput): { 
   for (const v of verdicts) if (!v.allowed) throw new HttpError(402, v.reason, v.upgradeTo ? `upgrade:${v.upgradeTo}` : "entitlement");
 
   if (rung && input.ladderLevel! > 1) {
-    const prog = db.select().from(schema.ladderProgress).where(and(eq(schema.ladderProgress.userId, userId), eq(schema.ladderProgress.level, input.ladderLevel!))).get();
+    const prog = await db.select().from(schema.ladderProgress).where(and(eq(schema.ladderProgress.userId, userId), eq(schema.ladderProgress.level, input.ladderLevel!))).get();
     if (!prog?.unlockedAt) throw new HttpError(403, "This rung of the Ladder is still locked.");
   }
 
   const pressure = clampPressure(rung ? rung.pressure : input.pressure);
   const targetMinutes = Math.min(Math.max(5, input.targetMinutes), maxSessionMinutes(ent));
-  const resume = db.select().from(schema.resumes).where(and(eq(schema.resumes.userId, userId), eq(schema.resumes.isActive, true))).orderBy(desc(schema.resumes.createdAt)).get();
-  const jd = db.select().from(schema.jobDescriptions).where(and(eq(schema.jobDescriptions.userId, userId), eq(schema.jobDescriptions.isActive, true))).orderBy(desc(schema.jobDescriptions.createdAt)).get();
+  const resume = await db.select().from(schema.resumes).where(and(eq(schema.resumes.userId, userId), eq(schema.resumes.isActive, true))).orderBy(desc(schema.resumes.createdAt)).get();
+  const jd = await db.select().from(schema.jobDescriptions).where(and(eq(schema.jobDescriptions.userId, userId), eq(schema.jobDescriptions.isActive, true))).orderBy(desc(schema.jobDescriptions.createdAt)).get();
 
   const interviewId = newId("int");
   const sessionId = newId("ses");
-  const styles = savedStyles(userId);
+  const styles = await savedStyles(userId);
   // The person's own name for an interviewer replaces the persona's; behaviour is unchanged.
   const named = (pid: PersonaId) => ({
     ...(styles[pid]?.name ? { name: styles[pid]!.name!, callName: styles[pid]!.name! } : { name: PERSONAS[pid].name }),
@@ -107,48 +107,48 @@ export function createInterview(userId: string, input: CreateInterviewInput): { 
     seed: Math.floor(Math.random() * 2 ** 31),
   });
 
-  const profile = db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).get();
+  const profile = await db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).get();
   const cameraMetrics = input.cameraMetrics && (profile?.cameraMetricsEnabled ?? true);
   const retentionDays = profile?.videoRetentionDays ?? 30;
 
-  db.transaction((tx) => {
-    tx.insert(schema.interviews).values({
+  await db.transaction(async (tx) => {
+    await tx.insert(schema.interviews).values({
       id: interviewId, userId, role: input.role, domain: pack.id, level: input.level, type: input.type, pressure,
       mode, resumeId: resume?.id ?? null, jobDescriptionId: jd?.id ?? null, ladderLevel: input.ladderLevel, targetMinutes,
     }).run();
-    if (mode === "panel") tx.insert(schema.panels).values({ id: newId("pnl"), interviewId, size: seated.length }).run();
-    tx.insert(schema.interviewSessions).values({
+    if (mode === "panel") await tx.insert(schema.panels).values({ id: newId("pnl"), interviewId, size: seated.length }).run();
+    await tx.insert(schema.interviewSessions).values({
       id: sessionId, interviewId, userId, status: "created", phase: "INTRO", controllerState: state as unknown as Record<string, unknown>,
       cameraMetricsEnabled: cameraMetrics, llmProvider: getLanguageModel().id, ttsProvider: getTextToSpeech().id,
       videoExpiresAt: new Date(Date.now() + retentionDays * 24 * 3600 * 1000),
     }).run();
     for (const s of seated) {
-      tx.insert(schema.interviewers).values({
+      await tx.insert(schema.interviewers).values({
         id: s.id, sessionId, personaId: s.personaId, panelRole: s.panelRole, displayName: s.name, avatarStyle: styles[s.personaId] ?? null, seat: s.seat,
         competencyFocus: state.plan.filter((p) => p.seat === s.seat).map((p) => p.competency), memory: [],
       }).run();
     }
-    tx.insert(schema.usageRecords).values({ id: newId("use"), userId, sessionId, kind: "sessions", quantity: 1 }).run();
+    await tx.insert(schema.usageRecords).values({ id: newId("use"), userId, sessionId, kind: "sessions", quantity: 1 }).run();
   });
   logEvent("decision", "plan_built", { sessionId, userId, data: { plan: state.plan, pressure, mode, seats: seated.map((s) => s.personaId) } });
-  audit("interview.create", { userId, target: sessionId, data: { mode, pressure, domain: pack.id, ladder: input.ladderLevel } });
+  await audit("interview.create", { userId, target: sessionId, data: { mode, pressure, domain: pack.id, ladder: input.ladderLevel } });
   return { sessionId, interviewId };
 }
 
 // ─── Loading ──────────────────────────────────────────────────────────────
 
-export function loadSession(sessionId: string, userId: string) {
+export async function loadSession(sessionId: string, userId: string) {
   const db = getDb();
-  const session = db.select().from(schema.interviewSessions).where(eq(schema.interviewSessions.id, sessionId)).get();
+  const session = await db.select().from(schema.interviewSessions).where(eq(schema.interviewSessions.id, sessionId)).get();
   if (!session || session.userId !== userId) throw new HttpError(404, "Session not found");
-  const interview = db.select().from(schema.interviews).where(eq(schema.interviews.id, session.interviewId)).get()!;
-  const interviewers = db.select().from(schema.interviewers).where(eq(schema.interviewers.sessionId, sessionId)).orderBy(asc(schema.interviewers.seat)).all();
-  const profile = db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).get();
+  const interview = (await db.select().from(schema.interviews).where(eq(schema.interviews.id, session.interviewId)).get())!;
+  const interviewers = await db.select().from(schema.interviewers).where(eq(schema.interviewers.sessionId, sessionId)).orderBy(asc(schema.interviewers.seat)).all();
+  const profile = await db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).get();
   return { session, interview, interviewers, profile, state: session.controllerState as unknown as InterviewState };
 }
 
-function saveState(sessionId: string, state: InterviewState, extra: Partial<typeof schema.interviewSessions.$inferInsert> = {}) {
-  getDb().update(schema.interviewSessions).set({ controllerState: state as unknown as Record<string, unknown>, phase: state.phase, ...extra }).where(eq(schema.interviewSessions.id, sessionId)).run();
+async function saveState(sessionId: string, state: InterviewState, extra: Partial<typeof schema.interviewSessions.$inferInsert> = {}) {
+  await getDb().update(schema.interviewSessions).set({ controllerState: state as unknown as Record<string, unknown>, phase: state.phase, ...extra }).where(eq(schema.interviewSessions.id, sessionId)).run();
 }
 
 // One turn at a time per session (a double-submitted turn must not advance the state twice).
@@ -160,17 +160,17 @@ export async function* runOpening(sessionId: string, userId: string): AsyncGener
   if (inFlight.has(sessionId)) throw new HttpError(409, "A turn is already in progress");
   inFlight.add(sessionId);
   try {
-    const { session, profile, state, interviewers } = loadSession(sessionId, userId);
+    const { session, profile, state, interviewers } = await loadSession(sessionId, userId);
     if (session.status === "ended") throw new HttpError(409, "This session has ended");
     const t0 = performance.now();
-    const existing = getDb().select().from(schema.questions).where(eq(schema.questions.sessionId, sessionId)).orderBy(desc(schema.questions.seq)).get();
+    const existing = await getDb().select().from(schema.questions).where(eq(schema.questions.sessionId, sessionId)).orderBy(desc(schema.questions.seq)).get();
     if (existing) {
       // Reconnect: repeat the last question instead of restarting the interview.
       yield* speakExisting(sessionId, userId, state, existing, interviewers);
       return;
     }
     const { decision, state: next } = openingDecision(state);
-    getDb().update(schema.interviewSessions).set({ status: "live", startedAt: new Date() }).where(eq(schema.interviewSessions.id, sessionId)).run();
+    await getDb().update(schema.interviewSessions).set({ status: "live", startedAt: new Date() }).where(eq(schema.interviewSessions.id, sessionId)).run();
     // Warm the speech cache with each interviewer's fixed phrases (acknowledgements, handoffs, closing).
     for (const iv of state.interviewers) prewarm(voiceFor(iv.personaId, iv), cacheablePhrases(state, iv.seat), (u) => recordTokenCost({ userId, sessionId }, "gemini-tts", "tts", "prewarm", u));
     yield* deliver({ sessionId, userId, decision, state: next, interviewers, candidateName: firstName(profile?.name ?? "there"), lastQuestion: null, lastAnswer: null, answerId: null, t0, askedAtMs: 0 });
@@ -207,13 +207,13 @@ export async function* runTurn(sessionId: string, userId: string, input: TurnInp
   try {
     const t0 = performance.now();
     const db = getDb();
-    const { session, profile, state, interviewers, interview } = loadSession(sessionId, userId);
+    const { session, profile, state, interviewers, interview } = await loadSession(sessionId, userId);
     if (session.status !== "live") throw new HttpError(409, "This session is not live");
     if (!state.lastQuestion) throw new HttpError(409, "No question has been asked yet");
 
     if (input.prevQuestion?.questionId === state.lastQuestion.questionId) {
-      db.update(schema.questions).set({ askedAtMs: Math.round(input.prevQuestion.startMs), speechEndMs: Math.round(input.prevQuestion.endMs) }).where(eq(schema.questions.id, input.prevQuestion.questionId)).run();
-      db.update(schema.transcriptSegments).set({ startMs: Math.round(input.prevQuestion.startMs), endMs: Math.round(input.prevQuestion.endMs) })
+      await db.update(schema.questions).set({ askedAtMs: Math.round(input.prevQuestion.startMs), speechEndMs: Math.round(input.prevQuestion.endMs) }).where(eq(schema.questions.id, input.prevQuestion.questionId)).run();
+      await db.update(schema.transcriptSegments).set({ startMs: Math.round(input.prevQuestion.startMs), endMs: Math.round(input.prevQuestion.endMs) })
         .where(and(eq(schema.transcriptSegments.sessionId, sessionId), eq(schema.transcriptSegments.questionId, input.prevQuestion.questionId), eq(schema.transcriptSegments.speaker, "interviewer"))).run();
     }
 
@@ -222,28 +222,28 @@ export async function* runTurn(sessionId: string, userId: string, input: TurnInp
     const heur = analyzeAnswer(text, durationSec);
     const answerId = newId("ans");
     const seq = state.answerSeq + 1;
-    db.transaction((tx) => {
-      tx.insert(schema.answers).values({
+    await db.transaction(async (tx) => {
+      await tx.insert(schema.answers).values({
         id: answerId, sessionId, questionId: state.lastQuestion!.questionId, seq, text,
         startMs: Math.round(input.startMs), endMs: Math.round(input.endMs), firstWordLatencyMs: input.firstWordLatencyMs === null ? null : Math.round(input.firstWordLatencyMs),
         interrupted: input.interrupted, inputMode: input.inputMode,
         flags: { vague: heur.vagueness >= 0.6, hasNumbers: heur.quantified.length > 0, star: heur.star, hedges: heur.hedges, fillers: heur.fillers, wordCount: heur.wordCount, claims: heur.claims.map((c) => c.text) },
       }).run();
-      tx.insert(schema.transcriptSegments).values({
+      await tx.insert(schema.transcriptSegments).values({
         id: newId("seg"), sessionId, speaker: "candidate", questionId: state.lastQuestion!.questionId, answerId, text,
         startMs: Math.round(input.startMs), endMs: Math.round(input.endMs), source: input.inputMode === "text" ? "typed" : "webspeech",
       }).run();
       for (const c of heur.claims) {
-        tx.insert(schema.claims).values({ id: newId("clm"), sessionId, answerId, answerSeq: seq, kind: c.kind, text: c.text, normalized: c.normalized }).run();
+        await tx.insert(schema.claims).values({ id: newId("clm"), sessionId, answerId, answerSeq: seq, kind: c.kind, text: c.text, normalized: c.normalized }).run();
       }
     });
 
     // The model-based Answer Analyzer runs in the background and enriches the memory
     // ledger for later turns. It never blocks the conversation.
-    const questionRow = db.select().from(schema.questions).where(eq(schema.questions.id, state.lastQuestion.questionId)).get();
+    const questionRow = await db.select().from(schema.questions).where(eq(schema.questions.id, state.lastQuestion.questionId)).get();
     void enrichAnswer(sessionId, userId, answerId, seq, questionRow?.text ?? "", text, questionRow?.competency ?? null, interview.domain);
 
-    const claims: OpenClaim[] = db.select().from(schema.claims).where(eq(schema.claims.sessionId, sessionId)).all()
+    const claims: OpenClaim[] = await (await db.select().from(schema.claims).where(eq(schema.claims.sessionId, sessionId)).all())
       .map((c) => ({ id: c.id, kind: c.kind, text: c.text, status: c.status, answerSeq: c.answerSeq }));
     const elapsedMs = session.startedAt ? Date.now() - session.startedAt.getTime() : input.endMs;
     const { decision, state: next } = decide(state, {
@@ -251,7 +251,7 @@ export async function* runTurn(sessionId: string, userId: string, input: TurnInp
     });
     const tDecide = performance.now() - t0;
     logEvent("decision", decision.intent, { sessionId, userId, durationMs: tDecide, data: { ...decision, quality: heur.quality, vagueness: heur.vagueness, answerSeq: seq } });
-    if (decision.claim) db.update(schema.claims).set({ status: "probed" }).where(eq(schema.claims.id, decision.claim.id)).run();
+    if (decision.claim) await db.update(schema.claims).set({ status: "probed" }).where(eq(schema.claims.id, decision.claim.id)).run();
 
     yield* deliver({
       sessionId, userId, decision, state: next, interviewers, candidateName: firstName(profile?.name ?? "there"),
@@ -276,7 +276,7 @@ async function* deliver(p: {
   const voice = voiceFor(iv.personaId, iv.avatarStyle);
   yield { type: "decision", seat: iv.seat, interviewerId: iv.id, action: p.decision.action, intent: p.decision.intent, avatarCue: p.decision.avatarCue, preSilenceMs: p.decision.preSilenceMs, pressure: p.decision.pressure, answerId: p.answerId };
 
-  const recent = db.select().from(schema.transcriptSegments).where(eq(schema.transcriptSegments.sessionId, p.sessionId)).orderBy(desc(schema.transcriptSegments.startMs)).limit(6).all().reverse();
+  const recent = (await db.select().from(schema.transcriptSegments).where(eq(schema.transcriptSegments.sessionId, p.sessionId)).orderBy(desc(schema.transcriptSegments.startMs)).limit(6).all()).reverse();
   const llm = getLanguageModel();
   const tts = getTextToSpeech();
 
@@ -303,7 +303,7 @@ async function* deliver(p: {
   let rendered: RenderedUtterance | null = null;
   const waiter: { wake: (() => void) | null } = { wake: null };
   const gen = streamUtterance(ctx, llm);
-  const pump = (async () => {
+  const pump = await (async () => {
     try {
       let r = await gen.next();
       while (!r.done) { sentences.push(r.value); waiter.wake?.(); r = await gen.next(); }
@@ -379,7 +379,7 @@ async function* deliver(p: {
       }
       if (r.value.cached) cacheHits++;
       if (ttsFirstChunkMs === null) ttsFirstChunkMs = r.value.firstChunkMs;
-      if (r.value.usage) recordTokenCost({ userId: p.userId, sessionId: p.sessionId }, tts.id, "tts", "interviewer_speech", r.value.usage);
+      if (r.value.usage) await recordTokenCost({ userId: p.userId, sessionId: p.sessionId }, tts.id, "tts", "interviewer_speech", r.value.usage);
     } catch (err) {
       logEvent("error", "tts_failed", { sessionId: p.sessionId, userId: p.userId, data: { error: err instanceof Error ? err.message : String(err), chunksSent: seq } });
       ttsFailed = true;
@@ -390,24 +390,24 @@ async function* deliver(p: {
   await pump;
   const r = rendered as RenderedUtterance | null;
   const fullText = [bridge, r?.text ?? first ?? ""].filter(Boolean).join(" ");
-  if (r?.usage) recordTokenCost({ userId: p.userId, sessionId: p.sessionId }, llm.id, "llm", "interviewer_turn", r.usage);
+  if (r?.usage) await recordTokenCost({ userId: p.userId, sessionId: p.sessionId }, llm.id, "llm", "interviewer_turn", r.usage);
   logEvent("llm_output", "interviewer", { sessionId: p.sessionId, userId: p.userId, durationMs: r?.latencyMs, data: { text: fullText, source: r?.source, intent: p.decision.intent, firstTokenMs: r?.firstTokenMs ?? null, error: r?.error ?? null } });
   if (r?.error) logEvent("fallback", "interviewer_template", { sessionId: p.sessionId, userId: p.userId, data: { error: r.error } });
 
   // Persist before telling the client we're done, so the next turn can reference it.
-  const qCount = db.select({ id: schema.questions.id }).from(schema.questions).where(eq(schema.questions.sessionId, p.sessionId)).all().length;
+  const qCount = (await db.select({ id: schema.questions.id }).from(schema.questions).where(eq(schema.questions.sessionId, p.sessionId)).all()).length;
   const bankDifficulty = p.state.plan.find((q) => q.text === p.decision.baseQuestion)?.difficulty ?? (p.decision.kind === "follow_up" ? 2 : 3);
-  db.insert(schema.questions).values({
+  await db.insert(schema.questions).values({
     id: questionId, sessionId: p.sessionId, interviewerId: iv.id, seq: qCount + 1, kind: p.decision.kind,
     competency: p.decision.competency, text: fullText, difficulty: p.decision.kind === "intro" ? 1 : bankDifficulty,
     parentQuestionId: p.state.currentPrimary?.questionId || null, decisionReason: p.decision.reason, askedAtMs: Math.round(p.askedAtMs),
   }).run();
-  db.insert(schema.transcriptSegments).values({
+  await db.insert(schema.transcriptSegments).values({
     id: newId("seg"), sessionId: p.sessionId, speaker: "interviewer", interviewerId: iv.id, questionId, text: fullText,
     startMs: Math.round(p.askedAtMs), endMs: Math.round(p.askedAtMs + fullText.length * 60), source: "tts",
   }).run();
   const finalState = recordAsked(p.state, p.decision, questionId);
-  saveState(p.sessionId, finalState);
+  await saveState(p.sessionId, finalState);
 
   if (fullText !== said.join(" ")) yield { type: "text", questionId, text: fullText, source: r?.source ?? "template", seat: iv.seat };
   if (ttsFailed && seq === bridgeChunks) {
@@ -452,7 +452,7 @@ export async function* speak(sessionId: string | null, userId: string, text: str
       yield { type: "audio", seq: seq++, sampleRate: r.value.sampleRate, pcm: r.value.pcm.toString("base64") };
       r = await gen.next();
     }
-    if (r.value.usage) recordTokenCost({ userId, sessionId }, tts.id, "tts", "speech", r.value.usage);
+    if (r.value.usage) await recordTokenCost({ userId, sessionId }, tts.id, "tts", "speech", r.value.usage);
     yield { type: "audio_end", chunks: seq };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -467,17 +467,17 @@ async function enrichAnswer(sessionId: string, userId: string, answerId: string,
     const llm = getLanguageModel();
     const rubric = competency ? getPack(domain).competencies.find((c) => c.key === competency)?.rubric ?? null : null;
     const r = await analyzeAnswerWithModel(llm, question, answer, rubric);
-    if (r.usage) recordTokenCost({ userId, sessionId }, llm.id, "analysis", "answer_analyzer", r.usage);
+    if (r.usage) await recordTokenCost({ userId, sessionId }, llm.id, "analysis", "answer_analyzer", r.usage);
     const db = getDb();
-    db.update(schema.answers).set({ analysis: r.data as unknown as Record<string, unknown> }).where(eq(schema.answers.id, answerId)).run();
-    const existing = db.select().from(schema.claims).where(eq(schema.claims.answerId, answerId)).all();
+    await db.update(schema.answers).set({ analysis: r.data as unknown as Record<string, unknown> }).where(eq(schema.answers.id, answerId)).run();
+    const existing = await db.select().from(schema.claims).where(eq(schema.claims.answerId, answerId)).all();
     for (const c of r.data.claims) {
       const match = existing.find((e) => e.normalized && (e.normalized.includes(c.text.toLowerCase()) || c.text.toLowerCase().includes(e.normalized)));
       if (match) {
-        if (!c.supported && match.status === "open") db.update(schema.claims).set({ status: "weak" }).where(eq(schema.claims.id, match.id)).run();
-        if (c.supported && match.status === "open") db.update(schema.claims).set({ status: "supported" }).where(eq(schema.claims.id, match.id)).run();
+        if (!c.supported && match.status === "open") await db.update(schema.claims).set({ status: "weak" }).where(eq(schema.claims.id, match.id)).run();
+        if (c.supported && match.status === "open") await db.update(schema.claims).set({ status: "supported" }).where(eq(schema.claims.id, match.id)).run();
       } else {
-        db.insert(schema.claims).values({ id: newId("clm"), sessionId, answerId, answerSeq: seq, kind: c.kind, text: c.text, normalized: c.text.toLowerCase(), status: c.supported ? "supported" : "weak" }).run();
+        await db.insert(schema.claims).values({ id: newId("clm"), sessionId, answerId, answerSeq: seq, kind: c.kind, text: c.text, normalized: c.text.toLowerCase(), status: c.supported ? "supported" : "weak" }).run();
       }
     }
     logEvent("llm_output", "answer_analyzer", { sessionId, userId, durationMs: r.latencyMs, data: { answerId, source: r.source, analysis: r.data, error: r.error ?? null } });

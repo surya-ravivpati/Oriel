@@ -11,7 +11,7 @@ const usd = (n: number) => (n < 0.01 ? `$${n.toFixed(4)}` : `$${n.toFixed(3)}`);
 
 export default async function AdminPage() {
   await requireAdmin();
-  const o = adminOverview();
+  const o = await adminOverview();
   const ps = providerStatus();
   const total = o.sessions.reduce((a, s) => a + s.usd, 0);
   return (
@@ -87,8 +87,8 @@ function rate(c: EvidenceCell) {
 }
 
 /** Whether the practice loop is associated with transfer and retention. Observational, not causal. */
-function TrainEvidence() {
-  const t = trainingEvidence();
+async function TrainEvidence() {
+  const t = await trainingEvidence();
   const rows: [string, EvidenceCell][] = [
     ["Carried to a new question, when the retry improved", t.transferAfterImproved],
     ["Carried to a new question, when the retry didn't improve", t.transferAfterNotImproved],

@@ -11,13 +11,13 @@ export const metadata = { title: "Profile" };
 export default async function ProfilePage() {
   const user = await requireUser();
   const db = getDb();
-  const profile = db.select().from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get()!;
-  const resume = db.select().from(schema.resumes).where(and(eq(schema.resumes.userId, user.id), eq(schema.resumes.isActive, true))).orderBy(desc(schema.resumes.createdAt)).get();
-  const jd = db.select().from(schema.jobDescriptions).where(and(eq(schema.jobDescriptions.userId, user.id), eq(schema.jobDescriptions.isActive, true))).orderBy(desc(schema.jobDescriptions.createdAt)).get();
-  const consents = db.select().from(schema.consentRecords).where(eq(schema.consentRecords.userId, user.id)).orderBy(desc(schema.consentRecords.createdAt)).limit(12).all();
-  const sub = activeSubscription(user.id);
-  const ent = loadEntitlementContext(user.id);
-  const media = db.select().from(schema.mediaObjects).where(and(eq(schema.mediaObjects.userId, user.id), eq(schema.mediaObjects.status, "complete"))).all();
+  const profile = (await db.select().from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get())!;
+  const resume = await db.select().from(schema.resumes).where(and(eq(schema.resumes.userId, user.id), eq(schema.resumes.isActive, true))).orderBy(desc(schema.resumes.createdAt)).get();
+  const jd = await db.select().from(schema.jobDescriptions).where(and(eq(schema.jobDescriptions.userId, user.id), eq(schema.jobDescriptions.isActive, true))).orderBy(desc(schema.jobDescriptions.createdAt)).get();
+  const consents = await db.select().from(schema.consentRecords).where(eq(schema.consentRecords.userId, user.id)).orderBy(desc(schema.consentRecords.createdAt)).limit(12).all();
+  const sub = await activeSubscription(user.id);
+  const ent = await loadEntitlementContext(user.id);
+  const media = await db.select().from(schema.mediaObjects).where(and(eq(schema.mediaObjects.userId, user.id), eq(schema.mediaObjects.status, "complete"))).all();
   return (
     <div>
       <h1 className="text-display-l text-ivory">{profile.name}</h1>
@@ -29,7 +29,7 @@ export default async function ProfilePage() {
         plan={{ id: ent.plan, name: PLANS[ent.plan].name, periodEnd: sub?.periodEnd?.toISOString() ?? null, sessionsThisWeek: ent.usage.sessionsThisWeek, drillsToday: ent.usage.drillsToday }}
         storedRecordings={media.length}
         consents={consents.map((c) => ({ id: c.id, kind: c.kind, granted: c.granted, version: c.version, at: c.createdAt.toISOString() }))}
-        styles={savedStyles(user.id)}
+        styles={await savedStyles(user.id)}
       />
     </div>
   );

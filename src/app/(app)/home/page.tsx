@@ -21,16 +21,16 @@ export const metadata = { title: "Home" };
 
 export default async function Home() {
   const user = await requireUser();
-  const profile = getDb().select().from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get();
-  const sessions = listSessions(user.id, 5);
-  const { latest, history } = progressSummary(user.id);
-  const { current } = ladderState(user.id);
+  const profile = await getDb().select().from(schema.profiles).where(eq(schema.profiles.userId, user.id)).get();
+  const sessions = await listSessions(user.id, 5);
+  const { latest, history } = await progressSummary(user.id);
+  const { current } = await ladderState(user.id);
   const rec = recommendDrill(latest?.metrics ?? {});
   const drill = getDrill(rec.drillId)!;
-  const lesson = nextLesson(user.id);
+  const lesson = await nextLesson(user.id);
   const next = current.personaIds[0];
-  const styles = savedStyles(user.id);
-  const reviews = dueReviews(user.id);
+  const styles = await savedStyles(user.id);
+  const reviews = await dueReviews(user.id);
   // One suggestion, in order of what matters most: a review that's due, the next lesson, a drill.
   const upNext = reviews.length
     ? { title: `Review: ${reviews[0].label}`, why: "A new question, answered cold, to see whether what you practiced has held.", href: "/train", action: "Start the review" }

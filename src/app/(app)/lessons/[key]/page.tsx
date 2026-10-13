@@ -21,7 +21,7 @@ export default async function LessonPage({ params }: { params: Promise<{ key: st
   const { key } = await params;
   if (!(key in LESSONS)) notFound();
   const def = LESSONS[key as LessonKey];
-  const found = lessonFor(user.id, key);
+  const found = await lessonFor(user.id, key);
   const l = found?.lesson ?? null;
   const drill = def.drillId ? getDrill(def.drillId) : null;
   const passes = l?.practicePasses ?? 0;

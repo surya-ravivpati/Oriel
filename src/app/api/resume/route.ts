@@ -28,14 +28,14 @@ export const POST = authed(async (req, { user }) => {
   }
   const llm = getLanguageModel();
   const parsed = await parseResume(llm, rawText);
-  if (parsed.usage) recordTokenCost({ userId: user.id }, llm.id, "analysis", "resume_parser", parsed.usage);
+  if (parsed.usage) await recordTokenCost({ userId: user.id }, llm.id, "analysis", "resume_parser", parsed.usage);
   logEvent("llm_output", "resume_parser", { userId: user.id, durationMs: parsed.latencyMs, data: { source: parsed.source, roles: parsed.data.roles.length, error: parsed.error ?? null } });
   const db = getDb();
   const id = newId("res");
-  db.transaction((tx) => {
-    tx.update(schema.resumes).set({ isActive: false }).where(and(eq(schema.resumes.userId, user.id), eq(schema.resumes.isActive, true))).run();
-    tx.insert(schema.resumes).values({ id, userId: user.id, fileName, mimeType, rawText, parsed: parsed.data }).run();
+  await db.transaction(async (tx) => {
+    await tx.update(schema.resumes).set({ isActive: false }).where(and(eq(schema.resumes.userId, user.id), eq(schema.resumes.isActive, true))).run();
+    await tx.insert(schema.resumes).values({ id, userId: user.id, fileName, mimeType, rawText, parsed: parsed.data }).run();
   });
-  audit("resume.upload", { userId: user.id, target: id, data: { fileName, chars: rawText.length } });
+  await audit("resume.upload", { userId: user.id, target: id, data: { fileName, chars: rawText.length } });
   return json({ id, parsed: parsed.data, chars: rawText.length });
 }, { limit: 10 });

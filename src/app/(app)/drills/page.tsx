@@ -21,8 +21,8 @@ const ORDER: Track[] = ["responses", "delivery", "presence"];
 
 export default async function DrillsPage() {
   const user = await requireUser();
-  const attempts = getDb().select().from(schema.drillAttempts).where(eq(schema.drillAttempts.userId, user.id)).orderBy(desc(schema.drillAttempts.createdAt)).limit(50).all();
-  const { latest } = progressSummary(user.id);
+  const attempts = await getDb().select().from(schema.drillAttempts).where(eq(schema.drillAttempts.userId, user.id)).orderBy(desc(schema.drillAttempts.createdAt)).limit(50).all();
+  const { latest } = await progressSummary(user.id);
   const rec = recommendDrill(latest?.metrics ?? {});
   const last = (id: string) => {
     const a = attempts.find((x) => x.drillId === id);

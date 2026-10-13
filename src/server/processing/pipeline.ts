@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { and, asc, desc, eq, isNotNull, ne } from "drizzle-orm";
 import { getDb, schema } from "@/db/client";
 import { newId } from "@/lib/id";
@@ -30,50 +31,62 @@ export const PIPELINE_STEPS = [
 
 const running = new Set<string>();
 
-export function enqueueAnalysis(sessionId: string): string {
+export async function enqueueAnalysis(sessionId: string): Promise<string> {
   const db = getDb();
-  const existing = db.select().from(schema.processingJobs).where(eq(schema.processingJobs.sessionId, sessionId)).orderBy(desc(schema.processingJobs.createdAt)).get();
+  const existing = await db.select().from(schema.processingJobs).where(eq(schema.processingJobs.sessionId, sessionId)).orderBy(desc(schema.processingJobs.createdAt)).get();
   let jobId: string;
   if (existing && existing.status !== "complete") {
     jobId = existing.id;
-    db.update(schema.processingJobs).set({ status: "queued", error: null, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
+    await db.update(schema.processingJobs).set({ status: "queued", error: null, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
   } else {
     jobId = newId("job");
-    db.insert(schema.processingJobs).values({ id: jobId, sessionId, status: "queued" }).run();
+    await db.insert(schema.processingJobs).values({ id: jobId, sessionId, status: "queued" }).run();
   }
-  db.update(schema.interviewSessions).set({ analysisStatus: "queued", analysisError: null }).where(eq(schema.interviewSessions.id, sessionId)).run();
-  if (process.env.ORIEL_SYNC_PIPELINE !== "1") setTimeout(() => void runJob(jobId), 0);
+  await db.update(schema.interviewSessions).set({ analysisStatus: "queued", analysisError: null }).where(eq(schema.interviewSessions.id, sessionId)).run();
+  if (process.env.ORIEL_SYNC_PIPELINE !== "1") runAfterResponse(() => runJob(jobId));
   return jobId;
+}
+
+/**
+ * Inside a request, `after()` keeps a serverless function alive until the work finishes (on a
+ * long-lived server it just runs after the response). Outside a request (boot tasks), fall back.
+ */
+function runAfterResponse(work: () => Promise<void>) {
+  try {
+    after(work);
+  } catch {
+    setTimeout(() => void work(), 0);
+  }
 }
 
 export async function runJob(jobId: string): Promise<void> {
   if (running.has(jobId)) return;
   running.add(jobId);
   const db = getDb();
-  const job = db.select().from(schema.processingJobs).where(eq(schema.processingJobs.id, jobId)).get();
+  const job = await db.select().from(schema.processingJobs).where(eq(schema.processingJobs.id, jobId)).get();
   if (!job) return void running.delete(jobId);
   const timings: Record<string, number> = {};
-  const setStep = (step: string) => db.update(schema.processingJobs).set({ step, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
-  db.update(schema.processingJobs).set({ status: "running", attempts: job.attempts + 1, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
-  db.update(schema.interviewSessions).set({ analysisStatus: "running" }).where(eq(schema.interviewSessions.id, job.sessionId)).run();
+  const setStep = async (step: string) => await db.update(schema.processingJobs).set({ step, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
+  await db.update(schema.processingJobs).set({ status: "running", attempts: job.attempts + 1, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
+  await db.update(schema.interviewSessions).set({ analysisStatus: "running" }).where(eq(schema.interviewSessions.id, job.sessionId)).run();
   const t0 = performance.now();
   let ctx: PipelineCtx | null = null;
   try {
     for (const step of PIPELINE_STEPS) {
-      setStep(step);
+      await setStep(step);
       // Fault injection for resilience tests (never set in production).
       if (process.env.ORIEL_PIPELINE_FAIL_STEP === step) throw new Error(`injected failure at ${step}`);
       const ts = performance.now();
       ctx = await STEP_IMPL[step](job.sessionId, ctx);
       timings[step] = Math.round(performance.now() - ts);
     }
-    db.update(schema.processingJobs).set({ status: "complete", step: null, stepTimings: timings, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
-    db.update(schema.interviewSessions).set({ analysisStatus: "complete" }).where(eq(schema.interviewSessions.id, job.sessionId)).run();
+    await db.update(schema.processingJobs).set({ status: "complete", step: null, stepTimings: timings, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
+    await db.update(schema.interviewSessions).set({ analysisStatus: "complete" }).where(eq(schema.interviewSessions.id, job.sessionId)).run();
     logEvent("pipeline", "analysis_complete", { sessionId: job.sessionId, durationMs: performance.now() - t0, data: timings });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    db.update(schema.processingJobs).set({ status: "failed", error: msg, stepTimings: timings, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
-    db.update(schema.interviewSessions).set({ analysisStatus: "failed", analysisError: msg }).where(eq(schema.interviewSessions.id, job.sessionId)).run();
+    await db.update(schema.processingJobs).set({ status: "failed", error: msg, stepTimings: timings, updatedAt: new Date() }).where(eq(schema.processingJobs.id, jobId)).run();
+    await db.update(schema.interviewSessions).set({ analysisStatus: "failed", analysisError: msg }).where(eq(schema.interviewSessions.id, job.sessionId)).run();
     logEvent("error", "analysis_failed", { sessionId: job.sessionId, durationMs: performance.now() - t0, data: { error: msg, timings } });
   } finally {
     running.delete(jobId);
@@ -103,39 +116,39 @@ type Step = (sessionId: string, ctx: PipelineCtx | null) => Promise<PipelineCtx>
 const STEP_IMPL: Record<(typeof PIPELINE_STEPS)[number], Step> = {
   async store_session(sessionId) {
     const db = getDb();
-    const session = db.select().from(schema.interviewSessions).where(eq(schema.interviewSessions.id, sessionId)).get();
+    const session = await db.select().from(schema.interviewSessions).where(eq(schema.interviewSessions.id, sessionId)).get();
     if (!session) throw new Error("session missing");
     if (session.status === "live" || session.status === "created") {
-      db.update(schema.interviewSessions).set({ status: "ended", endedAt: session.endedAt ?? new Date() }).where(eq(schema.interviewSessions.id, sessionId)).run();
+      await db.update(schema.interviewSessions).set({ status: "ended", endedAt: session.endedAt ?? new Date() }).where(eq(schema.interviewSessions.id, sessionId)).run();
     }
-    db.update(schema.mediaObjects).set({ status: "complete" }).where(and(eq(schema.mediaObjects.sessionId, sessionId), eq(schema.mediaObjects.status, "recording"))).run();
-    const interview = db.select().from(schema.interviews).where(eq(schema.interviews.id, session.interviewId)).get()!;
-    const profile = db.select().from(schema.profiles).where(eq(schema.profiles.userId, session.userId)).get();
+    await db.update(schema.mediaObjects).set({ status: "complete" }).where(and(eq(schema.mediaObjects.sessionId, sessionId), eq(schema.mediaObjects.status, "recording"))).run();
+    const interview = (await db.select().from(schema.interviews).where(eq(schema.interviews.id, session.interviewId)).get())!;
+    const profile = await db.select().from(schema.profiles).where(eq(schema.profiles.userId, session.userId)).get();
     // Storage cost line for the recording.
-    const media = db.select().from(schema.mediaObjects).where(eq(schema.mediaObjects.sessionId, sessionId)).all();
+    const media = await db.select().from(schema.mediaObjects).where(eq(schema.mediaObjects.sessionId, sessionId)).all();
     const bytes = media.reduce((a, m) => a + m.bytes, 0);
-    if (bytes) recordUnitCost({ userId: session.userId, sessionId }, "local-disk", "storage", "recording_30d", bytes, "bytes", (bytes / 1e9) * 0.023);
+    if (bytes) await recordUnitCost({ userId: session.userId, sessionId }, "local-disk", "storage", "recording_30d", bytes, "bytes", (bytes / 1e9) * 0.023);
     return { session, interview, profile };
   },
 
   async transcript_alignment(sessionId, ctx) {
     const db = getDb();
-    const answers = db.select().from(schema.answers).where(eq(schema.answers.sessionId, sessionId)).orderBy(asc(schema.answers.seq)).all();
-    const questions = db.select().from(schema.questions).where(eq(schema.questions.sessionId, sessionId)).orderBy(asc(schema.questions.seq)).all();
+    const answers = await db.select().from(schema.answers).where(eq(schema.answers.sessionId, sessionId)).orderBy(asc(schema.answers.seq)).all();
+    const questions = await db.select().from(schema.questions).where(eq(schema.questions.sessionId, sessionId)).orderBy(asc(schema.questions.seq)).all();
     // Prefer the server transcription (keeps disfluencies) when it exists and is substantive.
-    const aligned = answers.map((a) => {
+    const aligned = await Promise.all(answers.map(async (a) => {
       const server = a.serverText?.trim();
       const bestText = server && server.split(/\s+/).length >= Math.max(3, a.text.split(/\s+/).length * 0.5) ? server : a.text;
       if (bestText !== a.text) {
-        db.update(schema.transcriptSegments).set({ text: bestText, source: "gemini" }).where(and(eq(schema.transcriptSegments.answerId, a.id), eq(schema.transcriptSegments.speaker, "candidate"))).run();
+        await db.update(schema.transcriptSegments).set({ text: bestText, source: "gemini" }).where(and(eq(schema.transcriptSegments.answerId, a.id), eq(schema.transcriptSegments.speaker, "candidate"))).run();
       }
       return { ...a, bestText };
-    });
+    }));
     return { ...ctx!, answers: aligned, questions };
   },
 
   async audio_analysis(sessionId, ctx) {
-    const rows = getDb().select().from(schema.signalTimelines).where(and(eq(schema.signalTimelines.sessionId, sessionId), eq(schema.signalTimelines.kind, "audio"))).orderBy(asc(schema.signalTimelines.startMs)).all();
+    const rows = await getDb().select().from(schema.signalTimelines).where(and(eq(schema.signalTimelines.sessionId, sessionId), eq(schema.signalTimelines.kind, "audio"))).orderBy(asc(schema.signalTimelines.startMs)).all();
     const audio = rows.flatMap((r) => (Array.isArray(r.samples) ? (r.samples as AudioSample[]) : []))
       .filter((x) => x && typeof x.t === "number" && typeof x.rms === "number").sort((a, b) => a.t - b.t);
     return { ...ctx!, audio };
@@ -144,8 +157,8 @@ const STEP_IMPL: Record<(typeof PIPELINE_STEPS)[number], Step> = {
   async pose_gaze_analysis(sessionId, ctx) {
     const db = getDb();
     if (!ctx!.session.cameraMetricsEnabled) return { ...ctx!, vision: [], setup: null };
-    const rows = db.select().from(schema.signalTimelines).where(and(eq(schema.signalTimelines.sessionId, sessionId), eq(schema.signalTimelines.kind, "vision"))).orderBy(asc(schema.signalTimelines.startMs)).all();
-    const setupRow = db.select().from(schema.signalTimelines).where(and(eq(schema.signalTimelines.sessionId, sessionId), eq(schema.signalTimelines.kind, "setup"))).orderBy(desc(schema.signalTimelines.startMs)).get();
+    const rows = await db.select().from(schema.signalTimelines).where(and(eq(schema.signalTimelines.sessionId, sessionId), eq(schema.signalTimelines.kind, "vision"))).orderBy(asc(schema.signalTimelines.startMs)).all();
+    const setupRow = await db.select().from(schema.signalTimelines).where(and(eq(schema.signalTimelines.sessionId, sessionId), eq(schema.signalTimelines.kind, "setup"))).orderBy(desc(schema.signalTimelines.startMs)).get();
     const vision = rows.flatMap((r) => (Array.isArray(r.samples) ? (r.samples as VisionSample[]) : [])).filter((x) => x && typeof x.t === "number").sort((a, b) => a.t - b.t);
     return { ...ctx!, vision, setup: Array.isArray(setupRow?.samples) ? ((setupRow!.samples[0] as SetupSample) ?? null) : null };
   },
@@ -186,7 +199,7 @@ const STEP_IMPL: Record<(typeof PIPELINE_STEPS)[number], Step> = {
   },
 
   async playback_selection(_sessionId, ctx) {
-    const { maxClips } = canUsePlayback(loadEntitlementContext(ctx!.session.userId));
+    const { maxClips } = canUsePlayback(await loadEntitlementContext(ctx!.session.userId));
     return { ...ctx!, selected: selectMoments(ctx!.moments!, maxClips) };
   },
 
@@ -203,25 +216,26 @@ const STEP_IMPL: Record<(typeof PIPELINE_STEPS)[number], Step> = {
     const llm = getLanguageModel();
     const coaching = await generateCoaching(llm, {
       role: c.interview.role, moments: momentsForCoaching, metricsSummary,
-      weakestAnswer: weakest && canUsePlayback(loadEntitlementContext(c.session.userId)).level === "full" ? { question: weakest.answer.questionText, answer: weakest.answer.text } : null,
+      weakestAnswer: weakest && canUsePlayback(await loadEntitlementContext(c.session.userId)).level === "full" ? { question: weakest.answer.questionText, answer: weakest.answer.text } : null,
     });
-    if (coaching.usage) recordTokenCost({ userId: c.session.userId, sessionId }, llm.id, "analysis", "coaching_generator", coaching.usage);
+    if (coaching.usage) await recordTokenCost({ userId: c.session.userId, sessionId }, llm.id, "analysis", "coaching_generator", coaching.usage);
     logEvent("llm_output", "coaching_generator", { sessionId, durationMs: coaching.latencyMs, data: { source: coaching.source, output: coaching.data, error: coaching.error ?? null } });
 
-    db.transaction((tx) => {
-      tx.delete(schema.playbackClips).where(eq(schema.playbackClips.sessionId, sessionId)).run();
-      c.selected!.forEach((m, i) => {
+    await db.transaction(async (tx) => {
+      await tx.delete(schema.playbackClips).where(eq(schema.playbackClips.sessionId, sessionId)).run();
+      // In order, inside the transaction: each insert finishes before the next.
+      for (const [i, m] of c.selected!.entries()) {
         const r = rowById.get(m.answerId)!;
         const cm = coaching.data.moments.find((x) => x.id === String(i));
-        tx.insert(schema.playbackClips).values({
+        await tx.insert(schema.playbackClips).values({
           id: newId("clp"), sessionId, questionId: m.questionId, answerId: m.answerId, rank: i, startMs: m.startMs, endMs: m.endMs,
           title: cm?.title ?? m.signal, questionText: r.questionText, transcript: r.text.slice(0, 600),
           // Observed text is always the measured evidence; the model may only add the title and the suggestion.
           observed: m.evidence, suggestion: cm?.suggestion ?? "Try: lead with the point, then the evidence.",
           signal: m.signal, confidence: m.confidence, source: coaching.source,
         }).run();
-      });
-      tx.update(schema.interviewSessions).set({
+      }
+      await tx.update(schema.interviewSessions).set({
         summary: {
           headline: coaching.data.headline, strengths: coaching.data.strengths, focus: coaching.data.focus,
           rewrittenAnswer: coaching.data.rewrite && weakest ? { questionId: weakest.answer.questionId, ...coaching.data.rewrite } : null,
@@ -236,31 +250,31 @@ const STEP_IMPL: Record<(typeof PIPELINE_STEPS)[number], Step> = {
     const db = getDb();
     const c = ctx!;
     const userId = c.session.userId;
-    db.delete(schema.metrics).where(eq(schema.metrics.sessionId, sessionId)).run();
+    await db.delete(schema.metrics).where(eq(schema.metrics.sessionId, sessionId)).run();
     const toRow = (m: MetricResult): typeof schema.metrics.$inferInsert => ({
       id: newId("met"), sessionId, userId, key: m.key, value: m.value, low: m.low, high: m.high, unit: m.unit,
       confidence: m.confidence, targetLow: m.targetLow, targetHigh: m.targetHigh, detail: { label: m.label, note: m.note, ...(m.detail ?? {}) },
     });
     const rows = c.read!.metrics.map(toRow);
     rows.push({ id: newId("met"), sessionId, userId, key: "competencies", value: null, low: null, high: null, unit: "", confidence: "medium", targetLow: null, targetHigh: null, detail: { label: "Competencies", note: "", competencies: c.competencies } });
-    if (rows.length) db.insert(schema.metrics).values(rows).run();
+    if (rows.length) await db.insert(schema.metrics).values(rows).run();
 
     const current: MetricMap = Object.fromEntries(c.read!.metrics.map((m) => [m.key, m.value]));
-    const prior = db.select().from(schema.progressSnapshots).where(and(eq(schema.progressSnapshots.userId, userId), isNotNull(schema.progressSnapshots.sessionId), ne(schema.progressSnapshots.sessionId, sessionId))).orderBy(asc(schema.progressSnapshots.createdAt)).all();
+    const prior = await db.select().from(schema.progressSnapshots).where(and(eq(schema.progressSnapshots.userId, userId), isNotNull(schema.progressSnapshots.sessionId), ne(schema.progressSnapshots.sessionId, sessionId))).orderBy(asc(schema.progressSnapshots.createdAt)).all();
     const baseline = computeBaseline(prior.map((p) => p.metrics));
-    db.delete(schema.progressSnapshots).where(eq(schema.progressSnapshots.sessionId, sessionId)).run();
-    db.insert(schema.progressSnapshots).values({ id: newId("prg"), userId, sessionId, metrics: current, baseline }).run();
+    await db.delete(schema.progressSnapshots).where(eq(schema.progressSnapshots.sessionId, sessionId)).run();
+    await db.insert(schema.progressSnapshots).values({ id: newId("prg"), userId, sessionId, metrics: current, baseline }).run();
 
     // Ladder: qualifying sessions on the current rung unlock the next one.
     const level = c.interview.ladderLevel;
     if (level && prior.length) {
       const { above } = aboveBaseline(compare(current, baseline));
       if (above) {
-        const prog = db.select().from(schema.ladderProgress).where(and(eq(schema.ladderProgress.userId, userId), eq(schema.ladderProgress.level, level))).get();
+        const prog = await db.select().from(schema.ladderProgress).where(and(eq(schema.ladderProgress.userId, userId), eq(schema.ladderProgress.level, level))).get();
         const qualifying = (prog?.qualifyingSessions ?? 0) + 1;
-        if (prog) db.update(schema.ladderProgress).set({ qualifyingSessions: qualifying, completedAt: qualifying >= LADDER_QUALIFYING_SESSIONS ? prog.completedAt ?? new Date() : null }).where(and(eq(schema.ladderProgress.userId, userId), eq(schema.ladderProgress.level, level))).run();
+        if (prog) await db.update(schema.ladderProgress).set({ qualifyingSessions: qualifying, completedAt: qualifying >= LADDER_QUALIFYING_SESSIONS ? prog.completedAt ?? new Date() : null }).where(and(eq(schema.ladderProgress.userId, userId), eq(schema.ladderProgress.level, level))).run();
         if (qualifying >= LADDER_QUALIFYING_SESSIONS && LADDER.some((l) => l.level === level + 1)) {
-          db.insert(schema.ladderProgress).values({ userId, level: level + 1, qualifyingSessions: 0, unlockedAt: new Date() }).onConflictDoNothing().run();
+          await db.insert(schema.ladderProgress).values({ userId, level: level + 1, qualifyingSessions: 0, unlockedAt: new Date() }).onConflictDoNothing().run();
           logEvent("pipeline", "ladder_unlocked", { sessionId, userId, data: { level: level + 1 } });
         }
       }

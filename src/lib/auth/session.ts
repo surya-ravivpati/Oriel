@@ -15,7 +15,7 @@ const hashToken = (t: string) => createHash("sha256").update(t).digest("base64ur
 export async function createSession(userId: string) {
   const token = randomBytes(32).toString("base64url");
   const ua = (await headers()).get("user-agent")?.slice(0, 200) ?? null;
-  getDb().insert(schema.authSessions).values({
+  await getDb().insert(schema.authSessions).values({
     id: hashToken(token), userId, expiresAt: new Date(Date.now() + SESSION_TTL_MS), userAgent: ua,
   }).run();
   (await cookies()).set(SESSION_COOKIE, token, {
@@ -27,7 +27,7 @@ export async function createSession(userId: string) {
 export async function destroySession() {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
-  if (token) getDb().delete(schema.authSessions).where(eq(schema.authSessions.id, hashToken(token))).run();
+  if (token) await getDb().delete(schema.authSessions).where(eq(schema.authSessions.id, hashToken(token))).run();
   jar.delete(SESSION_COOKIE);
 }
 
@@ -35,7 +35,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const db = getDb();
-  const row = db
+  const row = await db
     .select({ id: schema.users.id, email: schema.users.email, role: schema.users.role, onboardedAt: schema.users.onboardedAt, name: schema.profiles.name })
     .from(schema.authSessions)
     .innerJoin(schema.users, eq(schema.users.id, schema.authSessions.userId))

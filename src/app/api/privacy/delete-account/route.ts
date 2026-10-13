@@ -9,6 +9,6 @@ const Body = z.object({ confirm: z.literal("DELETE") });
 export const POST = authed(async (req, { user }) => {
   await parseBody(req, Body);
   await destroySession();
-  deleteAccount(user.id, user.email.split("@")[1] ?? null);
+  await deleteAccount(user.id, user.email.split("@")[1] ?? null);
   return json({ ok: true });
 }, { limit: 5 });
