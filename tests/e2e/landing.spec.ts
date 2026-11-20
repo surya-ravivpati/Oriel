@@ -12,10 +12,10 @@ test.describe("landing page", () => {
 
     await page.goto("/");
     await expect(page.locator("h1")).toHaveCount(1);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Practice for the room before you’re in it.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mock interviews that follow up on your answers.");
     await expect(page.getByText(/^Sample interview with Daniel/).first()).toBeVisible();
 
-    const cta = page.getByRole("main").getByRole("link", { name: "Start practicing free" }).first();
+    const cta = page.getByRole("main").getByRole("link", { name: "Start a free mock interview" }).first();
     await expect(cta).toHaveAttribute("href", "/signup");
     await cta.click();
     await expect(page).toHaveURL(/\/signup$/);
@@ -27,6 +27,6 @@ test.describe("landing page", () => {
     await page.goto("/");
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
-    await expect(page.getByRole("main").getByRole("link", { name: "Start practicing free" }).first()).toBeInViewport();
+    await expect(page.getByRole("main").getByRole("link", { name: "Start a free mock interview" }).first()).toBeInViewport();
   });
 });

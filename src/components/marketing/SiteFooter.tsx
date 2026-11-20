@@ -8,7 +8,7 @@ const linkCls = "inline-block py-1 text-fg-muted transition-colors duration-pres
 export function SiteFooter({ signedIn }: { signedIn: boolean }) {
   const contact = contactEmail();
   const columns: [string, [string, string][]][] = [
-    ["Product", [["/#how", "Interviewers"], ["/#read", "Feedback"], ["/#practice", "Lessons and drills"], ["/#pricing", "Pricing"]]],
+    ["Product", [["/#how", "How it works"], ["/#accuracy", "What it measures"], ["/#pricing", "Price"]]],
     ["Practice", signedIn
       ? [["/home", "Open Oriel"], ["/practice", "Practice an interview"], ["/progress", "Your progress"]]
       : [["/signup", "Start practicing"], ["/login", "Sign in"]]],

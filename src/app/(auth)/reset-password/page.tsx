@@ -7,7 +7,7 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
   const { token } = await searchParams;
   return (
     <>
-      <h1 className="text-display-l text-fg">Choose a new password<span className="text-accent">.</span></h1>
+      <h1 className="text-display-l text-fg">Choose a new password.</h1>
       {token ? (
         <>
           <p className="mb-9 mt-3 text-body-l text-fg-muted">Then you&apos;re signed in.</p>

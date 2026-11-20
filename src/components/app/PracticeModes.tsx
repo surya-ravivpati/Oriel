@@ -12,19 +12,23 @@ const MODES = [
 ] as const;
 
 export function PracticeModes({ current }: { current: (typeof MODES)[number]["href"] }) {
+  const here = MODES.find((m) => m.href === current)!;
   return (
-    <nav aria-label="Kinds of practice" className="mb-group grid gap-px overflow-hidden rounded-control border border-line bg-line sm:grid-cols-3">
-      {MODES.map((m) => {
-        const on = m.href === current;
-        return (
-          <Link key={m.href} href={m.href} aria-current={on ? "page" : undefined}
-            className={cn("group relative flex flex-col gap-1 bg-page px-4 py-3.5 transition-colors duration-press sm:px-5 sm:py-4", on ? "bg-surface" : "hover:bg-surface/60")}>
-            {on && <span className="absolute inset-x-0 top-0 h-0.5 bg-accent" aria-hidden />}
-            <span className={cn("text-ui font-medium", on ? "text-fg" : "text-fg-muted group-hover:text-fg")}>{m.name}</span>
-            <span className="text-meta text-fg-subtle">{m.when}</span>
-          </Link>
-        );
-      })}
+    <nav aria-label="Kinds of practice" className="mb-group">
+      <ul className="flex flex-wrap gap-x-6 gap-y-1 border-b border-line">
+        {MODES.map((m) => {
+          const on = m.href === current;
+          return (
+            <li key={m.href}>
+              <Link href={m.href} aria-current={on ? "page" : undefined}
+                className={cn("relative -mb-px inline-flex min-h-11 items-center border-b text-ui transition-colors duration-press", on ? "border-fg text-fg" : "border-transparent text-fg-muted hover:text-fg")}>
+                {m.name}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-3 text-meta text-fg-subtle">{here.when}</p>
     </nav>
   );
 }

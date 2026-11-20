@@ -13,7 +13,6 @@ import { AvatarStudio, type SavedStyles } from "@/components/avatar/AvatarStudio
 import { BotStill } from "@/components/avatar/BotStill";
 import { InterviewerStage } from "@/components/avatar/InterviewerStage";
 import { cn } from "@/components/ui/cn";
-import { Title } from "@/components/ui/PageHeader";
 
 /** Where in the hiring process this round sits. Named for the stage, not a person, so it never reads like an interviewer. */
 const STAGES: { value: "recruiter" | "hiring_manager" | "senior_manager" | "executive"; label: string }[] = [
@@ -85,7 +84,7 @@ export function SetupForm(p: Props) {
     <div className="page-grid gap-y-12">
       <div className="col-span-4 sm:col-span-8 lg:col-span-7">
         <header>
-          <h1 className="text-display-l text-fg"><Title>{p.firstRun ? "Your first interview." : "Set up your interview."}</Title></h1>
+          <h1 className="text-display-l text-fg">{p.firstRun ? "Your first interview." : "Set up your interview."}</h1>
           {p.firstRun && <p className="mt-5 max-w-prose text-body-l text-fg-muted">We&apos;ve started you at Realistic pressure. Speak naturally: the interviewer can hear pauses, follow-ups adapt to what you say, and nothing is scored until afterwards.</p>}
         </header>
 

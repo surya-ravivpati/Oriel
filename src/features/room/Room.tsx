@@ -488,7 +488,7 @@ function Clock({ text }: { text: string }) {
 }
 
 function Kbd({ children, className }: { children: ReactNode; className?: string }) {
-  return <kbd aria-hidden className={cn("inline-grid h-5 min-w-5 place-items-center rounded-sm border border-control px-1 text-meta leading-none text-fg-muted", className)}>{children}</kbd>;
+  return <kbd aria-hidden className={cn("inline-grid pointer-coarse:hidden h-5 min-w-5 place-items-center rounded-sm border border-control px-1 text-meta leading-none text-fg-muted", className)}>{children}</kbd>;
 }
 
 /** A control in the Room's toolbar. Its name is what it shows (plus any words only a screen reader needs). */
